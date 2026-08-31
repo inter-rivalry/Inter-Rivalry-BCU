@@ -1,0 +1,960 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>INTER RIVALRY</title>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<style>
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: Arial, Helvetica, sans-serif;
+    background: #080808;
+    color: #fff;
+    min-height: 100vh;
+}
+
+button,
+input {
+    font: inherit;
+}
+
+button {
+    cursor: pointer;
+}
+
+.hidden {
+    display: none !important;
+}
+
+/* =========================
+   AUTH PAGE
+========================= */
+
+.auth-page {
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+}
+
+.auth-box {
+    width: 100%;
+    max-width: 430px;
+    background: #121212;
+    border: 1px solid #292929;
+    border-radius: 20px;
+    padding: 32px;
+    box-shadow: 0 20px 70px rgba(0,0,0,.5);
+}
+
+.logo {
+    text-align: center;
+    font-size: 30px;
+    font-weight: 900;
+    letter-spacing: 4px;
+}
+
+.tagline {
+    text-align: center;
+    color: #8c8c8c;
+    margin-top: 8px;
+    margin-bottom: 30px;
+}
+
+.auth-box h2 {
+    margin-bottom: 20px;
+}
+
+.input-group {
+    margin-bottom: 16px;
+}
+
+.input-group label {
+    display: block;
+    color: #aaa;
+    font-size: 14px;
+    margin-bottom: 7px;
+}
+
+.input-group input {
+    width: 100%;
+    padding: 14px;
+    background: #090909;
+    border: 1px solid #303030;
+    border-radius: 10px;
+    color: white;
+    outline: none;
+}
+
+.input-group input:focus {
+    border-color: #777;
+}
+
+.primary-btn {
+    width: 100%;
+    padding: 14px;
+    border: none;
+    border-radius: 10px;
+    background: white;
+    color: black;
+    font-weight: 800;
+    margin-top: 4px;
+}
+
+.secondary-btn {
+    width: 100%;
+    padding: 13px;
+    border: 1px solid #333;
+    border-radius: 10px;
+    background: transparent;
+    color: white;
+    margin-top: 10px;
+}
+
+.message {
+    text-align: center;
+    color: #aaa;
+    font-size: 14px;
+    margin-top: 16px;
+    line-height: 1.5;
+}
+
+/* =========================
+   DASHBOARD
+========================= */
+
+.navbar {
+    height: 70px;
+    padding: 0 25px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: #0d0d0d;
+    border-bottom: 1px solid #222;
+}
+
+.nav-logo {
+    font-size: 20px;
+    font-weight: 900;
+    letter-spacing: 2px;
+}
+
+.logout-btn {
+    padding: 9px 15px;
+    border: 1px solid #333;
+    background: transparent;
+    color: white;
+    border-radius: 8px;
+}
+
+.container {
+    width: 100%;
+    max-width: 1150px;
+    margin: auto;
+    padding: 30px 20px;
+}
+
+.welcome {
+    margin-bottom: 25px;
+}
+
+.welcome h1 {
+    font-size: 32px;
+    margin-bottom: 7px;
+}
+
+.welcome p {
+    color: #888;
+}
+
+.profile-card {
+    background: #121212;
+    border: 1px solid #292929;
+    border-radius: 16px;
+    padding: 23px;
+    margin-bottom: 28px;
+}
+
+.profile-card h2 {
+    margin-bottom: 10px;
+}
+
+.profile-id {
+    color: #999;
+}
+
+.profile-id span {
+    color: white;
+    font-weight: 800;
+}
+
+.college-status {
+    margin-top: 10px;
+    color: #888;
+    font-size: 14px;
+}
+
+.section-title {
+    margin-bottom: 16px;
+}
+
+.category-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+    gap: 16px;
+}
+
+.category-card {
+    background: #121212;
+    border: 1px solid #292929;
+    border-radius: 16px;
+    padding: 22px;
+    transition: .2s ease;
+}
+
+.category-card:hover {
+    transform: translateY(-3px);
+    border-color: #555;
+}
+
+.category-icon {
+    font-size: 32px;
+    margin-bottom: 12px;
+}
+
+.category-card h3 {
+    margin-bottom: 7px;
+}
+
+.category-card p {
+    color: #888;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.empty-rank {
+    margin-top: 28px;
+    padding: 20px;
+    background: #101010;
+    border: 1px solid #252525;
+    border-radius: 14px;
+    color: #888;
+    text-align: center;
+}
+
+/* =========================
+   LOADING
+========================= */
+
+.loading {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #999;
+}
+
+/* =========================
+   MOBILE
+========================= */
+
+@media (max-width: 600px) {
+
+    .navbar {
+        padding: 0 15px;
+    }
+
+    .container {
+        padding: 22px 15px;
+    }
+
+    .welcome h1 {
+        font-size: 26px;
+    }
+
+    .auth-box {
+        padding: 24px;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<!-- =========================
+     LOADING
+========================= -->
+
+<div id="loadingScreen" class="loading">
+    Loading INTER RIVALRY...
+</div>
+
+
+<!-- =========================
+     AUTH
+========================= -->
+
+<section id="authPage" class="auth-page hidden">
+
+    <div class="auth-box">
+
+        <div class="logo">
+            INTER RIVALRY
+        </div>
+
+        <div class="tagline">
+            Choose your battlefield.
+        </div>
+
+
+        <!-- LOGIN -->
+
+        <div id="loginForm">
+
+            <h2>Login</h2>
+
+            <div class="input-group">
+                <label>Email</label>
+                <input
+                    id="loginEmail"
+                    type="email"
+                    placeholder="Enter your email"
+                    autocomplete="email"
+                >
+            </div>
+
+            <div class="input-group">
+                <label>Password</label>
+                <input
+                    id="loginPassword"
+                    type="password"
+                    placeholder="Enter your password"
+                    autocomplete="current-password"
+                >
+            </div>
+
+            <button
+                class="primary-btn"
+                onclick="login()"
+            >
+                LOGIN
+            </button>
+
+            <button
+                class="secondary-btn"
+                onclick="showSignup()"
+            >
+                CREATE ACCOUNT
+            </button>
+
+        </div>
+
+
+        <!-- SIGNUP -->
+
+        <div id="signupForm" class="hidden">
+
+            <h2>Create Account</h2>
+
+            <div class="input-group">
+                <label>Full Name</label>
+                <input
+                    id="signupName"
+                    type="text"
+                    placeholder="Enter your full name"
+                    autocomplete="name"
+                >
+            </div>
+
+            <div class="input-group">
+                <label>Email</label>
+                <input
+                    id="signupEmail"
+                    type="email"
+                    placeholder="Enter your email"
+                    autocomplete="email"
+                >
+            </div>
+
+            <div class="input-group">
+                <label>Password</label>
+                <input
+                    id="signupPassword"
+                    type="password"
+                    placeholder="Create a password"
+                    autocomplete="new-password"
+                >
+            </div>
+
+            <button
+                class="primary-btn"
+                onclick="signup()"
+            >
+                CREATE ACCOUNT
+            </button>
+
+            <button
+                class="secondary-btn"
+                onclick="showLogin()"
+            >
+                BACK TO LOGIN
+            </button>
+
+        </div>
+
+
+        <div id="authMessage" class="message"></div>
+
+    </div>
+
+</section>
+
+
+<!-- =========================
+     DASHBOARD
+========================= -->
+
+<section id="dashboard" class="hidden">
+
+    <nav class="navbar">
+
+        <div class="nav-logo">
+            INTER RIVALRY
+        </div>
+
+        <button
+            class="logout-btn"
+            onclick="logout()"
+        >
+            Logout
+        </button>
+
+    </nav>
+
+
+    <main class="container">
+
+        <div class="welcome">
+
+            <h1>
+                Welcome, <span id="userName">Student</span>
+            </h1>
+
+            <p>
+                Your rivalry journey starts here.
+            </p>
+
+        </div>
+
+
+        <div class="profile-card">
+
+            <h2>Your Profile</h2>
+
+            <div class="profile-id">
+                INTER RIVALRY ID:
+                <span id="rivalryId">Loading...</span>
+            </div>
+
+            <div class="college-status" id="collegeStatus">
+                College: Not joined yet
+            </div>
+
+        </div>
+
+
+        <h2 class="section-title">
+            Choose Your Battlefield
+        </h2>
+
+
+        <div class="category-grid">
+
+            <div class="category-card">
+                <div class="category-icon">🏏</div>
+                <h3>Sports</h3>
+                <p>Cricket • Football • Volleyball</p>
+            </div>
+
+
+            <div class="category-card">
+                <div class="category-icon">🎓</div>
+                <h3>Education</h3>
+                <p>BCA • B.Com • BBA</p>
+            </div>
+
+
+            <div class="category-card">
+                <div class="category-icon">🎭</div>
+                <h3>Culture</h3>
+                <p>Dance • Singing • Roast • Rap</p>
+            </div>
+
+
+            <div class="category-card">
+                <div class="category-icon">🎮</div>
+                <h3>Gaming</h3>
+                <p>Free Fire • PUBG/BGMI • EA Sports</p>
+            </div>
+
+
+            <div class="category-card">
+                <div class="category-icon">💻</div>
+                <h3>Technology</h3>
+                <p>Crafts • Web Development • Coding</p>
+            </div>
+
+        </div>
+
+
+        <div class="empty-rank">
+            No skill ranks yet.<br>
+            Participate in a skill to begin your ranking journey.
+        </div>
+
+    </main>
+
+</section>
+
+
+<script>
+
+/* =========================================================
+   SUPABASE
+========================================================= */
+
+const SUPABASE_URL =
+    "https://qfkxvflyzucvkeyucbzn.supabase.co";
+
+const SUPABASE_PUBLISHABLE_KEY =
+    "sb_publishable_Se88Rw_onDUYfnMHxogs2g_q6WGY_3T";
+
+const client =
+    supabase.createClient(
+        SUPABASE_URL,
+        SUPABASE_PUBLISHABLE_KEY
+    );
+
+
+/* =========================================================
+   ELEMENTS
+========================================================= */
+
+const loadingScreen =
+    document.getElementById("loadingScreen");
+
+const authPage =
+    document.getElementById("authPage");
+
+const dashboard =
+    document.getElementById("dashboard");
+
+const authMessage =
+    document.getElementById("authMessage");
+
+
+/* =========================================================
+   MESSAGE
+========================================================= */
+
+function showMessage(message) {
+    authMessage.textContent = message;
+}
+
+
+/* =========================================================
+   AUTH FORMS
+========================================================= */
+
+function showSignup() {
+
+    document
+        .getElementById("loginForm")
+        .classList.add("hidden");
+
+    document
+        .getElementById("signupForm")
+        .classList.remove("hidden");
+
+    showMessage("");
+}
+
+
+function showLogin() {
+
+    document
+        .getElementById("signupForm")
+        .classList.add("hidden");
+
+    document
+        .getElementById("loginForm")
+        .classList.remove("hidden");
+
+    showMessage("");
+}
+
+
+/* =========================================================
+   SIGNUP
+========================================================= */
+
+async function signup() {
+
+    const name =
+        document
+            .getElementById("signupName")
+            .value
+            .trim();
+
+    const email =
+        document
+            .getElementById("signupEmail")
+            .value
+            .trim();
+
+    const password =
+        document
+            .getElementById("signupPassword")
+            .value;
+
+
+    if (!name || !email || !password) {
+
+        showMessage(
+            "Please fill in all fields."
+        );
+
+        return;
+    }
+
+
+    if (password.length < 6) {
+
+        showMessage(
+            "Password must be at least 6 characters."
+        );
+
+        return;
+    }
+
+
+    showMessage(
+        "Creating your INTER RIVALRY account..."
+    );
+
+
+    const {
+        data,
+        error
+    } = await client.auth.signUp({
+
+        email: email,
+
+        password: password,
+
+        options: {
+            data: {
+                full_name: name
+            }
+        }
+
+    });
+
+
+    if (error) {
+
+        showMessage(error.message);
+
+        return;
+    }
+
+
+    /*
+       Supabase may require email confirmation.
+    */
+
+    if (!data.session) {
+
+        showMessage(
+            "Account created! Check your email and confirm your account before logging in."
+        );
+
+        return;
+    }
+
+
+    await loadDashboard();
+}
+
+
+/* =========================================================
+   LOGIN
+========================================================= */
+
+async function login() {
+
+    const email =
+        document
+            .getElementById("loginEmail")
+            .value
+            .trim();
+
+    const password =
+        document
+            .getElementById("loginPassword")
+            .value;
+
+
+    if (!email || !password) {
+
+        showMessage(
+            "Please enter your email and password."
+        );
+
+        return;
+    }
+
+
+    showMessage("Logging in...");
+
+
+    const {
+        error
+    } = await client.auth.signInWithPassword({
+
+        email: email,
+
+        password: password
+
+    });
+
+
+    if (error) {
+
+        showMessage(error.message);
+
+        return;
+    }
+
+
+    await loadDashboard();
+}
+
+
+/* =========================================================
+   LOAD DASHBOARD
+========================================================= */
+
+async function loadDashboard() {
+
+    const {
+        data: {
+            user
+        }
+    } = await client.auth.getUser();
+
+
+    if (!user) {
+
+        showAuth();
+
+        return;
+    }
+
+
+    const {
+        data: profile,
+        error
+    } = await client
+        .from("profiles")
+        .select(`
+            full_name,
+            inter_rivalry_id
+        `)
+        .eq("id", user.id)
+        .single();
+
+
+    if (error) {
+
+        console.error(error);
+
+        showMessage(
+            "Your account exists, but your INTER RIVALRY profile could not be loaded."
+        );
+
+        showAuth();
+
+        return;
+    }
+
+
+    document
+        .getElementById("userName")
+        .textContent =
+            profile.full_name;
+
+
+    document
+        .getElementById("rivalryId")
+        .textContent =
+            profile.inter_rivalry_id;
+
+
+    /*
+       Check whether the student belongs
+       to a college.
+    */
+
+    const {
+        data: membership
+    } = await client
+        .from("college_memberships")
+        .select(`
+            college_id,
+            department,
+            course,
+            year_of_study,
+            colleges (
+                college_name,
+                college_code
+            )
+        `)
+        .eq("user_id", user.id)
+        .eq("is_active", true)
+        .maybeSingle();
+
+
+    const collegeStatus =
+        document.getElementById("collegeStatus");
+
+
+    if (membership && membership.colleges) {
+
+        collegeStatus.textContent =
+            "College: " +
+            membership.colleges.college_name +
+            " (" +
+            membership.colleges.college_code +
+            ")";
+
+    } else {
+
+        collegeStatus.textContent =
+            "College: Not joined yet";
+
+    }
+
+
+    loadingScreen
+        .classList
+        .add("hidden");
+
+    authPage
+        .classList
+        .add("hidden");
+
+    dashboard
+        .classList
+        .remove("hidden");
+}
+
+
+/* =========================================================
+   LOGOUT
+========================================================= */
+
+async function logout() {
+
+    await client.auth.signOut();
+
+    dashboard
+        .classList
+        .add("hidden");
+
+    showAuth();
+}
+
+
+/* =========================================================
+   SHOW AUTH
+========================================================= */
+
+function showAuth() {
+
+    loadingScreen
+        .classList
+        .add("hidden");
+
+    dashboard
+        .classList
+        .add("hidden");
+
+    authPage
+        .classList
+        .remove("hidden");
+}
+
+
+/* =========================================================
+   AUTH STATE
+========================================================= */
+
+client.auth.onAuthStateChange(
+    async (event, session) => {
+
+        if (session) {
+
+            await loadDashboard();
+
+        } else {
+
+            showAuth();
+
+        }
+
+    }
+);
+
+
+/* =========================================================
+   INITIAL SESSION CHECK
+========================================================= */
+
+async function initialize() {
+
+    const {
+        data: {
+            session
+        }
+    } = await client.auth.getSession();
+
+
+    if (session) {
+
+        await loadDashboard();
+
+    } else {
+
+        showAuth();
+
+    }
+}
+
+
+initialize();
+
+</script>
+
+</body>
+</html>
