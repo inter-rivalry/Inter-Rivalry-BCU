@@ -1,1 +1,4078 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+<title>INTER RIVALRY</title>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<style>
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: Arial, Helvetica, sans-serif;
+    background: #080808;
+    color: white;
+    min-height: 100vh;
+}
+
+button,
+input,
+select {
+    font: inherit;
+}
+
+button {
+    cursor: pointer;
+}
+
+.hidden {
+    display: none !important;
+}
+
+/* ================= AUTH ================= */
+
+.auth-page {
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+}
+
+.auth-box {
+    width: 100%;
+    max-width: 450px;
+    background: #121212;
+    border: 1px solid #292929;
+    border-radius: 20px;
+    padding: 32px;
+    box-shadow: 0 20px 70px rgba(0,0,0,.5);
+}
+
+.logo {
+    text-align: center;
+    font-size: 30px;
+    font-weight: 900;
+    letter-spacing: 4px;
+}
+
+.tagline {
+    text-align: center;
+    color: #8c8c8c;
+    margin-top: 8px;
+    margin-bottom: 30px;
+}
+
+.auth-box h2 {
+    margin-bottom: 20px;
+}
+
+.input-group {
+    margin-bottom: 16px;
+}
+
+.input-group label {
+    display: block;
+    color: #aaa;
+    font-size: 14px;
+    margin-bottom: 7px;
+}
+
+.input-group input,
+.input-group select {
+    width: 100%;
+    padding: 14px;
+    background: #090909;
+    border: 1px solid #303030;
+    border-radius: 10px;
+    color: white;
+    outline: none;
+}
+
+.input-group select option {
+    background: #111;
+}
+
+.primary-btn {
+    width: 100%;
+    padding: 14px;
+    border: none;
+    border-radius: 10px;
+    background: white;
+    color: black;
+    font-weight: 800;
+}
+
+.secondary-btn {
+    width: 100%;
+    padding: 13px;
+    border: 1px solid #333;
+    border-radius: 10px;
+    background: transparent;
+    color: white;
+    margin-top: 10px;
+}
+
+.message {
+    text-align: center;
+    color: #aaa;
+    font-size: 14px;
+    margin-top: 16px;
+    line-height: 1.5;
+}
+
+/* ================= NAVBAR ================= */
+
+.navbar {
+    height: 70px;
+    padding: 0 25px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: #0d0d0d;
+    border-bottom: 1px solid #222;
+}
+
+.nav-logo {
+    font-size: 20px;
+    font-weight: 900;
+    letter-spacing: 2px;
+}
+
+.nav-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.role-badge {
+    padding: 7px 10px;
+    border: 1px solid #333;
+    border-radius: 8px;
+    font-size: 12px;
+    color: #aaa;
+}
+
+.logout-btn {
+    padding: 9px 15px;
+    border: 1px solid #333;
+    background: transparent;
+    color: white;
+    border-radius: 8px;
+}
+
+/* ================= CONTAINER ================= */
+
+.container {
+    width: 100%;
+    max-width: 1150px;
+    margin: auto;
+    padding: 30px 20px;
+}
+
+.welcome {
+    margin-bottom: 25px;
+}
+
+.welcome h1 {
+    font-size: 32px;
+    margin-bottom: 7px;
+}
+
+.welcome p {
+    color: #888;
+}
+
+.section-title {
+    margin-bottom: 16px;
+}
+
+/* ================= CARDS ================= */
+
+.profile-card,
+.admin-stat,
+.college-card,
+.management-card,
+.request-card,
+.student-card,
+.admin-card {
+    background: #121212;
+    border: 1px solid #292929;
+    border-radius: 16px;
+    padding: 23px;
+}
+
+.profile-card {
+    margin-bottom: 28px;
+}
+
+.profile-card h2 {
+    margin-bottom: 10px;
+}
+
+.profile-id {
+    color: #999;
+}
+
+.profile-id span {
+    color: white;
+    font-weight: 800;
+}
+
+.college-status {
+    margin-top: 10px;
+    color: #888;
+    font-size: 14px;
+}
+
+/* ================= GRIDS ================= */
+
+.grid {
+    display: grid;
+    grid-template-columns:
+        repeat(auto-fit, minmax(220px, 1fr));
+    gap: 16px;
+}
+
+.category-grid {
+    display: grid;
+    grid-template-columns:
+        repeat(auto-fit, minmax(210px, 1fr));
+    gap: 16px;
+}
+
+.management-grid {
+    display: grid;
+    grid-template-columns:
+        repeat(auto-fit, minmax(220px, 1fr));
+    gap: 16px;
+    margin-bottom: 25px;
+}
+
+/* ================= CATEGORY ================= */
+
+.category-card {
+    background: #121212;
+    border: 1px solid #292929;
+    border-radius: 16px;
+    padding: 22px;
+    transition: .2s ease;
+}
+
+.category-card:hover {
+    transform: translateY(-3px);
+    border-color: #555;
+}
+
+.category-icon {
+    font-size: 32px;
+    margin-bottom: 12px;
+}
+
+.category-card h3 {
+    margin-bottom: 7px;
+}
+
+.category-card p {
+    color: #888;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+/* ================= ADMIN ================= */
+
+.admin-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 25px;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+.admin-header h1 {
+    font-size: 30px;
+}
+
+.admin-header p {
+    color: #888;
+    margin-top: 5px;
+}
+
+.admin-stat .number {
+    font-size: 32px;
+    font-weight: 900;
+    margin-bottom: 5px;
+}
+
+.admin-stat .label {
+    color: #888;
+}
+
+.add-college-box {
+    margin-top: 25px;
+    margin-bottom: 25px;
+}
+
+.college-card h3 {
+    margin-bottom: 8px;
+}
+
+.college-code {
+    color: #888;
+    font-size: 14px;
+    margin-bottom: 10px;
+}
+
+.college-location {
+    color: #777;
+    font-size: 13px;
+    margin-bottom: 15px;
+}
+
+/* ================= BUTTONS ================= */
+
+.small-btn {
+    padding: 9px 13px;
+    border: 1px solid #333;
+    background: transparent;
+    color: white;
+    border-radius: 8px;
+}
+
+.success-btn {
+    background: white;
+    color: black;
+    border-color: white;
+}
+
+.approve-btn {
+    background: white;
+    color: black;
+    border: none;
+}
+
+.reject-btn {
+    border-color: #555;
+}
+
+.danger-btn {
+    border-color: #555;
+}
+
+.back-btn {
+    margin-bottom: 20px;
+    padding: 10px 15px;
+    border: 1px solid #333;
+    background: transparent;
+    color: white;
+    border-radius: 9px;
+}
+
+/* ================= MANAGEMENT ================= */
+
+.management-header {
+    margin-bottom: 25px;
+}
+
+.management-header h1 {
+    font-size: 30px;
+    margin-bottom: 7px;
+}
+
+.management-header p {
+    color: #888;
+}
+
+.management-info {
+    margin-bottom: 25px;
+}
+
+.management-info h2 {
+    margin-bottom: 10px;
+}
+
+.management-info p {
+    color: #888;
+    margin-top: 7px;
+}
+
+.management-card {
+    text-align: center;
+}
+
+.management-card .icon {
+    font-size: 32px;
+    margin-bottom: 10px;
+}
+
+.management-card .count {
+    font-size: 30px;
+    font-weight: 900;
+    margin-bottom: 5px;
+}
+
+.management-card .label {
+    color: #888;
+    margin-bottom: 15px;
+}
+
+/* ================= REQUESTS ================= */
+
+.request-card {
+    margin-bottom: 12px;
+}
+
+.request-card h3 {
+    margin-bottom: 8px;
+}
+
+.request-info {
+    color: #999;
+    font-size: 14px;
+    line-height: 1.7;
+}
+
+.request-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 15px;
+    flex-wrap: wrap;
+}
+
+/* ================= STUDENTS ================= */
+
+.student-card {
+    margin-bottom: 12px;
+}
+
+.student-card h3 {
+    margin-bottom: 8px;
+}
+
+.student-info {
+    color: #999;
+    font-size: 14px;
+    line-height: 1.7;
+}
+
+/* ================= ADMINS ================= */
+
+.admin-card {
+    margin-bottom: 12px;
+}
+
+.admin-card h3 {
+    margin-bottom: 7px;
+}
+
+.admin-info {
+    color: #999;
+    font-size: 14px;
+    line-height: 1.7;
+}
+
+/* ================= EMPTY ================= */
+
+.empty-box {
+    padding: 30px;
+    text-align: center;
+    color: #777;
+    background: #101010;
+    border: 1px solid #252525;
+    border-radius: 14px;
+}
+
+.empty-rank {
+    margin-top: 28px;
+    padding: 20px;
+    background: #101010;
+    border: 1px solid #252525;
+    border-radius: 14px;
+    color: #888;
+    text-align: center;
+}
+
+/* ================= LOADING ================= */
+
+.loading {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #999;
+}
+
+/* ================= MOBILE ================= */
+
+@media (max-width: 600px) {
+
+    .navbar {
+        padding: 0 15px;
+    }
+
+    .container {
+        padding: 22px 15px;
+    }
+
+    .welcome h1 {
+        font-size: 26px;
+    }
+
+    .auth-box {
+        padding: 24px;
+    }
+
+    .role-badge {
+        display: none;
+    }
+
+}
+
+</style>
+</head>
+
+<body>
+
+
+<!-- =====================================================
+     LOADING
+===================================================== -->
+
+<div id="loadingScreen" class="loading">
+    Loading INTER RIVALRY...
+</div>
+
+
+<!-- =====================================================
+     AUTH
+===================================================== -->
+
+<section id="authPage" class="auth-page hidden">
+
+<div class="auth-box">
+
+<div class="logo">
+INTER RIVALRY
+</div>
+
+<div class="tagline">
+Choose your battlefield.
+</div>
+
+
+<div id="loginForm">
+
+<h2>Login</h2>
+
+<div class="input-group">
+<label>Email</label>
+<input
+id="loginEmail"
+type="email"
+placeholder="Enter your email"
+autocomplete="email"
+>
+</div>
+
+<div class="input-group">
+<label>Password</label>
+<input
+id="loginPassword"
+type="password"
+placeholder="Enter your password"
+autocomplete="current-password"
+>
+</div>
+
+<button
+class="primary-btn"
+onclick="login()"
+>
+LOGIN
+</button>
+
+<button
+class="secondary-btn"
+onclick="showSignup()"
+>
+CREATE ACCOUNT
+</button>
+
+</div>
+
+
+<div id="signupForm" class="hidden">
+
+<h2>Create Account</h2>
+
+<div class="input-group">
+<label>Full Name</label>
+<input
+id="signupName"
+type="text"
+placeholder="Enter your full name"
+>
+</div>
+
+<div class="input-group">
+<label>Email</label>
+<input
+id="signupEmail"
+type="email"
+placeholder="Enter your email"
+>
+</div>
+
+<div class="input-group">
+<label>Password</label>
+<input
+id="signupPassword"
+type="password"
+placeholder="Create a password"
+>
+</div>
+
+<button
+class="primary-btn"
+onclick="signup()"
+>
+CREATE ACCOUNT
+</button>
+
+<button
+class="secondary-btn"
+onclick="showLogin()"
+>
+BACK TO LOGIN
+</button>
+
+</div>
+
+<div id="authMessage" class="message"></div>
+
+</div>
+
+</section>
+
+
+<!-- =====================================================
+     STUDENT DASHBOARD
+===================================================== -->
+
+<section id="studentDashboard" class="hidden">
+
+<nav class="navbar">
+
+<div class="nav-logo">
+INTER RIVALRY
+</div>
+
+<div class="nav-right">
+
+<div class="role-badge">
+STUDENT
+</div>
+
+<button
+class="logout-btn"
+onclick="logout()"
+>
+Logout
+</button>
+
+</div>
+
+</nav>
+
+
+<main class="container">
+
+<div class="welcome">
+
+<h1>
+Welcome,
+<span id="userName">Student</span>
+</h1>
+
+<p>
+Your rivalry journey starts here.
+</p>
+
+</div>
+
+
+<div class="profile-card">
+
+<h2>Your Profile</h2>
+
+<div class="profile-id">
+INTER RIVALRY ID:
+<span id="rivalryId">Loading...</span>
+</div>
+
+<div
+class="college-status"
+id="collegeStatus"
+>
+College: Not joined yet
+</div>
+
+</div>
+
+
+<div
+id="studentCollegeSection"
+>
+
+<h2 class="section-title">
+Choose Your College
+</h2>
+
+<div
+id="collegeList"
+class="grid"
+>
+</div>
+
+</div>
+
+
+<h2 class="section-title">
+Choose Your Battlefield
+</h2>
+
+
+<div class="category-grid">
+
+<div class="category-card">
+<div class="category-icon">🏏</div>
+<h3>Sports</h3>
+<p>Cricket • Football • Volleyball</p>
+</div>
+
+<div class="category-card">
+<div class="category-icon">🎓</div>
+<h3>Education</h3>
+<p>BCA • B.Com • BBA</p>
+</div>
+
+<div class="category-card">
+<div class="category-icon">🎭</div>
+<h3>Culture</h3>
+<p>Dance • Singing • Roast • Rap</p>
+</div>
+
+<div class="category-card">
+<div class="category-icon">🎮</div>
+<h3>Gaming</h3>
+<p>Free Fire • PUBG/BGMI • EA Sports</p>
+</div>
+
+<div class="category-card">
+<div class="category-icon">💻</div>
+<h3>Technology</h3>
+<p>Crafts • Web Development • Coding</p>
+</div>
+
+</div>
+
+
+<div class="empty-rank">
+No skill ranks yet.<br>
+Participate in a skill to begin your ranking journey.
+</div>
+
+</main>
+
+</section>
+
+
+<!-- =====================================================
+     SUPER ADMIN DASHBOARD
+===================================================== -->
+
+<section id="adminDashboard" class="hidden">
+
+<nav class="navbar">
+
+<div class="nav-logo">
+INTER RIVALRY
+</div>
+
+<div class="nav-right">
+
+<div class="role-badge">
+SUPER ADMIN
+</div>
+
+<button
+class="logout-btn"
+onclick="logout()"
+>
+Logout
+</button>
+
+</div>
+
+</nav>
+
+
+<main class="container">
+
+<div class="admin-header">
+
+<div>
+
+<h1>
+👑 Super Admin
+</h1>
+
+<p>
+INTER RIVALRY platform management
+</p>
+
+</div>
+
+</div>
+
+
+<div class="grid">
+
+<div class="admin-stat">
+
+<div
+id="collegeCount"
+class="number"
+>
+0
+</div>
+
+<div class="label">
+Colleges
+</div>
+
+</div>
+
+
+<div class="admin-stat">
+
+<div
+id="requestCount"
+class="number"
+>
+0
+</div>
+
+<div class="label">
+Pending Requests
+</div>
+
+</div>
+
+
+<div class="admin-stat">
+
+<div
+id="adminCount"
+class="number"
+>
+0
+</div>
+
+<div class="label">
+College Admins
+</div>
+
+</div>
+
+</div>
+
+
+<!-- ADD COLLEGE -->
+
+<div class="profile-card add-college-box">
+
+<h2>
+🏫 Add College
+</h2>
+
+<br>
+
+<div class="input-group">
+<label>College Name</label>
+
+<input
+id="collegeName"
+type="text"
+placeholder="Example: Bengaluru City University"
+>
+</div>
+
+
+<div class="input-group">
+<label>College Code</label>
+
+<input
+id="collegeCode"
+type="text"
+placeholder="Example: BCU"
+>
+</div>
+
+
+<div class="input-group">
+<label>City</label>
+
+<input
+id="collegeCity"
+type="text"
+placeholder="Example: Bengaluru"
+>
+</div>
+
+
+<div class="input-group">
+<label>State</label>
+
+<input
+id="collegeState"
+type="text"
+placeholder="Example: Karnataka"
+>
+</div>
+
+
+<button
+class="primary-btn"
+onclick="addCollege()"
+>
++ ADD COLLEGE
+</button>
+
+
+<div
+id="adminMessage"
+class="message"
+>
+</div>
+
+</div>
+
+
+<h2 class="section-title">
+🏫 Colleges
+</h2>
+
+
+<div
+id="adminCollegeList"
+class="grid"
+>
+</div>
+
+</main>
+
+</section>
+
+
+<!-- =====================================================
+     COLLEGE MANAGEMENT
+===================================================== -->
+
+<section id="collegeManagement" class="hidden">
+
+<nav class="navbar">
+
+<div class="nav-logo">
+INTER RIVALRY
+</div>
+
+<div class="nav-right">
+
+<div class="role-badge">
+SUPER ADMIN
+</div>
+
+<button
+class="logout-btn"
+onclick="logout()"
+>
+Logout
+</button>
+
+</div>
+
+</nav>
+
+
+<main class="container">
+
+<button
+class="back-btn"
+onclick="backToAdmin()"
+>
+← BACK TO DASHBOARD
+</button>
+
+
+<div class="management-header">
+
+<h1>
+🏫 <span id="manageCollegeName">
+College
+</span>
+</h1>
+
+<p id="manageCollegeLocation">
+Loading...
+</p>
+
+</div>
+
+
+<div class="profile-card management-info">
+
+<h2>
+College Information
+</h2>
+
+<p>
+College Code:
+<strong id="manageCollegeCode">-</strong>
+</p>
+
+<p>
+City:
+<span id="manageCollegeCity">-</span>
+</p>
+
+<p>
+State:
+<span id="manageCollegeState">-</span>
+</p>
+
+</div>
+
+
+<!-- THREE MODULES -->
+
+<div class="management-grid">
+
+
+<div class="management-card">
+
+<div class="icon">
+👥
+</div>
+
+<div
+id="manageAdminCount"
+class="count"
+>
+0
+</div>
+
+<div class="label">
+College Admins
+</div>
+
+<button
+class="small-btn"
+onclick="openAdmins()"
+>
+MANAGE ADMINS
+</button>
+
+</div>
+
+
+<div class="management-card">
+
+<div class="icon">
+🎓
+</div>
+
+<div
+id="manageStudentCount"
+class="count"
+>
+0
+</div>
+
+<div class="label">
+Students
+</div>
+
+<button
+class="small-btn"
+onclick="openStudents()"
+>
+VIEW STUDENTS
+</button>
+
+</div>
+
+
+<div class="management-card">
+
+<div class="icon">
+📩
+</div>
+
+<div
+id="manageRequestCount"
+class="count"
+>
+0
+</div>
+
+<div class="label">
+Join Requests
+</div>
+
+<button
+class="small-btn"
+onclick="openRequests()"
+>
+VIEW REQUESTS
+</button>
+
+</div>
+
+</div>
+
+
+<!-- EDIT COLLEGE -->
+
+<div class="profile-card">
+
+<h2>
+⚙️ Edit College
+</h2>
+
+<br>
+
+<div class="input-group">
+<label>College Name</label>
+
+<input
+id="editCollegeName"
+type="text"
+>
+</div>
+
+<div class="input-group">
+<label>College Code</label>
+
+<input
+id="editCollegeCode"
+type="text"
+>
+</div>
+
+<div class="input-group">
+<label>City</label>
+
+<input
+id="editCollegeCity"
+type="text"
+>
+</div>
+
+<div class="input-group">
+<label>State</label>
+
+<input
+id="editCollegeState"
+type="text"
+>
+</div>
+
+<button
+class="primary-btn"
+onclick="saveCollegeChanges()"
+>
+SAVE CHANGES
+</button>
+
+<div
+id="editMessage"
+class="message"
+>
+</div>
+
+</div>
+
+</main>
+
+</section>
+
+
+<!-- =====================================================
+     ADMINS PAGE
+===================================================== -->
+
+<section id="adminsPage" class="hidden">
+
+<nav class="navbar">
+
+<div class="nav-logo">
+INTER RIVALRY
+</div>
+
+<div class="nav-right">
+
+<div class="role-badge">
+SUPER ADMIN
+</div>
+
+<button
+class="logout-btn"
+onclick="logout()"
+>
+Logout
+</button>
+
+</div>
+
+</nav>
+
+
+<main class="container">
+
+<button
+class="back-btn"
+onclick="backToManagement()"
+>
+← BACK
+</button>
+
+
+<h1>
+👥 College Admins
+</h1>
+
+<p
+id="adminsCollegeName"
+style="color:#888;margin-top:8px;margin-bottom:25px"
+>
+College
+</p>
+
+
+<div class="profile-card">
+
+<h2>
+➕ Add College Admin
+</h2>
+
+<br>
+
+<div class="input-group">
+
+<label>
+User ID
+</label>
+
+<input
+id="adminUserId"
+type="text"
+placeholder="Paste the user's UUID"
+>
+
+</div>
+
+
+<button
+class="primary-btn"
+onclick="addCollegeAdmin()"
+>
+ADD ADMIN
+</button>
+
+
+<div
+id="adminManageMessage"
+class="message"
+>
+</div>
+
+</div>
+
+
+<h2 class="section-title">
+Current Admins
+</h2>
+
+
+<div id="adminsList"></div>
+
+</main>
+
+</section>
+
+
+<!-- =====================================================
+     STUDENTS PAGE
+===================================================== -->
+
+<section id="studentsPage" class="hidden">
+
+<nav class="navbar">
+
+<div class="nav-logo">
+INTER RIVALRY
+</div>
+
+<div class="nav-right">
+
+<div class="role-badge">
+SUPER ADMIN
+</div>
+
+<button
+class="logout-btn"
+onclick="logout()"
+>
+Logout
+</button>
+
+</div>
+
+</nav>
+
+
+<main class="container">
+
+<button
+class="back-btn"
+onclick="backToManagement()"
+>
+← BACK
+</button>
+
+
+<h1>
+🎓 Students
+</h1>
+
+<p
+id="studentsCollegeName"
+style="color:#888;margin-top:8px;margin-bottom:25px"
+>
+College
+</p>
+
+
+<div id="studentsList"></div>
+
+</main>
+
+</section>
+
+
+<!-- =====================================================
+     REQUESTS PAGE
+===================================================== -->
+
+<section id="requestsPage" class="hidden">
+
+<nav class="navbar">
+
+<div class="nav-logo">
+INTER RIVALRY
+</div>
+
+<div class="nav-right">
+
+<div class="role-badge">
+SUPER ADMIN
+</div>
+
+<button
+class="logout-btn"
+onclick="logout()"
+>
+Logout
+</button>
+
+</div>
+
+</nav>
+
+
+<main class="container">
+
+<button
+class="back-btn"
+onclick="backToManagement()"
+>
+← BACK
+</button>
+
+
+<h1>
+📩 Join Requests
+</h1>
+
+<p
+id="requestsCollegeName"
+style="color:#888;margin-top:8px;margin-bottom:25px"
+>
+College
+</p>
+
+
+<div id="requestsList"></div>
+
+</main>
+
+</section>
+
+
+<script>
+
+/* =====================================================
+   SUPABASE
+===================================================== */
+
+const SUPABASE_URL =
+"https://qfkxvflyzucvkeyucbzn.supabase.co";
+
+const SUPABASE_PUBLISHABLE_KEY =
+"sb_publishable_Se88Rw_onDUYfnMHxogs2g_q6WGY_3T";
+
+const client =
+supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_PUBLISHABLE_KEY
+);
+
+
+/* =====================================================
+   GLOBAL
+===================================================== */
+
+let selectedCollegeId = null;
+
+
+/* =====================================================
+   ELEMENTS
+===================================================== */
+
+const loadingScreen =
+document.getElementById("loadingScreen");
+
+const authPage =
+document.getElementById("authPage");
+
+const studentDashboard =
+document.getElementById("studentDashboard");
+
+const adminDashboard =
+document.getElementById("adminDashboard");
+
+const collegeManagement =
+document.getElementById("collegeManagement");
+
+const adminsPage =
+document.getElementById("adminsPage");
+
+const studentsPage =
+document.getElementById("studentsPage");
+
+const requestsPage =
+document.getElementById("requestsPage");
+
+const authMessage =
+document.getElementById("authMessage");
+
+
+/* =====================================================
+   AUTH MESSAGE
+===================================================== */
+
+function showMessage(message) {
+
+authMessage.textContent =
+message;
+
+}
+
+
+/* =====================================================
+   AUTH FORMS
+===================================================== */
+
+function showSignup() {
+
+document
+.getElementById("loginForm")
+.classList
+.add("hidden");
+
+document
+.getElementById("signupForm")
+.classList
+.remove("hidden");
+
+showMessage("");
+
+}
+
+
+function showLogin() {
+
+document
+.getElementById("signupForm")
+.classList
+.add("hidden");
+
+document
+.getElementById("loginForm")
+.classList
+.remove("hidden");
+
+showMessage("");
+
+}
+
+
+/* =====================================================
+   SIGNUP
+===================================================== */
+
+async function signup() {
+
+const name =
+document
+.getElementById("signupName")
+.value
+.trim();
+
+const email =
+document
+.getElementById("signupEmail")
+.value
+.trim();
+
+const password =
+document
+.getElementById("signupPassword")
+.value;
+
+
+if (!name || !email || !password) {
+
+showMessage(
+"Please fill in all fields."
+);
+
+return;
+
+}
+
+
+if (password.length < 6) {
+
+showMessage(
+"Password must be at least 6 characters."
+);
+
+return;
+
+}
+
+
+showMessage(
+"Creating your INTER RIVALRY account..."
+);
+
+
+const {
+data,
+error
+} =
+await client.auth.signUp({
+
+email,
+
+password,
+
+options: {
+
+emailRedirectTo:
+"https://inter-rivalry.github.io/Inter-Rivalry-BCU/",
+
+data: {
+full_name: name
+}
+
+}
+
+});
+
+
+if (error) {
+
+showMessage(
+error.message
+);
+
+return;
+
+}
+
+
+if (!data.session) {
+
+showMessage(
+"Account created! Check your email and confirm your account before logging in."
+);
+
+return;
+
+}
+
+
+await loadUser();
+
+}
+
+
+/* =====================================================
+   LOGIN
+===================================================== */
+
+async function login() {
+
+const email =
+document
+.getElementById("loginEmail")
+.value
+.trim();
+
+const password =
+document
+.getElementById("loginPassword")
+.value;
+
+
+if (!email || !password) {
+
+showMessage(
+"Please enter your email and password."
+);
+
+return;
+
+}
+
+
+showMessage(
+"Logging in..."
+);
+
+
+const {
+error
+} =
+await client.auth.signInWithPassword({
+
+email,
+
+password
+
+});
+
+
+if (error) {
+
+showMessage(
+error.message
+);
+
+return;
+
+}
+
+
+await loadUser();
+
+}
+
+
+/* =====================================================
+   LOAD USER
+===================================================== */
+
+async function loadUser() {
+
+const {
+data: {
+user
+}
+} =
+await client.auth.getUser();
+
+
+if (!user) {
+
+showAuth();
+
+return;
+
+}
+
+
+const {
+data: profile,
+error
+} =
+await client
+.from("profiles")
+.select(`
+full_name,
+inter_rivalry_id,
+role
+`)
+.eq("id", user.id)
+.single();
+
+
+if (error) {
+
+console.error(error);
+
+showAuth();
+
+return;
+
+}
+
+
+console.log(
+"PROFILE:",
+profile
+);
+
+
+/* SUPER ADMIN */
+
+if (
+profile.role ===
+"super_admin"
+) {
+
+await loadAdminDashboard();
+
+return;
+
+}
+
+
+/* COLLEGE ADMIN */
+
+if (
+profile.role ===
+"college_admin"
+) {
+
+await loadCollegeAdminDashboard(
+user,
+profile
+);
+
+return;
+
+}
+
+
+/* STUDENT */
+
+await loadStudentDashboard(
+user,
+profile
+);
+
+}
+
+
+/* =====================================================
+   STUDENT DASHBOARD
+===================================================== */
+
+async function loadStudentDashboard(
+user,
+profile
+) {
+
+document
+.getElementById("userName")
+.textContent =
+profile.full_name;
+
+document
+.getElementById("rivalryId")
+.textContent =
+profile.inter_rivalry_id;
+
+
+const {
+data: membership
+} =
+await client
+.from("college_memberships")
+.select(`
+college_id,
+department,
+course,
+year_of_study,
+specialization,
+colleges (
+college_name,
+college_code,
+city,
+state
+)
+`)
+.eq(
+"user_id",
+user.id
+)
+.eq(
+"is_active",
+true
+)
+.maybeSingle();
+
+
+const collegeStatus =
+document.getElementById(
+"collegeStatus"
+);
+
+
+if (
+membership &&
+membership.colleges
+) {
+
+collegeStatus.textContent =
+"College: " +
+membership.colleges.college_name +
+" (" +
+membership.colleges.college_code +
+")";
+
+document
+.getElementById(
+"studentCollegeSection"
+)
+.classList
+.add("hidden");
+
+}
+else {
+
+collegeStatus.textContent =
+"College: Not joined yet";
+
+document
+.getElementById(
+"studentCollegeSection"
+)
+.classList
+.remove("hidden");
+
+await loadStudentColleges();
+
+}
+
+
+showOnlyStudent();
+
+}
+
+
+/* =====================================================
+   STUDENT COLLEGES
+===================================================== */
+
+async function loadStudentColleges() {
+
+const {
+data,
+error
+} =
+await client
+.from("colleges")
+.select(`
+id,
+college_name,
+college_code,
+city,
+state
+`)
+.order(
+"college_name",
+{
+ascending:true
+}
+);
+
+
+const list =
+document.getElementById(
+"collegeList"
+);
+
+list.innerHTML = "";
+
+
+if (error) {
+
+console.error(error);
+
+list.innerHTML =
+"<div class='empty-box'>Unable to load colleges.</div>";
+
+return;
+
+}
+
+
+if (!data || data.length === 0) {
+
+list.innerHTML =
+"<div class='empty-box'>No colleges available yet.</div>";
+
+return;
+
+}
+
+
+data.forEach(
+college => {
+
+const card =
+document.createElement(
+"div"
+);
+
+card.className =
+"college-card";
+
+
+card.innerHTML = `
+
+<h3>
+${escapeHTML(college.college_name)}
+</h3>
+
+<div class="college-code">
+${escapeHTML(college.college_code)}
+</div>
+
+<div class="college-location">
+${escapeHTML(college.city || "")}
+${college.state
+? ", " +
+escapeHTML(college.state)
+: ""}
+</div>
+
+<button
+class="small-btn success-btn"
+onclick="showJoinForm('${college.id}')"
+>
+JOIN COLLEGE
+</button>
+
+`;
+
+
+list.appendChild(card);
+
+});
+
+}
+
+
+/* =====================================================
+   JOIN COLLEGE
+===================================================== */
+
+async function showJoinForm(
+collegeId
+) {
+
+const course =
+prompt(
+"Enter course:\nBCA, BBA or B.Com"
+);
+
+
+if (!course)
+return;
+
+
+const normalizedCourse =
+course
+.trim()
+.toUpperCase();
+
+
+if (
+normalizedCourse !== "BCA" &&
+normalizedCourse !== "BBA" &&
+normalizedCourse !== "B.COM"
+) {
+
+alert(
+"Please enter BCA, BBA or B.Com."
+);
+
+return;
+
+}
+
+
+const year =
+prompt(
+"Enter year:\n1 = 1st Year\n2 = 2nd Year\n3 = 3rd Year"
+);
+
+
+const yearNumber =
+Number(year);
+
+
+if (
+yearNumber !== 1 &&
+yearNumber !== 2 &&
+yearNumber !== 3
+) {
+
+alert(
+"Please enter 1, 2 or 3."
+);
+
+return;
+
+}
+
+
+let specialization = null;
+
+
+if (
+normalizedCourse === "BCA"
+) {
+
+specialization =
+prompt(
+"BCA specialization:\nAI & ML\nData Science\nGeneral"
+);
+
+if (!specialization)
+return;
+
+specialization =
+specialization.trim();
+
+}
+
+
+const {
+data: {
+user
+}
+} =
+await client.auth.getUser();
+
+
+if (!user) {
+
+alert(
+"Please login first."
+);
+
+return;
+
+}
+
+
+const {
+error
+} =
+await client
+.from("college_join_requests")
+.insert({
+
+student_id:user.id,
+
+college_id:collegeId,
+
+course:normalizedCourse,
+
+year_of_study:yearNumber,
+
+specialization:specialization
+
+});
+
+
+if (error) {
+
+console.error(error);
+
+alert(
+"Could not send request: " +
+error.message
+);
+
+return;
+
+}
+
+
+alert(
+"Join request submitted! Waiting for college admin approval."
+);
+
+}
+
+
+/* =====================================================
+   ADMIN DASHBOARD
+===================================================== */
+
+async function loadAdminDashboard() {
+
+showOnlyAdmin();
+
+await loadAdminStats();
+
+await loadAdminColleges();
+
+}
+
+
+/* =====================================================
+   ADMIN STATS
+===================================================== */
+
+async function loadAdminStats() {
+
+const {
+count: colleges
+} =
+await client
+.from("colleges")
+.select(
+"id",
+{
+count:"exact",
+head:true
+}
+);
+
+
+document
+.getElementById(
+"collegeCount"
+)
+.textContent =
+colleges || 0;
+
+
+const {
+count: requests
+} =
+await client
+.from("college_join_requests")
+.select(
+"id",
+{
+count:"exact",
+head:true
+}
+)
+.eq(
+"status",
+"pending"
+);
+
+
+document
+.getElementById(
+"requestCount"
+)
+.textContent =
+requests || 0;
+
+
+const {
+count: admins
+} =
+await client
+.from("college_admins")
+.select(
+"id",
+{
+count:"exact",
+head:true
+}
+);
+
+
+document
+.getElementById(
+"adminCount"
+)
+.textContent =
+admins || 0;
+
+}
+
+
+/* =====================================================
+   ADMIN COLLEGES
+===================================================== */
+
+async function loadAdminColleges() {
+
+const {
+data,
+error
+} =
+await client
+.from("colleges")
+.select(`
+id,
+college_name,
+college_code,
+city,
+state
+`)
+.order(
+"college_name",
+{
+ascending:true
+}
+);
+
+
+const list =
+document.getElementById(
+"adminCollegeList"
+);
+
+list.innerHTML = "";
+
+
+if (error) {
+
+console.error(error);
+
+list.innerHTML =
+"<div class='empty-box'>Unable to load colleges.</div>";
+
+return;
+
+}
+
+
+if (!data || data.length === 0) {
+
+list.innerHTML =
+"<div class='empty-box'>No colleges have been added yet.</div>";
+
+return;
+
+}
+
+
+data.forEach(
+college => {
+
+const card =
+document.createElement(
+"div"
+);
+
+card.className =
+"college-card";
+
+
+card.innerHTML = `
+
+<h3>
+${escapeHTML(college.college_name)}
+</h3>
+
+<div class="college-code">
+Code: ${escapeHTML(college.college_code)}
+</div>
+
+<div class="college-location">
+${escapeHTML(college.city || "")}
+${college.state
+? ", " + escapeHTML(college.state)
+: ""}
+</div>
+
+<button
+class="small-btn"
+onclick="viewCollege('${college.id}')"
+>
+MANAGE
+</button>
+
+`;
+
+list.appendChild(card);
+
+});
+
+}
+
+
+/* =====================================================
+   ADD COLLEGE
+===================================================== */
+
+async function addCollege() {
+
+const name =
+document
+.getElementById("collegeName")
+.value
+.trim();
+
+const code =
+document
+.getElementById("collegeCode")
+.value
+.trim()
+.toUpperCase();
+
+const city =
+document
+.getElementById("collegeCity")
+.value
+.trim();
+
+const state =
+document
+.getElementById("collegeState")
+.value
+.trim();
+
+
+const message =
+document.getElementById(
+"adminMessage"
+);
+
+
+if (!name || !code) {
+
+message.textContent =
+"College name and code are required.";
+
+return;
+
+}
+
+
+message.textContent =
+"Adding college...";
+
+
+const {
+error
+} =
+await client
+.from("colleges")
+.insert({
+
+college_name:name,
+
+college_code:code,
+
+city:city || null,
+
+state:state || null,
+
+country:"India"
+
+});
+
+
+if (error) {
+
+console.error(error);
+
+message.textContent =
+"Error: " +
+error.message;
+
+return;
+
+}
+
+
+message.textContent =
+"College added successfully! 🏆";
+
+
+document.getElementById("collegeName").value="";
+document.getElementById("collegeCode").value="";
+document.getElementById("collegeCity").value="";
+document.getElementById("collegeState").value="";
+
+
+await loadAdminStats();
+
+await loadAdminColleges();
+
+}
+
+
+/* =====================================================
+   VIEW COLLEGE
+===================================================== */
+
+async function viewCollege(
+collegeId
+) {
+
+selectedCollegeId =
+collegeId;
+
+
+const {
+data:college,
+error
+} =
+await client
+.from("colleges")
+.select(`
+id,
+college_name,
+college_code,
+city,
+state
+`)
+.eq(
+"id",
+collegeId
+)
+.single();
+
+
+if (error) {
+
+console.error(error);
+
+alert(
+"Unable to load college."
+);
+
+return;
+
+}
+
+
+document
+.getElementById(
+"manageCollegeName"
+)
+.textContent =
+college.college_name;
+
+document
+.getElementById(
+"manageCollegeCode"
+)
+.textContent =
+college.college_code || "-";
+
+document
+.getElementById(
+"manageCollegeCity"
+)
+.textContent =
+college.city || "-";
+
+document
+.getElementById(
+"manageCollegeState"
+)
+.textContent =
+college.state || "-";
+
+document
+.getElementById(
+"manageCollegeLocation"
+)
+.textContent =
+(college.city || "") +
+(
+college.state
+? ", " + college.state
+: ""
+);
+
+
+document
+.getElementById(
+"editCollegeName"
+)
+.value =
+college.college_name || "";
+
+document
+.getElementById(
+"editCollegeCode"
+)
+.value =
+college.college_code || "";
+
+document
+.getElementById(
+"editCollegeCity"
+)
+.value =
+college.city || "";
+
+document
+.getElementById(
+"editCollegeState"
+)
+.value =
+college.state || "";
+
+
+await loadCollegeManagementCounts(
+collegeId
+);
+
+
+showOnlyCollegeManagement();
+
+}
+
+
+/* =====================================================
+   MANAGEMENT COUNTS
+===================================================== */
+
+async function loadCollegeManagementCounts(
+collegeId
+) {
+
+
+const {
+count:admins
+} =
+await client
+.from("college_admins")
+.select(
+"id",
+{
+count:"exact",
+head:true
+}
+)
+.eq(
+"college_id",
+collegeId
+);
+
+
+document
+.getElementById(
+"manageAdminCount"
+)
+.textContent =
+admins || 0;
+
+
+const {
+count:students
+} =
+await client
+.from("college_memberships")
+.select(
+"id",
+{
+count:"exact",
+head:true
+}
+)
+.eq(
+"college_id",
+collegeId
+)
+.eq(
+"is_active",
+true
+);
+
+
+document
+.getElementById(
+"manageStudentCount"
+)
+.textContent =
+students || 0;
+
+
+const {
+count:requests
+} =
+await client
+.from("college_join_requests")
+.select(
+"id",
+{
+count:"exact",
+head:true
+}
+)
+.eq(
+"college_id",
+collegeId
+)
+.eq(
+"status",
+"pending"
+);
+
+
+document
+.getElementById(
+"manageRequestCount"
+)
+.textContent =
+requests || 0;
+
+}
+
+
+/* =====================================================
+   EDIT COLLEGE
+===================================================== */
+
+async function saveCollegeChanges() {
+
+if (!selectedCollegeId)
+return;
+
+
+const name =
+document
+.getElementById("editCollegeName")
+.value
+.trim();
+
+const code =
+document
+.getElementById("editCollegeCode")
+.value
+.trim()
+.toUpperCase();
+
+const city =
+document
+.getElementById("editCollegeCity")
+.value
+.trim();
+
+const state =
+document
+.getElementById("editCollegeState")
+.value
+.trim();
+
+
+const message =
+document.getElementById(
+"editMessage"
+);
+
+
+if (!name || !code) {
+
+message.textContent =
+"College name and code are required.";
+
+return;
+
+}
+
+
+message.textContent =
+"Saving changes...";
+
+
+const {
+error
+} =
+await client
+.from("colleges")
+.update({
+
+college_name:name,
+
+college_code:code,
+
+city:city || null,
+
+state:state || null
+
+})
+.eq(
+"id",
+selectedCollegeId
+);
+
+
+if (error) {
+
+console.error(error);
+
+message.textContent =
+"Error: " +
+error.message;
+
+return;
+
+}
+
+
+message.textContent =
+"College updated successfully! 🏆";
+
+
+document
+.getElementById(
+"manageCollegeName"
+)
+.textContent =
+name;
+
+document
+.getElementById(
+"manageCollegeCode"
+)
+.textContent =
+code;
+
+document
+.getElementById(
+"manageCollegeCity"
+)
+.textContent =
+city || "-";
+
+document
+.getElementById(
+"manageCollegeState"
+)
+.textContent =
+state || "-";
+
+document
+.getElementById(
+"manageCollegeLocation"
+)
+.textContent =
+city +
+(
+state
+? ", " + state
+: ""
+);
+
+}
+
+
+/* =====================================================
+   ADMINS MODULE
+===================================================== */
+
+async function openAdmins() {
+
+if (!selectedCollegeId)
+return;
+
+
+const {
+data:college
+} =
+await client
+.from("colleges")
+.select("college_name")
+.eq("id",selectedCollegeId)
+.single();
+
+
+document
+.getElementById(
+"adminsCollegeName"
+)
+.textContent =
+college
+? college.college_name
+: "College";
+
+
+await loadAdmins();
+
+showOnlyAdmins();
+
+}
+
+
+/* =====================================================
+   LOAD ADMINS
+===================================================== */
+
+async function loadAdmins() {
+
+const {
+data,
+error
+} =
+await client
+.from("college_admins")
+.select(`
+id,
+user_id,
+created_at,
+profiles (
+full_name,
+inter_rivalry_id
+)
+`)
+.eq(
+"college_id",
+selectedCollegeId
+)
+.order(
+"created_at",
+{
+ascending:false
+}
+);
+
+
+const list =
+document.getElementById(
+"adminsList"
+);
+
+list.innerHTML = "";
+
+
+if (error) {
+
+console.error(error);
+
+list.innerHTML =
+`
+<div class="empty-box">
+Unable to load admins.<br>
+${escapeHTML(error.message)}
+</div>
+`;
+
+return;
+
+}
+
+
+if (!data || data.length === 0) {
+
+list.innerHTML =
+`
+<div class="empty-box">
+No college admins assigned yet.
+</div>
+`;
+
+return;
+
+}
+
+
+data.forEach(
+admin => {
+
+const card =
+document.createElement(
+"div"
+);
+
+card.className =
+"admin-card";
+
+
+const name =
+admin.profiles
+? admin.profiles.full_name
+: "Unknown User";
+
+const rivalryId =
+admin.profiles
+? admin.profiles.inter_rivalry_id
+: "Unknown";
+
+
+card.innerHTML = `
+
+<h3>
+👤 ${escapeHTML(name)}
+</h3>
+
+<div class="admin-info">
+
+INTER RIVALRY ID:
+${escapeHTML(rivalryId)}
+
+<br>
+
+User ID:
+${escapeHTML(admin.user_id)}
+
+</div>
+
+<br>
+
+<button
+class="small-btn danger-btn"
+onclick="removeCollegeAdmin('${admin.id}')"
+>
+REMOVE ADMIN
+</button>
+
+`;
+
+
+list.appendChild(card);
+
+});
+
+}
+
+
+/* =====================================================
+   ADD ADMIN
+===================================================== */
+
+async function addCollegeAdmin() {
+
+const userId =
+document
+.getElementById(
+"adminUserId"
+)
+.value
+.trim();
+
+const message =
+document.getElementById(
+"adminManageMessage"
+);
+
+
+if (!userId) {
+
+message.textContent =
+"Enter the user's UUID.";
+
+return;
+
+}
+
+
+message.textContent =
+"Checking user...";
+
+
+/* Check profile */
+
+const {
+data:profile,
+error:profileError
+} =
+await client
+.from("profiles")
+.select(`
+id,
+full_name,
+role
+`)
+.eq(
+"id",
+userId
+)
+.single();
+
+
+if (profileError || !profile) {
+
+message.textContent =
+"User not found in profiles.";
+
+return;
+
+}
+
+
+/* Change role */
+
+const {
+error:roleError
+} =
+await client
+.from("profiles")
+.update({
+
+role:"college_admin",
+
+updated_at:new Date().toISOString()
+
+})
+.eq(
+"id",
+userId
+);
+
+
+if (roleError) {
+
+console.error(roleError);
+
+message.textContent =
+"Could not update role: " +
+roleError.message;
+
+return;
+
+}
+
+
+/* Add college admin */
+
+const {
+error
+} =
+await client
+.from("college_admins")
+.insert({
+
+college_id:
+selectedCollegeId,
+
+user_id:
+userId
+
+});
+
+
+if (error) {
+
+console.error(error);
+
+message.textContent =
+"Could not add admin: " +
+error.message;
+
+return;
+
+}
+
+
+message.textContent =
+"College admin added successfully! 🏆";
+
+
+document
+.getElementById(
+"adminUserId"
+)
+.value = "";
+
+
+await loadAdmins();
+
+await loadCollegeManagementCounts(
+selectedCollegeId
+);
+
+}
+
+
+/* =====================================================
+   REMOVE ADMIN
+===================================================== */
+
+async function removeCollegeAdmin(
+adminId
+) {
+
+const confirmed =
+confirm(
+"Remove this college admin?"
+);
+
+
+if (!confirmed)
+return;
+
+
+const {
+data:admin
+} =
+await client
+.from("college_admins")
+.select("user_id")
+.eq(
+"id",
+adminId
+)
+.single();
+
+
+if (!admin) {
+
+alert(
+"Admin not found."
+);
+
+return;
+
+}
+
+
+const {
+error
+} =
+await client
+.from("college_admins")
+.delete()
+.eq(
+"id",
+adminId
+);
+
+
+if (error) {
+
+alert(
+"Could not remove admin: " +
+error.message
+);
+
+return;
+
+}
+
+
+/*
+   Change role back to student only if
+   the user has no other college-admin
+   assignments.
+*/
+
+const {
+count
+} =
+await client
+.from("college_admins")
+.select(
+"id",
+{
+count:"exact",
+head:true
+}
+)
+.eq(
+"user_id",
+admin.user_id
+);
+
+
+if (!count || count === 0) {
+
+await client
+.from("profiles")
+.update({
+
+role:"student",
+
+updated_at:
+new Date().toISOString()
+
+})
+.eq(
+"id",
+admin.user_id
+);
+
+}
+
+
+await loadAdmins();
+
+await loadCollegeManagementCounts(
+selectedCollegeId
+);
+
+}
+
+
+/* =====================================================
+   STUDENTS MODULE
+===================================================== */
+
+async function openStudents() {
+
+const {
+data:college
+} =
+await client
+.from("colleges")
+.select("college_name")
+.eq("id",selectedCollegeId)
+.single();
+
+
+document
+.getElementById(
+"studentsCollegeName"
+)
+.textContent =
+college
+? college.college_name
+: "College";
+
+
+await loadStudents();
+
+showOnlyStudents();
+
+}
+
+
+/* =====================================================
+   LOAD STUDENTS
+===================================================== */
+
+async function loadStudents() {
+
+const {
+data,
+error
+} =
+await client
+.from("college_memberships")
+.select(`
+id,
+user_id,
+student_number,
+department,
+course,
+year_of_study,
+specialization,
+joined_at,
+profiles (
+full_name,
+inter_rivalry_id
+)
+`)
+.eq(
+"college_id",
+selectedCollegeId
+)
+.eq(
+"is_active",
+true
+)
+.order(
+"joined_at",
+{
+ascending:false
+}
+);
+
+
+const list =
+document.getElementById(
+"studentsList"
+);
+
+list.innerHTML = "";
+
+
+if (error) {
+
+console.error(error);
+
+list.innerHTML =
+`
+<div class="empty-box">
+Unable to load students.<br>
+${escapeHTML(error.message)}
+</div>
+`;
+
+return;
+
+}
+
+
+if (!data || data.length === 0) {
+
+list.innerHTML =
+`
+<div class="empty-box">
+No students have joined this college yet.
+</div>
+`;
+
+return;
+
+}
+
+
+data.forEach(
+student => {
+
+const card =
+document.createElement(
+"div"
+);
+
+card.className =
+"student-card";
+
+
+const name =
+student.profiles
+? student.profiles.full_name
+: "Unknown Student";
+
+const rivalryId =
+student.profiles
+? student.profiles.inter_rivalry_id
+: "Unknown";
+
+
+card.innerHTML = `
+
+<h3>
+🎓 ${escapeHTML(name)}
+</h3>
+
+<div class="student-info">
+
+INTER RIVALRY ID:
+${escapeHTML(rivalryId)}
+
+<br>
+
+Course:
+${escapeHTML(student.course || "-")}
+
+<br>
+
+Year:
+${escapeHTML(student.year_of_study || "-")}
+
+<br>
+
+Department:
+${escapeHTML(student.department || "-")}
+
+<br>
+
+Specialization:
+${escapeHTML(student.specialization || "-")}
+
+<br>
+
+Student Number:
+${escapeHTML(student.student_number || "Not assigned")}
+
+</div>
+
+`;
+
+
+list.appendChild(card);
+
+});
+
+}
+
+
+/* =====================================================
+   REQUESTS MODULE
+===================================================== */
+
+async function openRequests() {
+
+const {
+data:college
+} =
+await client
+.from("colleges")
+.select("college_name")
+.eq("id",selectedCollegeId)
+.single();
+
+
+document
+.getElementById(
+"requestsCollegeName"
+)
+.textContent =
+college
+? college.college_name
+: "College";
+
+
+await loadRequests();
+
+showOnlyRequests();
+
+}
+
+
+/* =====================================================
+   LOAD REQUESTS
+===================================================== */
+
+async function loadRequests() {
+
+const {
+data,
+error
+} =
+await client
+.from("college_join_requests")
+.select(`
+id,
+student_id,
+department,
+course,
+year_of_study,
+specialization,
+status,
+created_at,
+profiles (
+full_name,
+inter_rivalry_id
+)
+`)
+.eq(
+"college_id",
+selectedCollegeId
+)
+.eq(
+"status",
+"pending"
+)
+.order(
+"created_at",
+{
+ascending:true
+}
+);
+
+
+const list =
+document.getElementById(
+"requestsList"
+);
+
+list.innerHTML = "";
+
+
+if (error) {
+
+console.error(error);
+
+list.innerHTML =
+`
+<div class="empty-box">
+Unable to load requests.<br>
+${escapeHTML(error.message)}
+</div>
+`;
+
+return;
+
+}
+
+
+if (!data || data.length === 0) {
+
+list.innerHTML =
+`
+<div class="empty-box">
+🎉 No pending join requests.
+</div>
+`;
+
+return;
+
+}
+
+
+data.forEach(
+request => {
+
+const card =
+document.createElement(
+"div"
+);
+
+card.className =
+"request-card";
+
+
+const name =
+request.profiles
+? request.profiles.full_name
+: "Unknown Student";
+
+const rivalryId =
+request.profiles
+? request.profiles.inter_rivalry_id
+: "Unknown";
+
+
+card.innerHTML = `
+
+<h3>
+📩 ${escapeHTML(name)}
+</h3>
+
+<div class="request-info">
+
+INTER RIVALRY ID:
+${escapeHTML(rivalryId)}
+
+<br>
+
+Course:
+${escapeHTML(request.course || "-")}
+
+<br>
+
+Year:
+${escapeHTML(request.year_of_study || "-")}
+
+<br>
+
+Department:
+${escapeHTML(request.department || "-")}
+
+<br>
+
+Specialization:
+${escapeHTML(request.specialization || "-")}
+
+</div>
+
+
+<div class="request-actions">
+
+<button
+class="small-btn approve-btn"
+onclick="reviewRequest('${request.id}', true)"
+>
+✅ APPROVE
+</button>
+
+<button
+class="small-btn reject-btn"
+onclick="reviewRequest('${request.id}', false)"
+>
+❌ REJECT
+</button>
+
+</div>
+
+`;
+
+
+list.appendChild(card);
+
+});
+
+}
+
+
+/* =====================================================
+   APPROVE / REJECT REQUEST
+===================================================== */
+
+async function reviewRequest(
+requestId,
+approve
+) {
+
+const action =
+approve
+? "approve"
+: "reject";
+
+
+const confirmed =
+confirm(
+"Are you sure you want to " +
+action +
+" this request?"
+);
+
+
+if (!confirmed)
+return;
+
+
+const {
+error
+} =
+await client.rpc(
+"review_college_join_request",
+{
+p_request_id:
+requestId,
+
+p_approve:
+approve
+}
+);
+
+
+if (error) {
+
+console.error(error);
+
+alert(
+"Could not " +
+action +
+" request:\n" +
+error.message
+);
+
+return;
+
+}
+
+
+alert(
+approve
+? "Student approved successfully! 🎓"
+: "Request rejected."
+);
+
+
+await loadRequests();
+
+await loadCollegeManagementCounts(
+selectedCollegeId
+);
+
+}
+
+
+/* =====================================================
+   COLLEGE ADMIN DASHBOARD
+===================================================== */
+
+async function loadCollegeAdminDashboard(
+user,
+profile
+) {
+
+/*
+   Find the college assigned to this admin.
+*/
+
+const {
+data:admin,
+error
+} =
+await client
+.from("college_admins")
+.select(`
+college_id,
+colleges (
+college_name,
+college_code,
+city,
+state
+)
+`)
+.eq(
+"user_id",
+user.id
+)
+.maybeSingle();
+
+
+if (error || !admin) {
+
+alert(
+"Your college admin account has not been assigned to a college yet."
+);
+
+showAuth();
+
+return;
+
+}
+
+
+showOnlyAdmin();
+
+
+/*
+   We will expand the College Admin dashboard
+   with the same request/student tools next.
+*/
+
+document
+.querySelector(
+"#adminDashboard .admin-header h1"
+)
+.textContent =
+"🏫 " +
+(
+admin.colleges
+? admin.colleges.college_name
+: "College Admin"
+);
+
+document
+.querySelector(
+"#adminDashboard .admin-header p"
+)
+.textContent =
+"College Admin Panel";
+
+}
+
+
+/* =====================================================
+   NAVIGATION
+===================================================== */
+
+function backToAdmin() {
+
+selectedCollegeId =
+null;
+
+loadAdminDashboard();
+
+}
+
+
+function backToManagement() {
+
+showOnlyCollegeManagement();
+
+}
+
+
+/* =====================================================
+   SHOW STUDENT
+===================================================== */
+
+function showOnlyStudent() {
+
+loadingScreen.classList.add("hidden");
+
+authPage.classList.add("hidden");
+
+adminDashboard.classList.add("hidden");
+
+collegeManagement.classList.add("hidden");
+
+adminsPage.classList.add("hidden");
+
+studentsPage.classList.add("hidden");
+
+requestsPage.classList.add("hidden");
+
+studentDashboard.classList.remove("hidden");
+
+}
+
+
+/* =====================================================
+   SHOW ADMIN
+===================================================== */
+
+function showOnlyAdmin() {
+
+loadingScreen.classList.add("hidden");
+
+authPage.classList.add("hidden");
+
+studentDashboard.classList.add("hidden");
+
+collegeManagement.classList.add("hidden");
+
+adminsPage.classList.add("hidden");
+
+studentsPage.classList.add("hidden");
+
+requestsPage.classList.add("hidden");
+
+adminDashboard.classList.remove("hidden");
+
+}
+
+
+/* =====================================================
+   SHOW COLLEGE MANAGEMENT
+===================================================== */
+
+function showOnlyCollegeManagement() {
+
+loadingScreen.classList.add("hidden");
+
+authPage.classList.add("hidden");
+
+studentDashboard.classList.add("hidden");
+
+adminDashboard.classList.add("hidden");
+
+adminsPage.classList.add("hidden");
+
+studentsPage.classList.add("hidden");
+
+requestsPage.classList.add("hidden");
+
+collegeManagement.classList.remove("hidden");
+
+}
+
+
+/* =====================================================
+   SHOW ADMINS
+===================================================== */
+
+function showOnlyAdmins() {
+
+loadingScreen.classList.add("hidden");
+
+authPage.classList.add("hidden");
+
+studentDashboard.classList.add("hidden");
+
+adminDashboard.classList.add("hidden");
+
+collegeManagement.classList.add("hidden");
+
+studentsPage.classList.add("hidden");
+
+requestsPage.classList.add("hidden");
+
+adminsPage.classList.remove("hidden");
+
+}
+
+
+/* =====================================================
+   SHOW STUDENTS
+===================================================== */
+
+function showOnlyStudents() {
+
+loadingScreen.classList.add("hidden");
+
+authPage.classList.add("hidden");
+
+studentDashboard.classList.add("hidden");
+
+adminDashboard.classList.add("hidden");
+
+collegeManagement.classList.add("hidden");
+
+adminsPage.classList.add("hidden");
+
+requestsPage.classList.add("hidden");
+
+studentsPage.classList.remove("hidden");
+
+}
+
+
+/* =====================================================
+   SHOW REQUESTS
+===================================================== */
+
+function showOnlyRequests() {
+
+loadingScreen.classList.add("hidden");
+
+authPage.classList.add("hidden");
+
+studentDashboard.classList.add("hidden");
+
+adminDashboard.classList.add("hidden");
+
+collegeManagement.classList.add("hidden");
+
+adminsPage.classList.add("hidden");
+
+studentsPage.classList.add("hidden");
+
+requestsPage.classList.remove("hidden");
+
+}
+
+
+/* =====================================================
+   AUTH
+===================================================== */
+
+function showAuth() {
+
+loadingScreen.classList.add("hidden");
+
+studentDashboard.classList.add("hidden");
+
+adminDashboard.classList.add("hidden");
+
+collegeManagement.classList.add("hidden");
+
+adminsPage.classList.add("hidden");
+
+studentsPage.classList.add("hidden");
+
+requestsPage.classList.add("hidden");
+
+authPage.classList.remove("hidden");
+
+}
+
+
+async function logout() {
+
+await client.auth.signOut();
+
+selectedCollegeId =
+null;
+
+showAuth();
+
+}
+
+
+/* =====================================================
+   AUTH STATE
+===================================================== */
+
+client.auth.onAuthStateChange(
+async (event, session) => {
+
+if (session) {
+
+setTimeout(
+() => loadUser(),
+0
+);
+
+}
+else {
+
+showAuth();
+
+}
+
+});
+
+
+/* =====================================================
+   INITIALIZE
+===================================================== */
+
+async function initialize() {
+
+const {
+data:{
+session
+}
+} =
+await client.auth.getSession();
+
+
+if (session) {
+
+await loadUser();
+
+}
+else {
+
+showAuth();
+
+}
+
+}
+
+
+/* =====================================================
+   ESCAPE HTML
+===================================================== */
+
+function escapeHTML(value) {
+
+if (
+value === null ||
+value === undefined
+) {
+
+return "";
+
+}
+
+return String(value)
+.replaceAll("&","&amp;")
+.replaceAll("<","&lt;")
+.replaceAll(">","&gt;")
+.replaceAll('"',"&quot;")
+.replaceAll("'","&#039;");
+
+}
+
+
+/* =====================================================
+   START
+===================================================== */
+
+initialize();
+
+</script>
+
+</body>
+</html>
