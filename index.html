@@ -2548,145 +2548,146 @@ async function openStudents(){
    LOAD STUDENTS
 ===================================================== */
 
-async function loadStudents(){
+async function loadStudents() {
 
-    const {
-        data,
-        error
-    } =
-    await client
-    .from("college_memberships")
-    .select(`
-        id,
-        user_id,
-        student_number,
-        department,
-        course,
-        year_of_study,
-        specialization,
-        joined_at
-    `)
-    .eq("college_id",selectedCollegeId)
-    .eq("is_active",true)
-    .order("joined_at",{
-        ascending:false
-    });
+    const list = document.getElementById("studentsList");
 
+    list.innerHTML = `
+        <div class="empty-box">
+            Loading students...
+        </div>
+    `;
 
-    const list =
-    document.getElementById("studentsList");
+    if (!selectedCollegeId) {
+        list.innerHTML = `
+            <div class="empty-box">
+                No college selected.
+            </div>
+        `;
+        return;
+    }
+
+    const { data, error } = await client
+        .from("college_memberships")
+        .select(`
+            id,
+            user_id,
+            student_number,
+            department,
+            course,
+            year_of_study,
+            specialization,
+            joined_at,
+            profiles!college_memberships_user_id_fkey (
+                full_name,
+                inter_rivalry_id
+            )
+        `)
+        .eq("college_id", selectedCollegeId)
+        .eq("is_active", true)
+        .order("joined_at", {
+            ascending: false
+        });
+
+    console.log("STUDENTS:", data);
+    console.log("STUDENT ERROR:", error);
+
+    if (error) {
+
+        list.innerHTML = `
+            <div class="empty-box">
+                Unable to load students.<br><br>
+                ${escapeHTML(error.message)}
+            </div>
+        `;
+
+        return;
+    }
+
+    if (!data || data.length === 0) {
+
+        list.innerHTML = `
+            <div class="empty-box">
+                No students have joined this college yet.
+            </div>
+        `;
+
+        return;
+    }
 
     list.innerHTML = "";
 
+    data.forEach(student => {
 
-    if(error){
-
-        console.error(error);
-
-        list.innerHTML =
-        `
-        <div class="empty-box">
-            Unable to load students.<br>
-            ${escapeHTML(error.message)}
-        </div>
-        `;
-
-        return;
-    }
-
-
-    if(!data || data.length === 0){
-
-        list.innerHTML =
-        `
-        <div class="empty-box">
-            No students have joined this college yet.
-        </div>
-        `;
-
-        return;
-    }
-
-
-    for(const student of data){
-
-        const {
-            data:profile
-        } =
-        await client
-        .from("profiles")
-        .select(`
-            full_name,
-            inter_rivalry_id
-        `)
-        .eq("id",student.user_id)
-        .maybeSingle();
-
-
-        const card =
-        document.createElement("div");
-
-        card.className =
-        "student-card";
-
+        const profile = student.profiles;
 
         const name =
-        profile
-            ? profile.full_name
-            : "Unknown Student";
-
+            profile?.full_name || "Unknown Student";
 
         const rivalryId =
-        profile
-            ? profile.inter_rivalry_id
-            : "Unknown";
+            profile?.inter_rivalry_id || "Not assigned";
 
+        const card =
+            document.createElement("div");
+
+        card.className = "student-card";
 
         card.innerHTML = `
 
-        <h3>
-            🎓 ${escapeHTML(name)}
-        </h3>
+            <h3>
+                🎓 ${escapeHTML(name)}
+            </h3>
 
-        <div class="student-info">
+            <div class="student-info">
 
-            INTER RIVALRY ID:
-            ${escapeHTML(rivalryId)}
+                INTER RIVALRY ID:
+                ${escapeHTML(rivalryId)}
 
-            <br>
+                <br>
 
-            Course:
-            ${escapeHTML(student.course || "-")}
+                User ID:
+                ${escapeHTML(student.user_id)}
 
-            <br>
+                <br>
 
-            Year:
-            ${escapeHTML(student.year_of_study || "-")}
+                Course:
+                ${escapeHTML(student.course || "-")}
 
-            <br>
+                <br>
 
-            Department:
-            ${escapeHTML(student.department || "-")}
+                Year:
+                ${escapeHTML(
+                    student.year_of_study
+                    ? String(student.year_of_study)
+                    : "-"
+                )}
 
-            <br>
+                <br>
 
-            Specialization:
-            ${escapeHTML(student.specialization || "-")}
+                Department:
+                ${escapeHTML(student.department || "-")}
 
-            <br>
+                <br>
 
-            Student Number:
-            ${escapeHTML(student.student_number || "Not assigned")}
+                Specialization:
+                ${escapeHTML(student.specialization || "-")}
 
-        </div>
+                <br>
 
+                Student Number:
+                ${escapeHTML(
+                    student.student_number ||
+                    "Not assigned"
+                )}
+
+            </div>
         `;
 
-
         list.appendChild(card);
-    }
-}
 
+    });
+
+}
 
 /* =====================================================
    REQUESTS MODULE
