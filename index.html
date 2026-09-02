@@ -2547,7 +2547,6 @@ async function openStudents(){
 /* =====================================================
    LOAD STUDENTS
 ===================================================== */
-
 async function loadStudents() {
 
     const list = document.getElementById("studentsList");
@@ -2567,7 +2566,8 @@ async function loadStudents() {
         return;
     }
 
-    const { data, error } = await client
+    // Get students from the college
+    const { data: memberships, error } = await client
         .from("college_memberships")
         .select(`
             id,
@@ -2577,11 +2577,7 @@ async function loadStudents() {
             course,
             year_of_study,
             specialization,
-            joined_at,
-            profiles!college_memberships_user_id_fkey (
-                full_name,
-                inter_rivalry_id
-            )
+            joined_at
         `)
         .eq("college_id", selectedCollegeId)
         .eq("is_active", true)
@@ -2589,8 +2585,8 @@ async function loadStudents() {
             ascending: false
         });
 
-    console.log("STUDENTS:", data);
-    console.log("STUDENT ERROR:", error);
+    console.log("MEMBERSHIPS:", memberships);
+    console.log("MEMBERSHIP ERROR:", error);
 
     if (error) {
 
@@ -2604,7 +2600,7 @@ async function loadStudents() {
         return;
     }
 
-    if (!data || data.length === 0) {
+    if (!memberships || memberships.length === 0) {
 
         list.innerHTML = `
             <div class="empty-box">
@@ -2617,9 +2613,24 @@ async function loadStudents() {
 
     list.innerHTML = "";
 
-    data.forEach(student => {
+    // Load each student's profile separately
+    for (const student of memberships) {
 
-        const profile = student.profiles;
+        let profile = null;
+
+        const { data: profileData, error: profileError } =
+            await client
+                .from("profiles")
+                .select(`
+                    full_name,
+                    inter_rivalry_id
+                `)
+                .eq("id", student.user_id)
+                .maybeSingle();
+
+        if (!profileError) {
+            profile = profileData;
+        }
 
         const name =
             profile?.full_name || "Unknown Student";
@@ -2658,8 +2669,8 @@ async function loadStudents() {
                 Year:
                 ${escapeHTML(
                     student.year_of_study
-                    ? String(student.year_of_study)
-                    : "-"
+                        ? String(student.year_of_study)
+                        : "-"
                 )}
 
                 <br>
@@ -2684,9 +2695,7 @@ async function loadStudents() {
         `;
 
         list.appendChild(card);
-
-    });
-
+    }
 }
 
 /* =====================================================
