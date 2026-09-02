@@ -499,7 +499,7 @@ button{
     margin-top:15px;
 }
 
-/* ================= PROFILE VIEW ================= */
+/* ================= PROFILE ================= */
 
 .profile-big{
     text-align:center;
@@ -562,12 +562,18 @@ button{
     margin-bottom:20px;
 }
 
-.challenge-list{
-    margin-top:20px;
-}
-
 .challenge-card{
     margin-bottom:12px;
+}
+
+.challenge-card h3{
+    margin-bottom:8px;
+}
+
+.challenge-info{
+    color:#999;
+    font-size:14px;
+    line-height:1.7;
 }
 
 /* ================= EMPTY ================= */
@@ -658,235 +664,105 @@ Choose your battlefield.
 </div>
 
 
-<!-- ================= LOGIN ================= -->
+<!-- LOGIN -->
 
 <div id="loginForm">
 
 <h2>Login</h2>
 
 <div class="input-group">
-
 <label>Email</label>
-
 <input
 id="loginEmail"
 type="email"
 placeholder="Enter your email"
 autocomplete="email">
-
 </div>
 
-
 <div class="input-group">
-
 <label>Password</label>
-
 <input
 id="loginPassword"
 type="password"
 placeholder="Enter your password"
 autocomplete="current-password">
-
 </div>
-
 
 <button
 class="primary-btn"
 onclick="login()">
-
 LOGIN
-
 </button>
-
-
-<!-- FORGOT PASSWORD -->
 
 <button
 class="secondary-btn"
-onclick="showForgotPassword()">
-
+onclick="forgotPassword()">
 FORGOT PASSWORD?
-
 </button>
 
+<button
+class="secondary-btn"
+onclick="resendConfirmationEmail()">
+RESEND CONFIRMATION EMAIL
+</button>
 
 <button
 class="secondary-btn"
 onclick="showSignup()">
-
 CREATE ACCOUNT
-
 </button>
 
 </div>
 
 
-<!-- ================= SIGNUP ================= -->
+<!-- SIGNUP -->
 
 <div id="signupForm" class="hidden">
 
 <h2>Create Account</h2>
 
 <div class="input-group">
-
 <label>Full Name</label>
-
 <input
 id="signupName"
 type="text"
 placeholder="Enter your full name">
-
 </div>
 
-
 <div class="input-group">
-
 <label>Email</label>
-
 <input
 id="signupEmail"
 type="email"
 placeholder="Enter your email">
-
 </div>
 
-
 <div class="input-group">
-
 <label>Password</label>
-
 <input
 id="signupPassword"
 type="password"
 placeholder="Create a password">
-
 </div>
-
 
 <button
 class="primary-btn"
 onclick="signup()">
-
 CREATE ACCOUNT
-
 </button>
-
 
 <button
 class="secondary-btn"
 onclick="showLogin()">
-
 BACK TO LOGIN
-
 </button>
 
 </div>
 
 
-<!-- ================= FORGOT PASSWORD ================= -->
-
-<div id="forgotPasswordForm" class="hidden">
-
-<h2>Reset Password</h2>
-
-<p style="color:#888;margin-bottom:20px;line-height:1.5">
-
-Enter the email address connected to your INTER RIVALRY account.
-
-</p>
-
-
-<div class="input-group">
-
-<label>Email</label>
-
-<input
-id="forgotEmail"
-type="email"
-placeholder="Enter your email"
-autocomplete="email">
+<div id="authMessage" class="message"></div>
 
 </div>
-
-
-<button
-class="primary-btn"
-onclick="forgotPassword()">
-
-SEND RESET EMAIL
-
-</button>
-
-
-<button
-class="secondary-btn"
-onclick="showLogin()">
-
-BACK TO LOGIN
-
-</button>
-
-</div>
-
-
-<!-- ================= RESET PASSWORD ================= -->
-
-<div id="resetPasswordForm" class="hidden">
-
-<h2>Set New Password</h2>
-
-<p style="color:#888;margin-bottom:20px;line-height:1.5">
-
-Create a new password for your INTER RIVALRY account.
-
-</p>
-
-
-<div class="input-group">
-
-<label>New Password</label>
-
-<input
-id="newPassword"
-type="password"
-placeholder="Enter new password"
-autocomplete="new-password">
-
-</div>
-
-
-<div class="input-group">
-
-<label>Confirm Password</label>
-
-<input
-id="confirmPassword"
-type="password"
-placeholder="Confirm new password"
-autocomplete="new-password">
-
-</div>
-
-
-<button
-class="primary-btn"
-onclick="updatePassword()">
-
-UPDATE PASSWORD
-
-</button>
-
-</div>
-
-
-<div
-id="authMessage"
-class="message">
-
-</div>
-
-</div>
-
 </section>
 
 
@@ -911,9 +787,7 @@ STUDENT
 <button
 class="logout-btn"
 onclick="logout()">
-
 Logout
-
 </button>
 
 </div>
@@ -942,21 +816,14 @@ Your rivalry journey starts here.
 <h2>Your Profile</h2>
 
 <div class="profile-id">
-
 INTER RIVALRY ID:
-<span id="rivalryId">
-Loading...
-</span>
-
+<span id="rivalryId">Loading...</span>
 </div>
-
 
 <div
 class="college-status"
 id="collegeStatus">
-
 College: Not joined yet
-
 </div>
 
 </div>
@@ -973,7 +840,6 @@ Choose Your College
 <div
 id="collegeList"
 class="grid">
-
 </div>
 
 </div>
@@ -985,91 +851,36 @@ class="grid">
 Choose Your Battlefield
 </h2>
 
-
 <div class="category-grid">
 
 <div class="category-card">
-
-<div class="category-icon">
-🏏
+<div class="category-icon">🏏</div>
+<h3>Sports</h3>
+<p>Cricket • Football • Volleyball</p>
 </div>
-
-<h3>
-Sports
-</h3>
-
-<p>
-Cricket • Football • Volleyball
-</p>
-
-</div>
-
 
 <div class="category-card">
-
-<div class="category-icon">
-🎓
+<div class="category-icon">🎓</div>
+<h3>Education</h3>
+<p>BCA • B.Com • BBA</p>
 </div>
-
-<h3>
-Education
-</h3>
-
-<p>
-BCA • B.Com • BBA
-</p>
-
-</div>
-
 
 <div class="category-card">
-
-<div class="category-icon">
-🎭
+<div class="category-icon">🎭</div>
+<h3>Culture</h3>
+<p>Dance • Singing • Roast • Rap</p>
 </div>
-
-<h3>
-Culture
-</h3>
-
-<p>
-Dance • Singing • Roast • Rap
-</p>
-
-</div>
-
 
 <div class="category-card">
-
-<div class="category-icon">
-🎮
+<div class="category-icon">🎮</div>
+<h3>Gaming</h3>
+<p>BGMI • Free Fire • EA Sports</p>
 </div>
-
-<h3>
-Gaming
-</h3>
-
-<p>
-BGMI • Free Fire • EA Sports
-</p>
-
-</div>
-
 
 <div class="category-card">
-
-<div class="category-icon">
-💻
-</div>
-
-<h3>
-Technology
-</h3>
-
-<p>
-Coding • Web Development
-</p>
-
+<div class="category-icon">💻</div>
+<h3>Technology</h3>
+<p>Coding • Web Development</p>
 </div>
 
 </div>
@@ -1088,12 +899,22 @@ Coding • Web Development
 </div>
 
 
+<!-- MY CHALLENGES -->
+
+<div style="margin-top:25px">
+
+<button
+class="primary-btn"
+onclick="showOnlyMyChallenges()">
+⚔️ MY CHALLENGES
+</button>
+
+</div>
+
+
 <div class="empty-rank">
-
 No skill ranks yet.<br>
-
 Participate in a skill to begin your ranking journey.
-
 </div>
 
 </main>
@@ -1122,24 +943,19 @@ RIVAL PROFILE
 <button
 class="logout-btn"
 onclick="logout()">
-
 Logout
-
 </button>
 
 </div>
 
 </nav>
 
-
 <main class="container">
 
 <button
 class="back-btn"
 onclick="backToStudentDashboard()">
-
 ← BACK
-
 </button>
 
 
@@ -1149,34 +965,26 @@ onclick="backToStudentDashboard()">
 👤
 </div>
 
-
 <h1 id="viewProfileName">
 User
 </h1>
-
 
 <p id="viewProfileRivalry">
 IR-XXXX-XXXX
 </p>
 
-
 <div
 id="viewProfileCollege"
 style="margin-top:10px;color:#777">
-
 College
-
 </div>
-
 
 <div style="margin-top:20px">
 
 <button
 class="small-btn challenge-btn"
 onclick="openChallengePage()">
-
 ⚔️ CHALLENGE
-
 </button>
 
 </div>
@@ -1193,7 +1001,6 @@ onclick="openChallengePage()">
 <div
 id="viewProfileSkills"
 style="margin-top:15px">
-
 </div>
 
 </div>
@@ -1224,26 +1031,20 @@ CHALLENGE
 <button
 class="logout-btn"
 onclick="logout()">
-
 Logout
-
 </button>
 
 </div>
 
 </nav>
 
-
 <main class="container">
 
 <button
 class="back-btn"
 onclick="backToProfile()">
-
 ← BACK
-
 </button>
-
 
 <div class="challenge-header">
 
@@ -1273,9 +1074,7 @@ User
 <span
 id="challengeOpponentId"
 style="color:#777">
-
 IR-XXXX-XXXX
-
 </span>
 
 </div>
@@ -1289,7 +1088,6 @@ Choose Skill
 
 <br>
 
-
 <div class="input-group">
 
 <label>
@@ -1297,11 +1095,9 @@ Skill
 </label>
 
 <select id="challengeSkill">
-
 <option value="">
 Loading skills...
 </option>
-
 </select>
 
 </div>
@@ -1317,7 +1113,6 @@ Challenge Title
 id="challengeTitle"
 type="text"
 placeholder="Example: BCA Coding Battle">
-
 </div>
 
 
@@ -1343,7 +1138,6 @@ Start Time
 <input
 id="challengeStart"
 type="datetime-local">
-
 </div>
 
 
@@ -1356,23 +1150,18 @@ End Time
 <input
 id="challengeEnd"
 type="datetime-local">
-
 </div>
 
 
 <button
 class="primary-btn"
 onclick="sendChallenge()">
-
 ⚔️ SEND CHALLENGE
-
 </button>
-
 
 <div
 id="challengeMessage"
 class="message">
-
 </div>
 
 </div>
@@ -1403,29 +1192,28 @@ CHALLENGES
 <button
 class="logout-btn"
 onclick="logout()">
-
 Logout
-
 </button>
 
 </div>
 
 </nav>
 
-
 <main class="container">
+
+<button
+class="back-btn"
+onclick="backToStudentDashboard()">
+← BACK
+</button>
 
 <h1>
 ⚔️ My Challenges
 </h1>
 
-<p
-style="color:#888;margin-top:7px;margin-bottom:25px">
-
+<p style="color:#888;margin-top:7px;margin-bottom:25px">
 Challenges sent and received by you.
-
 </p>
-
 
 <div id="myChallengesList"></div>
 
@@ -1455,15 +1243,12 @@ SUPER ADMIN
 <button
 class="logout-btn"
 onclick="logout()">
-
 Logout
-
 </button>
 
 </div>
 
 </nav>
-
 
 <main class="container">
 
@@ -1491,9 +1276,7 @@ INTER RIVALRY platform management
 <div
 id="collegeCount"
 class="number">
-
 0
-
 </div>
 
 <div class="label">
@@ -1508,9 +1291,7 @@ Colleges
 <div
 id="requestCount"
 class="number">
-
 0
-
 </div>
 
 <div class="label">
@@ -1525,9 +1306,7 @@ Pending Requests
 <div
 id="adminCount"
 class="number">
-
 0
-
 </div>
 
 <div class="label">
@@ -1549,76 +1328,51 @@ College Admins
 
 <br>
 
-
 <div class="input-group">
-
-<label>
-College Name
-</label>
+<label>College Name</label>
 
 <input
 id="collegeName"
 type="text"
 placeholder="Example: Bengaluru City University">
-
 </div>
 
-
 <div class="input-group">
-
-<label>
-College Code
-</label>
+<label>College Code</label>
 
 <input
 id="collegeCode"
 type="text"
 placeholder="Example: BCU">
-
 </div>
 
-
 <div class="input-group">
-
-<label>
-City
-</label>
+<label>City</label>
 
 <input
 id="collegeCity"
 type="text"
 placeholder="Example: Bengaluru">
-
 </div>
 
-
 <div class="input-group">
-
-<label>
-State
-</label>
+<label>State</label>
 
 <input
 id="collegeState"
 type="text"
 placeholder="Example: Karnataka">
-
 </div>
-
 
 <button
 class="primary-btn"
 onclick="addCollege()">
-
 + ADD COLLEGE
-
 </button>
-
 
 <div
 id="adminMessage"
 class="message">
-
 </div>
 
 </div>
@@ -1628,15 +1382,12 @@ class="message">
 🏫 Colleges
 </h2>
 
-
 <div
 id="adminCollegeList"
 class="grid">
-
 </div>
 
 </main>
-
 </section>
 
 
@@ -1661,39 +1412,30 @@ SUPER ADMIN
 <button
 class="logout-btn"
 onclick="logout()">
-
 Logout
-
 </button>
 
 </div>
 
 </nav>
 
-
 <main class="container">
 
 <button
 class="back-btn"
 onclick="backToAdmin()">
-
 ← BACK TO DASHBOARD
-
 </button>
 
 
 <div class="management-header">
 
 <h1>
-
 🏫
-
 <span id="manageCollegeName">
 College
 </span>
-
 </h1>
-
 
 <p id="manageCollegeLocation">
 Loading...
@@ -1708,37 +1450,19 @@ Loading...
 College Information
 </h2>
 
-
 <p>
-
 College Code:
-
-<strong id="manageCollegeCode">
--
-</strong>
-
+<strong id="manageCollegeCode">-</strong>
 </p>
 
-
 <p>
-
 City:
-
-<span id="manageCollegeCity">
--
-</span>
-
+<span id="manageCollegeCity">-</span>
 </p>
 
-
 <p>
-
 State:
-
-<span id="manageCollegeState">
--
-</span>
-
+<span id="manageCollegeState">-</span>
 </p>
 
 </div>
@@ -1755,9 +1479,7 @@ State:
 <div
 id="manageAdminCount"
 class="count">
-
 0
-
 </div>
 
 <div class="label">
@@ -1767,9 +1489,7 @@ College Admins
 <button
 class="small-btn"
 onclick="openAdmins()">
-
 MANAGE ADMINS
-
 </button>
 
 </div>
@@ -1784,9 +1504,7 @@ MANAGE ADMINS
 <div
 id="manageStudentCount"
 class="count">
-
 0
-
 </div>
 
 <div class="label">
@@ -1796,9 +1514,7 @@ Students
 <button
 class="small-btn"
 onclick="openStudents()">
-
 VIEW STUDENTS
-
 </button>
 
 </div>
@@ -1813,9 +1529,7 @@ VIEW STUDENTS
 <div
 id="manageRequestCount"
 class="count">
-
 0
-
 </div>
 
 <div class="label">
@@ -1825,9 +1539,7 @@ Join Requests
 <button
 class="small-btn"
 onclick="openRequests()">
-
 VIEW REQUESTS
-
 </button>
 
 </div>
@@ -1845,78 +1557,40 @@ VIEW REQUESTS
 
 <br>
 
-
 <div class="input-group">
-
-<label>
-College Name
-</label>
-
-<input
-id="editCollegeName"
-type="text">
-
+<label>College Name</label>
+<input id="editCollegeName" type="text">
 </div>
 
-
 <div class="input-group">
-
-<label>
-College Code
-</label>
-
-<input
-id="editCollegeCode"
-type="text">
-
+<label>College Code</label>
+<input id="editCollegeCode" type="text">
 </div>
 
-
 <div class="input-group">
-
-<label>
-City
-</label>
-
-<input
-id="editCollegeCity"
-type="text">
-
+<label>City</label>
+<input id="editCollegeCity" type="text">
 </div>
 
-
 <div class="input-group">
-
-<label>
-State
-</label>
-
-<input
-id="editCollegeState"
-type="text">
-
+<label>State</label>
+<input id="editCollegeState" type="text">
 </div>
-
 
 <button
 class="primary-btn"
 onclick="saveCollegeChanges()">
-
 SAVE CHANGES
-
 </button>
-
 
 <div
 id="editMessage"
 class="message">
-
 </div>
 
 </div>
 
 </main>
-
 </section>
 
 
@@ -1941,38 +1615,29 @@ SUPER ADMIN
 <button
 class="logout-btn"
 onclick="logout()">
-
 Logout
-
 </button>
 
 </div>
 
 </nav>
 
-
 <main class="container">
 
 <button
 class="back-btn"
 onclick="backToManagement()">
-
 ← BACK
-
 </button>
-
 
 <h1>
 👥 College Admins
 </h1>
 
-
 <p
 id="adminsCollegeName"
 style="color:#888;margin-top:8px;margin-bottom:25px">
-
 College
-
 </p>
 
 
@@ -1983,7 +1648,6 @@ College
 </h2>
 
 <br>
-
 
 <div class="input-group">
 
@@ -1998,20 +1662,15 @@ placeholder="Paste user's UUID">
 
 </div>
 
-
 <button
 class="primary-btn"
 onclick="addCollegeAdmin()">
-
 ADD ADMIN
-
 </button>
-
 
 <div
 id="adminManageMessage"
 class="message">
-
 </div>
 
 </div>
@@ -2021,11 +1680,9 @@ class="message">
 Current Admins
 </h2>
 
-
 <div id="adminsList"></div>
 
 </main>
-
 </section>
 
 
@@ -2050,45 +1707,34 @@ SUPER ADMIN
 <button
 class="logout-btn"
 onclick="logout()">
-
 Logout
-
 </button>
 
 </div>
 
 </nav>
 
-
 <main class="container">
 
 <button
 class="back-btn"
 onclick="backToManagement()">
-
 ← BACK
-
 </button>
-
 
 <h1>
 🎓 Students
 </h1>
 
-
 <p
 id="studentsCollegeName"
 style="color:#888;margin-top:8px;margin-bottom:25px">
-
 College
-
 </p>
-
 
 <div id="studentsList"></div>
 
 </main>
-
 </section>
 
 
@@ -2113,45 +1759,34 @@ SUPER ADMIN
 <button
 class="logout-btn"
 onclick="logout()">
-
 Logout
-
 </button>
 
 </div>
 
 </nav>
 
-
 <main class="container">
 
 <button
 class="back-btn"
 onclick="backToManagement()">
-
 ← BACK
-
 </button>
-
 
 <h1>
 📩 Join Requests
 </h1>
 
-
 <p
 id="requestsCollegeName"
 style="color:#888;margin-top:8px;margin-bottom:25px">
-
 College
-
 </p>
-
 
 <div id="requestsList"></div>
 
 </main>
-
 </section>
 
 
@@ -2229,8 +1864,7 @@ document.getElementById("authMessage");
 
 function showMessage(message){
 
-authMessage.textContent =
-message;
+    authMessage.textContent = message;
 
 }
 
@@ -2241,302 +1875,34 @@ message;
 
 function showSignup(){
 
-document
-.getElementById("loginForm")
-.classList
-.add("hidden");
+    document
+    .getElementById("loginForm")
+    .classList
+    .add("hidden");
 
-document
-.getElementById("forgotPasswordForm")
-.classList
-.add("hidden");
+    document
+    .getElementById("signupForm")
+    .classList
+    .remove("hidden");
 
-document
-.getElementById("resetPasswordForm")
-.classList
-.add("hidden");
-
-document
-.getElementById("signupForm")
-.classList
-.remove("hidden");
-
-showMessage("");
+    showMessage("");
 
 }
 
 
 function showLogin(){
 
-document
-.getElementById("signupForm")
-.classList
-.add("hidden");
-
-document
-.getElementById("forgotPasswordForm")
-.classList
-.add("hidden");
-
-document
-.getElementById("resetPasswordForm")
-.classList
-.add("hidden");
-
-document
-.getElementById("loginForm")
-.classList
-.remove("hidden");
-
-showMessage("");
-
-}
-
-
-/* =====================================================
-   FORGOT PASSWORD FORM
-===================================================== */
-
-function showForgotPassword(){
-
-document
-.getElementById("loginForm")
-.classList
-.add("hidden");
-
-document
-.getElementById("signupForm")
-.classList
-.add("hidden");
-
-document
-.getElementById("resetPasswordForm")
-.classList
-.add("hidden");
-
-document
-.getElementById("forgotPasswordForm")
-.classList
-.remove("hidden");
-
-document
-.getElementById("forgotEmail")
-.value =
-document
-.getElementById("loginEmail")
-.value
-.trim();
-
-showMessage("");
-
-}
-
-
-/* =====================================================
-   FORGOT PASSWORD
-===================================================== */
-
-async function forgotPassword(){
-
-const email =
-document
-.getElementById("forgotEmail")
-.value
-.trim();
-
-
-if(!email){
-
-showMessage(
-"Enter your email first."
-);
-
-return;
-
-}
-
-
-showMessage(
-"Sending password reset email..."
-);
-
-
-const {
-error
-} =
-await client.auth.resetPasswordForEmail(
-email,
-{
-redirectTo:
-"https://inter-rivalry.github.io/Inter-Rivalry-BCU/"
-}
-);
-
-
-if(error){
-
-console.error(error);
-
-showMessage(
-error.message
-);
-
-return;
-
-}
-
-
-showMessage(
-"Password reset email sent! Check your inbox."
-);
-
-}
-
-
-/* =====================================================
-   RESET PASSWORD FORM
-===================================================== */
-
-function showResetPassword(){
-
-document
-.getElementById("loginForm")
-.classList
-.add("hidden");
-
-document
-.getElementById("signupForm")
-.classList
-.add("hidden");
-
-document
-.getElementById("forgotPasswordForm")
-.classList
-.add("hidden");
-
-document
-.getElementById("resetPasswordForm")
-.classList
-.remove("hidden");
-
-showMessage(
-"Enter your new password below."
-);
-
-}
-
-
-/* =====================================================
-   UPDATE PASSWORD
-===================================================== */
-
-async function updatePassword(){
-
-const newPassword =
-document
-.getElementById("newPassword")
-.value;
-
-const confirmPassword =
-document
-.getElementById("confirmPassword")
-.value;
-
-
-if(!newPassword || !confirmPassword){
-
-showMessage(
-"Please fill in both password fields."
-);
-
-return;
-
-}
-
-
-if(newPassword.length < 6){
-
-showMessage(
-"Password must be at least 6 characters."
-);
-
-return;
-
-}
-
-
-if(newPassword !== confirmPassword){
-
-showMessage(
-"Passwords do not match."
-);
-
-return;
-
-}
-
-
-showMessage(
-"Updating your password..."
-);
-
-
-const {
-error
-} =
-await client.auth.updateUser({
-
-password:newPassword
-
-});
-
-
-if(error){
-
-console.error(error);
-
-showMessage(
-"Could not update password: " +
-error.message
-);
-
-return;
-
-}
-
-
-showMessage(
-"Password updated successfully! You can now login with your new password."
-);
-
-
-document
-.getElementById("newPassword")
-.value = "";
-
-document
-.getElementById("confirmPassword")
-.value = "";
-
-
-/*
-   Give the user a moment to read the success message.
-*/
-
-setTimeout(
-()=>{
-
-client.auth.signOut();
-
-showLogin();
-
-showMessage(
-"Password updated successfully. Please login."
-);
-
-},
-1800
-);
+    document
+    .getElementById("signupForm")
+    .classList
+    .add("hidden");
+
+    document
+    .getElementById("loginForm")
+    .classList
+    .remove("hidden");
+
+    showMessage("");
 
 }
 
@@ -2547,100 +1913,98 @@ showMessage(
 
 async function signup(){
 
-const name =
-document
-.getElementById("signupName")
-.value
-.trim();
+    const name =
+    document
+    .getElementById("signupName")
+    .value
+    .trim();
+
+    const email =
+    document
+    .getElementById("signupEmail")
+    .value
+    .trim();
+
+    const password =
+    document
+    .getElementById("signupPassword")
+    .value;
 
 
-const email =
-document
-.getElementById("signupEmail")
-.value
-.trim();
+    if(!name || !email || !password){
+
+        showMessage(
+            "Please fill in all fields."
+        );
+
+        return;
+
+    }
 
 
-const password =
-document
-.getElementById("signupPassword")
-.value;
+    if(password.length < 6){
+
+        showMessage(
+            "Password must be at least 6 characters."
+        );
+
+        return;
+
+    }
 
 
-if(!name || !email || !password){
-
-showMessage(
-"Please fill in all fields."
-);
-
-return;
-
-}
+    showMessage(
+        "Creating your INTER RIVALRY account..."
+    );
 
 
-if(password.length < 6){
+    const {
+        data,
+        error
+    } =
+    await client.auth.signUp({
 
-showMessage(
-"Password must be at least 6 characters."
-);
+        email:email,
 
-return;
+        password:password,
 
-}
+        options:{
 
+            emailRedirectTo:
+            "https://inter-rivalry.github.io/Inter-Rivalry-BCU/",
 
-showMessage(
-"Creating your INTER RIVALRY account..."
-);
+            data:{
+                full_name:name
+            }
 
+        }
 
-const {
-data,
-error
-} =
-await client.auth.signUp({
-
-email,
-
-password,
-
-options:{
-
-emailRedirectTo:
-"https://inter-rivalry.github.io/Inter-Rivalry-BCU/",
-
-data:{
-full_name:name
-}
-
-}
-
-});
+    });
 
 
-if(error){
+    if(error){
 
-showMessage(
-error.message
-);
+        showMessage(
+            error.message
+        );
 
-return;
+        return;
 
-}
-
-
-if(!data.session){
-
-showMessage(
-"Account created! Check your email and confirm your account before logging in."
-);
-
-return;
-
-}
+    }
 
 
-await loadUser();
+    if(!data.session){
+
+        showMessage(
+            "Account created! Check your email and confirm your account before logging in."
+        );
+
+        return;
+
+    }
+
+
+    await loadUser();
 
 }
 
@@ -2651,58 +2015,180 @@ await loadUser();
 
 async function login(){
 
-const email =
-document
-.getElementById("loginEmail")
-.value
-.trim();
+    const email =
+    document
+    .getElementById("loginEmail")
+    .value
+    .trim();
+
+    const password =
+    document
+    .getElementById("loginPassword")
+    .value;
 
 
-const password =
-document
-.getElementById("loginPassword")
-.value;
+    if(!email || !password){
+
+        showMessage(
+            "Please enter your email and password."
+        );
+
+        return;
+
+    }
 
 
-if(!email || !password){
+    showMessage(
+        "Logging in..."
+    );
 
-showMessage(
-"Please enter your email and password."
-);
 
-return;
+    const {
+        error
+    } =
+    await client.auth.signInWithPassword({
+
+        email:email,
+        password:password
+
+    });
+
+
+    if(error){
+
+        showMessage(
+            error.message
+        );
+
+        return;
+
+    }
+
+
+    await loadUser();
 
 }
 
 
-showMessage(
-"Logging in..."
-);
+/* =====================================================
+   FORGOT PASSWORD
+===================================================== */
+
+async function forgotPassword(){
+
+    const email =
+    document
+    .getElementById("loginEmail")
+    .value
+    .trim();
 
 
-const {
-error
-} =
-await client.auth.signInWithPassword({
+    if(!email){
 
-email,
-password
+        showMessage(
+            "Enter your email first."
+        );
 
-});
+        return;
+
+    }
 
 
-if(error){
+    showMessage(
+        "Sending password reset email..."
+    );
 
-showMessage(
-error.message
-);
 
-return;
+    const {
+        error
+    } =
+    await client.auth.resetPasswordForEmail(
+        email,
+        {
+            redirectTo:
+            "https://inter-rivalry.github.io/Inter-Rivalry-BCU/"
+        }
+    );
+
+
+    if(error){
+
+        showMessage(
+            error.message
+        );
+
+        return;
+
+    }
+
+
+    showMessage(
+        "Password reset email sent! Check your inbox and spam folder."
+    );
 
 }
 
 
-await loadUser();
+/* =====================================================
+   RESEND CONFIRMATION EMAIL
+===================================================== */
+
+async function resendConfirmationEmail(){
+
+    const email =
+    document
+    .getElementById("loginEmail")
+    .value
+    .trim();
+
+
+    if(!email){
+
+        showMessage(
+            "Enter your email first."
+        );
+
+        return;
+
+    }
+
+
+    showMessage(
+        "Sending confirmation email..."
+    );
+
+
+    const {
+        error
+    } =
+    await client.auth.resend({
+
+        type:"signup",
+
+        email:email,
+
+        options:{
+            emailRedirectTo:
+            "https://inter-rivalry.github.io/Inter-Rivalry-BCU/"
+        }
+
+    });
+
+
+    if(error){
+
+        showMessage(
+            error.message
+        );
+
+        return;
+
+    }
+
+
+    showMessage(
+        "Confirmation email sent! Check your inbox and spam folder."
+    );
 
 }
 
@@ -2713,75 +2199,75 @@ await loadUser();
 
 async function loadUser(){
 
-const {
-data:{
-user
-}
-} =
-await client.auth.getUser();
+    const {
+        data:{
+            user
+        }
+    } =
+    await client.auth.getUser();
 
 
-if(!user){
+    if(!user){
 
-showAuth();
+        showAuth();
 
-return;
+        return;
 
-}
-
-
-const {
-data:profile,
-error
-} =
-await client
-.from("profiles")
-.select(`
-id,
-full_name,
-inter_rivalry_id,
-role
-`)
-.eq("id",user.id)
-.single();
+    }
 
 
-if(error || !profile){
-
-console.error(error);
-
-showAuth();
-
-return;
-
-}
-
-
-if(profile.role === "super_admin"){
-
-await loadAdminDashboard();
-
-return;
-
-}
+    const {
+        data:profile,
+        error
+    } =
+    await client
+    .from("profiles")
+    .select(`
+        id,
+        full_name,
+        inter_rivalry_id,
+        role
+    `)
+    .eq("id",user.id)
+    .single();
 
 
-if(profile.role === "college_admin"){
+    if(error || !profile){
 
-await loadCollegeAdminDashboard(
-user,
-profile
-);
+        console.error(error);
 
-return;
+        showAuth();
 
-}
+        return;
+
+    }
 
 
-await loadStudentDashboard(
-user,
-profile
-);
+    if(profile.role === "super_admin"){
+
+        await loadAdminDashboard();
+
+        return;
+
+    }
+
+
+    if(profile.role === "college_admin"){
+
+        await loadCollegeAdminDashboard(
+            user,
+            profile
+        );
+
+        return;
+
+    }
+
+
+    await loadStudentDashboard(
+        user,
+        profile
+    );
 
 }
 
@@ -2791,105 +2277,105 @@ profile
 ===================================================== */
 
 async function loadStudentDashboard(
-user,
-profile
+    user,
+    profile
 ){
 
-document
-.getElementById("userName")
-.textContent =
-profile.full_name || "Student";
+    document
+    .getElementById("userName")
+    .textContent =
+    profile.full_name || "Student";
 
 
-document
-.getElementById("rivalryId")
-.textContent =
-profile.inter_rivalry_id || "Not assigned";
+    document
+    .getElementById("rivalryId")
+    .textContent =
+    profile.inter_rivalry_id || "Not assigned";
 
 
-const {
-data:membership,
-error
-} =
-await client
-.from("college_memberships")
-.select(`
-college_id,
-department,
-course,
-year_of_study,
-specialization,
-colleges (
-college_name,
-college_code,
-city,
-state
-)
-`)
-.eq("user_id",user.id)
-.eq("is_active",true)
-.maybeSingle();
+    const {
+        data:membership,
+        error
+    } =
+    await client
+    .from("college_memberships")
+    .select(`
+        college_id,
+        department,
+        course,
+        year_of_study,
+        specialization,
+        colleges (
+            college_name,
+            college_code,
+            city,
+            state
+        )
+    `)
+    .eq("user_id",user.id)
+    .eq("is_active",true)
+    .maybeSingle();
 
 
-if(error){
+    if(error){
 
-console.error(
-"Membership error:",
-error
-);
+        console.error(
+            "Membership error:",
+            error
+        );
 
-}
-
-
-const collegeStatus =
-document.getElementById(
-"collegeStatus"
-);
+    }
 
 
-if(membership && membership.colleges){
-
-collegeStatus.textContent =
-"College: " +
-membership.colleges.college_name +
-" (" +
-membership.colleges.college_code +
-")";
+    const collegeStatus =
+    document.getElementById(
+        "collegeStatus"
+    );
 
 
-document
-.getElementById(
-"studentCollegeSection"
-)
-.classList
-.add("hidden");
+    if(
+        membership &&
+        membership.colleges
+    ){
 
-}
-else{
-
-collegeStatus.textContent =
-"College: Not joined yet";
-
-
-document
-.getElementById(
-"studentCollegeSection"
-)
-.classList
-.remove("hidden");
+        collegeStatus.textContent =
+        "College: " +
+        membership.colleges.college_name +
+        " (" +
+        membership.colleges.college_code +
+        ")";
 
 
-await loadStudentColleges();
+        document
+        .getElementById(
+            "studentCollegeSection"
+        )
+        .classList
+        .add("hidden");
 
-}
+    }
+    else{
+
+        collegeStatus.textContent =
+        "College: Not joined yet";
 
 
-/* LOAD RIVALS */
+        document
+        .getElementById(
+            "studentCollegeSection"
+        )
+        .classList
+        .remove("hidden");
 
-await loadRivals();
+
+        await loadStudentColleges();
+
+    }
 
 
-showOnlyStudent();
+    await loadRivals();
+
+    showOnlyStudent();
 
 }
 
@@ -2900,96 +2386,98 @@ showOnlyStudent();
 
 async function loadStudentColleges(){
 
-const {
-data,
-error
-} =
-await client
-.from("colleges")
-.select(`
-id,
-college_name,
-college_code,
-city,
-state
-`)
-.order(
-"college_name",
-{
-ascending:true
-}
-);
+    const {
+        data,
+        error
+    } =
+    await client
+    .from("colleges")
+    .select(`
+        id,
+        college_name,
+        college_code,
+        city,
+        state
+    `)
+    .order(
+        "college_name",
+        {
+            ascending:true
+        }
+    );
 
 
-const list =
-document.getElementById(
-"collegeList"
-);
-
-list.innerHTML = "";
+    const list =
+    document.getElementById(
+        "collegeList"
+    );
 
 
-if(error){
-
-console.error(error);
-
-list.innerHTML =
-"<div class='empty-box'>Unable to load colleges.</div>";
-
-return;
-
-}
+    list.innerHTML = "";
 
 
-if(!data || data.length === 0){
+    if(error){
 
-list.innerHTML =
-"<div class='empty-box'>No colleges available yet.</div>";
+        console.error(error);
 
-return;
+        list.innerHTML =
+        "<div class='empty-box'>Unable to load colleges.</div>";
 
-}
+        return;
+
+    }
 
 
-data.forEach(
-college => {
+    if(!data || data.length === 0){
 
-const card =
-document.createElement("div");
+        list.innerHTML =
+        "<div class='empty-box'>No colleges available yet.</div>";
 
-card.className =
-"college-card";
+        return;
 
-card.innerHTML = `
+    }
 
-<h3>
-${escapeHTML(college.college_name)}
-</h3>
 
-<div class="college-code">
-${escapeHTML(college.college_code)}
-</div>
+    data.forEach(
+        college => {
 
-<div class="college-location">
-${escapeHTML(college.city || "")}
-${college.state
-? ", " + escapeHTML(college.state)
-: ""}
-</div>
+            const card =
+            document.createElement("div");
 
-<button
-class="small-btn success-btn"
-onclick="showJoinForm('${college.id}')">
+            card.className =
+            "college-card";
 
-JOIN COLLEGE
 
-</button>
+            card.innerHTML = `
 
-`;
+                <h3>
+                    ${escapeHTML(college.college_name)}
+                </h3>
 
-list.appendChild(card);
+                <div class="college-code">
+                    ${escapeHTML(college.college_code)}
+                </div>
 
-});
+                <div class="college-location">
+                    ${escapeHTML(college.city || "")}
+                    ${college.state
+                    ? ", " + escapeHTML(college.state)
+                    : ""}
+                </div>
+
+                <button
+                    class="small-btn success-btn"
+                    onclick="showJoinForm('${college.id}')">
+                    JOIN COLLEGE
+                </button>
+
+            `;
+
+
+            list.appendChild(card);
+
+        }
+    );
 
 }
 
@@ -3000,137 +2488,139 @@ list.appendChild(card);
 
 async function showJoinForm(collegeId){
 
-const course =
-prompt(
-"Enter course:\nBCA, BBA or B.Com"
-);
+    const course =
+    prompt(
+        "Enter course:\nBCA, BBA or B.Com"
+    );
 
 
-if(!course)
-return;
+    if(!course)
+        return;
 
 
-const normalizedCourse =
-course
-.trim()
-.toUpperCase();
+    const normalizedCourse =
+    course
+    .trim()
+    .toUpperCase();
 
 
-if(
-normalizedCourse !== "BCA" &&
-normalizedCourse !== "BBA" &&
-normalizedCourse !== "B.COM"
-){
+    if(
+        normalizedCourse !== "BCA" &&
+        normalizedCourse !== "BBA" &&
+        normalizedCourse !== "B.COM"
+    ){
 
-alert(
-"Please enter BCA, BBA or B.Com."
-);
+        alert(
+            "Please enter BCA, BBA or B.Com."
+        );
 
-return;
+        return;
 
-}
-
-
-const year =
-prompt(
-"Enter year:\n1 = 1st Year\n2 = 2nd Year\n3 = 3rd Year"
-);
+    }
 
 
-const yearNumber =
-Number(year);
+    const year =
+    prompt(
+        "Enter year:\n1 = 1st Year\n2 = 2nd Year\n3 = 3rd Year"
+    );
 
 
-if(
-yearNumber !== 1 &&
-yearNumber !== 2 &&
-yearNumber !== 3
-){
-
-alert(
-"Please enter 1, 2 or 3."
-);
-
-return;
-
-}
+    const yearNumber =
+    Number(year);
 
 
-let specialization = null;
+    if(
+        yearNumber !== 1 &&
+        yearNumber !== 2 &&
+        yearNumber !== 3
+    ){
+
+        alert(
+            "Please enter 1, 2 or 3."
+        );
+
+        return;
+
+    }
 
 
-if(normalizedCourse === "BCA"){
-
-specialization =
-prompt(
-"BCA specialization:\nAI ML\nData Science\nGeneral"
-);
-
-if(!specialization)
-return;
-
-specialization =
-specialization.trim();
-
-}
+    let specialization = null;
 
 
-const {
-data:{
-user
-}
-} =
-await client.auth.getUser();
+    if(normalizedCourse === "BCA"){
+
+        specialization =
+        prompt(
+            "BCA specialization:\nAI ML\nData Science\nGeneral"
+        );
 
 
-if(!user){
-
-alert(
-"Please login first."
-);
-
-return;
-
-}
+        if(!specialization)
+            return;
 
 
-const {
-error
-} =
-await client
-.from("college_join_requests")
-.insert({
+        specialization =
+        specialization.trim();
 
-student_id:user.id,
-
-college_id:collegeId,
-
-course:normalizedCourse,
-
-year_of_study:yearNumber,
-
-specialization:specialization
-
-});
+    }
 
 
-if(error){
-
-console.error(error);
-
-alert(
-"Could not send request: " +
-error.message
-);
-
-return;
-
-}
+    const {
+        data:{
+            user
+        }
+    } =
+    await client.auth.getUser();
 
 
-alert(
-"Join request submitted! Waiting for college admin approval."
-);
+    if(!user){
+
+        alert(
+            "Please login first."
+        );
+
+        return;
+
+    }
+
+
+    const {
+        error
+    } =
+    await client
+    .from("college_join_requests")
+    .insert({
+
+        student_id:user.id,
+
+        college_id:collegeId,
+
+        course:normalizedCourse,
+
+        year_of_study:yearNumber,
+
+        specialization:specialization
+
+    });
+
+
+    if(error){
+
+        console.error(error);
+
+        alert(
+            "Could not send request: " +
+            error.message
+        );
+
+        return;
+
+    }
+
+
+    alert(
+        "Join request submitted! Waiting for college admin approval."
+    );
 
 }
 
@@ -3141,316 +2631,319 @@ alert(
 
 async function loadRivals(){
 
-const list =
-document.getElementById(
-"rivalsList"
-);
+    const list =
+    document.getElementById(
+        "rivalsList"
+    );
 
 
-if(!list)
-return;
+    if(!list)
+        return;
 
 
-list.innerHTML =
-"<div class='empty-box'>Loading rivals...</div>";
+    list.innerHTML =
+    "<div class='empty-box'>Loading rivals...</div>";
 
 
-const {
-data:{
-user
-}
-} =
-await client.auth.getUser();
+    const {
+        data:{
+            user
+        }
+    } =
+    await client.auth.getUser();
 
 
-if(!user){
-
-return;
-
-}
+    if(!user)
+        return;
 
 
-const {
-data:profiles,
-error
-} =
-await client
-.from("profiles")
-.select(`
-id,
-full_name,
-inter_rivalry_id,
-role
-`)
-.neq("id",user.id)
-.eq("role","student")
-.order(
-"full_name",
-{
-ascending:true
-}
-);
+    const {
+        data:profiles,
+        error
+    } =
+    await client
+    .from("profiles")
+    .select(`
+        id,
+        full_name,
+        inter_rivalry_id,
+        role
+    `)
+    .neq("id",user.id)
+    .eq("role","student")
+    .order(
+        "full_name",
+        {
+            ascending:true
+        }
+    );
 
 
-if(error){
+    if(error){
 
-console.error(error);
+        console.error(error);
 
-list.innerHTML =
-`
-<div class="empty-box">
-Unable to load rivals.<br>
-${escapeHTML(error.message)}
-</div>
-`;
+        list.innerHTML =
+        `
+        <div class="empty-box">
+            Unable to load rivals.<br>
+            ${escapeHTML(error.message)}
+        </div>
+        `;
 
-return;
+        return;
 
-}
-
-
-if(!profiles || profiles.length === 0){
-
-list.innerHTML =
-`
-<div class="empty-box">
-No other students found yet.
-</div>
-`;
-
-return;
-
-}
+    }
 
 
-list.innerHTML = "";
+    if(!profiles || profiles.length === 0){
+
+        list.innerHTML =
+        `
+        <div class="empty-box">
+            No other students found yet.
+        </div>
+        `;
+
+        return;
+
+    }
 
 
-profiles.forEach(
-profile => {
-
-const card =
-document.createElement("div");
-
-card.className =
-"rival-card";
+    list.innerHTML = "";
 
 
-card.innerHTML = `
+    profiles.forEach(
+        profile => {
 
-<h3>
-👤 ${escapeHTML(profile.full_name || "Student")}
-</h3>
+            const card =
+            document.createElement("div");
 
-<div class="rival-info">
+            card.className =
+            "rival-card";
 
-INTER RIVALRY ID:
-${escapeHTML(profile.inter_rivalry_id || "-")}
 
-</div>
+            card.innerHTML = `
 
-<div class="rival-actions">
+                <h3>
+                    👤 ${escapeHTML(profile.full_name || "Student")}
+                </h3>
 
-<button
-class="small-btn challenge-btn"
-onclick="viewProfile('${profile.id}')">
+                <div class="rival-info">
 
-VIEW PROFILE
+                    INTER RIVALRY ID:
+                    ${escapeHTML(profile.inter_rivalry_id || "-")}
 
-</button>
+                </div>
 
-</div>
+                <div class="rival-actions">
 
-`;
+                    <button
+                        class="small-btn challenge-btn"
+                        onclick="viewProfile('${profile.id}')">
+                        VIEW PROFILE
+                    </button>
 
-list.appendChild(card);
+                </div>
 
-});
+            `;
+
+
+            list.appendChild(card);
+
+        }
+    );
 
 }
 
 
 /* =====================================================
-   VIEW USER PROFILE
+   VIEW PROFILE
 ===================================================== */
 
 async function viewProfile(userId){
 
-selectedProfileId =
-userId;
+    selectedProfileId =
+    userId;
 
 
-const {
-data:profile,
-error
-} =
-await client
-.from("profiles")
-.select(`
-id,
-full_name,
-inter_rivalry_id,
-role
-`)
-.eq("id",userId)
-.single();
+    const {
+        data:profile,
+        error
+    } =
+    await client
+    .from("profiles")
+    .select(`
+        id,
+        full_name,
+        inter_rivalry_id,
+        role
+    `)
+    .eq("id",userId)
+    .single();
 
 
-if(error || !profile){
+    if(error || !profile){
 
-alert(
-"Unable to load profile."
-);
+        alert(
+            "Unable to load profile."
+        );
 
-return;
+        return;
 
-}
-
-
-document
-.getElementById(
-"viewProfileName"
-)
-.textContent =
-profile.full_name || "User";
+    }
 
 
-document
-.getElementById(
-"viewProfileRivalry"
-)
-.textContent =
-profile.inter_rivalry_id || "-";
+    document
+    .getElementById(
+        "viewProfileName"
+    )
+    .textContent =
+    profile.full_name || "User";
 
 
-const {
-data:membership
-} =
-await client
-.from("college_memberships")
-.select(`
-course,
-year_of_study,
-specialization,
-colleges(
-college_name
-)
-`)
-.eq("user_id",userId)
-.eq("is_active",true)
-.maybeSingle();
+    document
+    .getElementById(
+        "viewProfileRivalry"
+    )
+    .textContent =
+    profile.inter_rivalry_id || "-";
 
 
-if(membership && membership.colleges){
-
-document
-.getElementById(
-"viewProfileCollege"
-)
-.textContent =
-membership.colleges.college_name;
-
-}
-else{
-
-document
-.getElementById(
-"viewProfileCollege"
-)
-.textContent =
-"College information unavailable";
-
-}
+    const {
+        data:membership
+    } =
+    await client
+    .from("college_memberships")
+    .select(`
+        course,
+        year_of_study,
+        specialization,
+        colleges(
+            college_name
+        )
+    `)
+    .eq("user_id",userId)
+    .eq("is_active",true)
+    .maybeSingle();
 
 
-/* SKILLS */
+    if(
+        membership &&
+        membership.colleges
+    ){
 
-const skillsBox =
-document.getElementById(
-"viewProfileSkills"
-);
+        document
+        .getElementById(
+            "viewProfileCollege"
+        )
+        .textContent =
+        membership.colleges.college_name;
 
-skillsBox.innerHTML =
-"<div class='empty-box'>Loading skills...</div>";
+    }
+    else{
 
+        document
+        .getElementById(
+            "viewProfileCollege"
+        )
+        .textContent =
+        "College information unavailable";
 
-const {
-data:skills,
-error:skillsError
-} =
-await client
-.from("subcategories")
-.select(`
-id,
-name,
-categories(
-name
-)
-`)
-.order("name");
+    }
 
 
-if(skillsError){
-
-console.error(skillsError);
-
-skillsBox.innerHTML =
-`
-<div class="empty-box">
-Skills could not be loaded.
-</div>
-`;
-
-}
-else if(!skills || skills.length === 0){
-
-skillsBox.innerHTML =
-`
-<div class="empty-box">
-No skills available yet.
-</div>
-`;
-
-}
-else{
-
-skillsBox.innerHTML = "";
-
-skills.forEach(
-skill => {
-
-const item =
-document.createElement("div");
-
-item.className =
-"skill-item";
-
-item.innerHTML = `
-
-<strong>
-${escapeHTML(skill.name)}
-</strong>
-
-<div style="color:#777;margin-top:5px">
-
-${escapeHTML(
-skill.categories
-? skill.categories.name
-: "Skill"
-)}
-
-</div>
-
-`;
-
-skillsBox.appendChild(item);
-
-});
-
-}
+    const skillsBox =
+    document.getElementById(
+        "viewProfileSkills"
+    );
 
 
-showOnlyProfile();
+    skillsBox.innerHTML =
+    "<div class='empty-box'>Loading skills...</div>";
+
+
+    const {
+        data:skills,
+        error:skillsError
+    } =
+    await client
+    .from("subcategories")
+    .select(`
+        id,
+        name,
+        categories(
+            name
+        )
+    `)
+    .order("name");
+
+
+    if(skillsError){
+
+        console.error(skillsError);
+
+        skillsBox.innerHTML =
+        `
+        <div class="empty-box">
+            Skills could not be loaded.
+        </div>
+        `;
+
+    }
+    else if(!skills || skills.length === 0){
+
+        skillsBox.innerHTML =
+        `
+        <div class="empty-box">
+            No skills available yet.
+        </div>
+        `;
+
+    }
+    else{
+
+        skillsBox.innerHTML = "";
+
+
+        skills.forEach(
+            skill => {
+
+                const item =
+                document.createElement("div");
+
+                item.className =
+                "skill-item";
+
+
+                item.innerHTML = `
+
+                    <strong>
+                        ${escapeHTML(skill.name)}
+                    </strong>
+
+                    <div style="color:#777;margin-top:5px">
+
+                        ${escapeHTML(
+                            skill.categories
+                            ? skill.categories.name
+                            : "Skill"
+                        )}
+
+                    </div>
+
+                `;
+
+
+                skillsBox.appendChild(item);
+
+            }
+        );
+
+    }
+
+
+    showOnlyProfile();
 
 }
 
@@ -3461,93 +2954,90 @@ showOnlyProfile();
 
 async function openChallengePage(){
 
-if(!selectedProfileId){
+    if(!selectedProfileId){
 
-alert(
-"No opponent selected."
-);
+        alert(
+            "No opponent selected."
+        );
 
-return;
+        return;
 
-}
-
-
-const {
-data:{
-user
-}
-} =
-await client.auth.getUser();
+    }
 
 
-if(!user){
-
-alert(
-"Please login first."
-);
-
-return;
-
-}
+    const {
+        data:{
+            user
+        }
+    } =
+    await client.auth.getUser();
 
 
-if(user.id === selectedProfileId){
+    if(!user){
 
-alert(
-"You cannot challenge yourself."
-);
+        alert(
+            "Please login first."
+        );
 
-return;
+        return;
 
-}
-
-
-/* LOAD OPPONENT */
-
-const {
-data:opponent
-} =
-await client
-.from("profiles")
-.select(`
-full_name,
-inter_rivalry_id
-`)
-.eq("id",selectedProfileId)
-.single();
+    }
 
 
-if(!opponent){
+    if(user.id === selectedProfileId){
 
-alert(
-"Opponent not found."
-);
+        alert(
+            "You cannot challenge yourself."
+        );
 
-return;
+        return;
 
-}
-
-
-document
-.getElementById(
-"challengeOpponentName"
-)
-.textContent =
-opponent.full_name || "User";
+    }
 
 
-document
-.getElementById(
-"challengeOpponentId"
-)
-.textContent =
-opponent.inter_rivalry_id || "-";
+    const {
+        data:opponent
+    } =
+    await client
+    .from("profiles")
+    .select(`
+        full_name,
+        inter_rivalry_id
+    `)
+    .eq("id",selectedProfileId)
+    .single();
 
 
-await loadChallengeSkills();
+    if(!opponent){
+
+        alert(
+            "Opponent not found."
+        );
+
+        return;
+
+    }
 
 
-showOnlyChallenge();
+    document
+    .getElementById(
+        "challengeOpponentName"
+    )
+    .textContent =
+    opponent.full_name || "User";
+
+
+    document
+    .getElementById(
+        "challengeOpponentId"
+    )
+    .textContent =
+    opponent.inter_rivalry_id || "-";
+
+
+    await loadChallengeSkills();
+
+    showOnlyChallenge();
 
 }
 
@@ -3558,76 +3048,81 @@ showOnlyChallenge();
 
 async function loadChallengeSkills(){
 
-const select =
-document.getElementById(
-"challengeSkill"
-);
-
-select.innerHTML =
-"<option value=''>Loading skills...</option>";
+    const select =
+    document.getElementById(
+        "challengeSkill"
+    );
 
 
-const {
-data,
-error
-} =
-await client
-.from("subcategories")
-.select(`
-id,
-name,
-categories(
-name
-)
-`)
-.order("name");
+    select.innerHTML =
+    "<option value=''>Loading skills...</option>";
 
 
-if(error){
-
-console.error(error);
-
-select.innerHTML =
-"<option value=''>Unable to load skills</option>";
-
-return;
-
-}
-
-
-if(!data || data.length === 0){
-
-select.innerHTML =
-"<option value=''>No skills available</option>";
-
-return;
-
-}
+    const {
+        data,
+        error
+    } =
+    await client
+    .from("subcategories")
+    .select(`
+        id,
+        name,
+        categories(
+            name
+        )
+    `)
+    .order("name");
 
 
-select.innerHTML =
-"<option value=''>Select a skill</option>";
+    if(error){
+
+        console.error(error);
+
+        select.innerHTML =
+        "<option value=''>Unable to load skills</option>";
+
+        return;
+
+    }
 
 
-data.forEach(
-skill => {
+    if(!data || data.length === 0){
 
-const option =
-document.createElement("option");
+        select.innerHTML =
+        "<option value=''>No skills available</option>";
 
-option.value =
-skill.id;
+        return;
 
-option.textContent =
-skill.categories
-? skill.categories.name +
-" • " +
-skill.name
-: skill.name;
+    }
 
-select.appendChild(option);
 
-});
+    select.innerHTML =
+    "<option value=''>Select a skill</option>";
+
+
+    data.forEach(
+        skill => {
+
+            const option =
+            document.createElement("option");
+
+
+            option.value =
+            skill.id;
+
+
+            option.textContent =
+            skill.categories
+            ? skill.categories.name +
+              " • " +
+              skill.name
+            : skill.name;
+
+
+            select.appendChild(option);
+
+        }
+    );
 
 }
 
@@ -3638,204 +3133,207 @@ select.appendChild(option);
 
 async function sendChallenge(){
 
-const {
-data:{
-user
-}
-} =
-await client.auth.getUser();
+    const {
+        data:{
+            user
+        }
+    } =
+    await client.auth.getUser();
 
 
-if(!user){
+    if(!user){
 
-alert(
-"Please login first."
-);
+        alert(
+            "Please login first."
+        );
 
-return;
+        return;
 
-}
+    }
 
 
-if(!selectedProfileId){
+    if(!selectedProfileId){
 
-alert(
-"No opponent selected."
-);
+        alert(
+            "No opponent selected."
+        );
 
-return;
+        return;
 
-}
+    }
 
 
-if(user.id === selectedProfileId){
+    if(user.id === selectedProfileId){
 
-alert(
-"You cannot challenge yourself."
-);
+        alert(
+            "You cannot challenge yourself."
+        );
 
-return;
+        return;
 
-}
+    }
 
 
-const subcategoryId =
-document
-.getElementById(
-"challengeSkill"
-)
-.value;
+    const subcategoryId =
+    document
+    .getElementById(
+        "challengeSkill"
+    )
+    .value;
 
 
-const title =
-document
-.getElementById(
-"challengeTitle"
-)
-.value
-.trim();
+    const title =
+    document
+    .getElementById(
+        "challengeTitle"
+    )
+    .value
+    .trim();
 
 
-const description =
-document
-.getElementById(
-"challengeDescription"
-)
-.value
-.trim();
+    const description =
+    document
+    .getElementById(
+        "challengeDescription"
+    )
+    .value
+    .trim();
 
 
-const startValue =
-document
-.getElementById(
-"challengeStart"
-)
-.value;
+    const startValue =
+    document
+    .getElementById(
+        "challengeStart"
+    )
+    .value;
 
 
-const endValue =
-document
-.getElementById(
-"challengeEnd"
-)
-.value;
+    const endValue =
+    document
+    .getElementById(
+        "challengeEnd"
+    )
+    .value;
 
 
-const message =
-document.getElementById(
-"challengeMessage"
-);
+    const message =
+    document.getElementById(
+        "challengeMessage"
+    );
 
 
-if(!subcategoryId){
+    if(!subcategoryId){
 
-message.textContent =
-"Please select a skill.";
+        message.textContent =
+        "Please select a skill.";
 
-return;
+        return;
 
-}
+    }
 
 
-if(!title){
+    if(!title){
 
-message.textContent =
-"Enter a challenge title.";
+        message.textContent =
+        "Enter a challenge title.";
 
-return;
+        return;
 
-}
+    }
 
 
-if(!startValue || !endValue){
+    if(!startValue || !endValue){
 
-message.textContent =
-"Please select start and end times.";
+        message.textContent =
+        "Please select start and end times.";
 
-return;
+        return;
 
-}
+    }
 
 
-const startDate =
-new Date(startValue);
+    const startDate =
+    new Date(startValue);
 
 
-const endDate =
-new Date(endValue);
+    const endDate =
+    new Date(endValue);
 
 
-if(endDate <= startDate){
+    if(endDate <= startDate){
 
-message.textContent =
-"End time must be after start time.";
+        message.textContent =
+        "End time must be after start time.";
 
-return;
+        return;
 
-}
+    }
 
 
-message.textContent =
-"Sending challenge...";
+    message.textContent =
+    "Sending challenge...";
 
 
-const {
-error
-} =
-await client
-.from("challenges")
-.insert({
+    const {
+        error
+    } =
+    await client
+    .from("challenges")
+    .insert({
 
-challenger_id:user.id,
+        challenger_id:user.id,
 
-opponent_id:selectedProfileId,
+        opponent_id:selectedProfileId,
 
-subcategory_id:subcategoryId,
+        subcategory_id:subcategoryId,
 
-title:title,
+        title:title,
 
-description:description || null,
+        description:
+        description || null,
 
-rules:{},
+        rules:{},
 
-starts_at:startDate.toISOString(),
+        starts_at:
+        startDate.toISOString(),
 
-ends_at:endDate.toISOString(),
+        ends_at:
+        endDate.toISOString(),
 
-status:"pending"
+        status:"pending"
 
-});
+    });
 
 
-if(error){
+    if(error){
 
-console.error(error);
+        console.error(error);
 
-message.textContent =
-"Could not send challenge: " +
-error.message;
+        message.textContent =
+        "Could not send challenge: " +
+        error.message;
 
-return;
+        return;
 
-}
+    }
 
 
-message.textContent =
-"Challenge sent successfully! ⚔️";
+    message.textContent =
+    "Challenge sent successfully! ⚔️";
 
 
-document
-.getElementById(
-"challengeTitle"
-)
-.value = "";
+    document
+    .getElementById(
+        "challengeTitle"
+    )
+    .value = "";
 
 
-document
-.getElementById(
-"challengeDescription"
-)
-.value = "";
+    document
+    .getElementById(
+        "challengeDescription"
+    )
+    .value = "";
 
 }
 
@@ -3846,220 +3344,240 @@ document
 
 async function loadMyChallenges(){
 
-const list =
-document.getElementById(
-"myChallengesList"
-);
-
-list.innerHTML =
-"<div class='empty-box'>Loading challenges...</div>";
+    const list =
+    document.getElementById(
+        "myChallengesList"
+    );
 
 
-const {
-data:{
-user
-}
-} =
-await client.auth.getUser();
+    list.innerHTML =
+    "<div class='empty-box'>Loading challenges...</div>";
 
 
-if(!user)
-return;
+    const {
+        data:{
+            user
+        }
+    } =
+    await client.auth.getUser();
 
 
-const {
-data,
-error
-} =
-await client
-.from("challenges")
-.select(`
-id,
-challenger_id,
-opponent_id,
-title,
-description,
-starts_at,
-ends_at,
-status,
-created_at,
-subcategory_id,
-subcategories(
-name,
-categories(
-name
-)
-)
-`)
-.or(
-`challenger_id.eq.${user.id},opponent_id.eq.${user.id}`
-)
-.order(
-"created_at",
-{
-ascending:false
-}
-);
+    if(!user)
+        return;
 
 
-if(error){
-
-console.error(error);
-
-list.innerHTML =
-`
-<div class="empty-box">
-Unable to load challenges.<br>
-${escapeHTML(error.message)}
-</div>
-`;
-
-return;
-
-}
-
-
-if(!data || data.length === 0){
-
-list.innerHTML =
-`
-<div class="empty-box">
-No challenges yet.
-</div>
-`;
-
-return;
-
-}
-
-
-list.innerHTML = "";
-
-
-for(const challenge of data){
-
-const isSender =
-challenge.challenger_id === user.id;
+    const {
+        data,
+        error
+    } =
+    await client
+    .from("challenges")
+    .select(`
+        id,
+        challenger_id,
+        opponent_id,
+        title,
+        description,
+        starts_at,
+        ends_at,
+        status,
+        created_at,
+        subcategory_id,
+        subcategories(
+            name,
+            categories(
+                name
+            )
+        )
+    `)
+    .or(
+        `challenger_id.eq.${user.id},opponent_id.eq.${user.id}`
+    )
+    .order(
+        "created_at",
+        {
+            ascending:false
+        }
+    );
 
 
-const otherUserId =
-isSender
-? challenge.opponent_id
-: challenge.challenger_id;
+    if(error){
+
+        console.error(error);
+
+        list.innerHTML =
+        `
+        <div class="empty-box">
+            Unable to load challenges.<br>
+            ${escapeHTML(error.message)}
+        </div>
+        `;
+
+        return;
+
+    }
 
 
-let otherName =
-"User";
+    if(!data || data.length === 0){
+
+        list.innerHTML =
+        `
+        <div class="empty-box">
+            No challenges yet.
+        </div>
+        `;
+
+        return;
+
+    }
 
 
-const {
-data:otherProfile
-} =
-await client
-.from("profiles")
-.select(
-"full_name,inter_rivalry_id"
-)
-.eq("id",otherUserId)
-.maybeSingle();
+    list.innerHTML = "";
 
 
-if(otherProfile){
+    for(
+        const challenge
+        of data
+    ){
 
-otherName =
-otherProfile.full_name ||
-"User";
-
-}
-
-
-const skillName =
-challenge.subcategories
-? (
-challenge.subcategories.categories
-? challenge.subcategories.categories.name +
-" • "
-: ""
-) +
-challenge.subcategories.name
-: "Skill";
+        const isSender =
+        challenge.challenger_id === user.id;
 
 
-const card =
-document.createElement("div");
+        const otherUserId =
+        isSender
+        ? challenge.opponent_id
+        : challenge.challenger_id;
 
-card.className =
-"challenge-card";
+
+        let otherName =
+        "User";
 
 
-card.innerHTML = `
+        const {
+            data:otherProfile
+        } =
+        await client
+        .from("profiles")
+        .select(
+            "full_name,inter_rivalry_id"
+        )
+        .eq(
+            "id",
+            otherUserId
+        )
+        .maybeSingle();
 
-<h3>
-⚔️ ${escapeHTML(challenge.title)}
-</h3>
 
-<div class="challenge-info">
+        if(otherProfile){
 
-<strong>
-${isSender ? "Opponent" : "Challenger"}:
-</strong>
+            otherName =
+            otherProfile.full_name ||
+            "User";
 
-${escapeHTML(otherName)}
+        }
 
-<br>
 
-<strong>
-Skill:
-</strong>
+        const skillName =
+        challenge.subcategories
+        ? (
+            challenge.subcategories.categories
+            ? challenge.subcategories.categories.name +
+              " • "
+            : ""
+          ) +
+          challenge.subcategories.name
+        : "Skill";
 
-${escapeHTML(skillName)}
 
-<br>
+        const card =
+        document.createElement("div");
 
-<strong>
-Status:
-</strong>
 
-${escapeHTML(challenge.status || "-")}
+        card.className =
+        "challenge-card";
 
-<br>
 
-<strong>
-Starts:
-</strong>
+        card.innerHTML = `
 
-${escapeHTML(
-formatDate(challenge.starts_at)
-)}
+            <h3>
+                ⚔️ ${escapeHTML(challenge.title)}
+            </h3>
 
-<br>
+            <div class="challenge-info">
 
-<strong>
-Ends:
-</strong>
+                <strong>
+                    ${isSender
+                    ? "Opponent"
+                    : "Challenger"}:
+                </strong>
 
-${escapeHTML(
-formatDate(challenge.ends_at)
-)}
+                ${escapeHTML(otherName)}
 
-${challenge.description
-? `
-<br>
-<strong>
-Description:
-</strong>
+                <br>
 
-${escapeHTML(challenge.description)}
-`
-: ""}
+                <strong>
+                    Skill:
+                </strong>
 
-</div>
+                ${escapeHTML(skillName)}
 
-`;
+                <br>
 
-list.appendChild(card);
+                <strong>
+                    Status:
+                </strong>
 
-}
+                ${escapeHTML(
+                    challenge.status || "-"
+                )}
+
+                <br>
+
+                <strong>
+                    Starts:
+                </strong>
+
+                ${escapeHTML(
+                    formatDate(
+                        challenge.starts_at
+                    )
+                )}
+
+                <br>
+
+                <strong>
+                    Ends:
+                </strong>
+
+                ${escapeHTML(
+                    formatDate(
+                        challenge.ends_at
+                    )
+                )}
+
+                ${
+                    challenge.description
+                    ? `
+                    <br>
+                    <strong>
+                        Description:
+                    </strong>
+                    ${escapeHTML(
+                        challenge.description
+                    )}
+                    `
+                    : ""
+                }
+
+            </div>
+
+        `;
+
+
+        list.appendChild(card);
+
+    }
 
 }
 
@@ -4070,11 +3588,11 @@ list.appendChild(card);
 
 async function loadAdminDashboard(){
 
-showOnlyAdmin();
+    showOnlyAdmin();
 
-await loadAdminStats();
+    await loadAdminStats();
 
-await loadAdminColleges();
+    await loadAdminColleges();
 
 }
 
@@ -4085,74 +3603,74 @@ await loadAdminColleges();
 
 async function loadAdminStats(){
 
-const {
-count:colleges
-} =
-await client
-.from("colleges")
-.select(
-"id",
-{
-count:"exact",
-head:true
-}
-);
+    const {
+        count:colleges
+    } =
+    await client
+    .from("colleges")
+    .select(
+        "id",
+        {
+            count:"exact",
+            head:true
+        }
+    );
 
 
-document
-.getElementById(
-"collegeCount"
-)
-.textContent =
-colleges || 0;
+    document
+    .getElementById(
+        "collegeCount"
+    )
+    .textContent =
+    colleges || 0;
 
 
-const {
-count:requests
-} =
-await client
-.from("college_join_requests")
-.select(
-"id",
-{
-count:"exact",
-head:true
-}
-)
-.eq(
-"status",
-"pending"
-);
+    const {
+        count:requests
+    } =
+    await client
+    .from("college_join_requests")
+    .select(
+        "id",
+        {
+            count:"exact",
+            head:true
+        }
+    )
+    .eq(
+        "status",
+        "pending"
+    );
 
 
-document
-.getElementById(
-"requestCount"
-)
-.textContent =
-requests || 0;
+    document
+    .getElementById(
+        "requestCount"
+    )
+    .textContent =
+    requests || 0;
 
 
-const {
-count:admins
-} =
-await client
-.from("college_admins")
-.select(
-"id",
-{
-count:"exact",
-head:true
-}
-);
+    const {
+        count:admins
+    } =
+    await client
+    .from("college_admins")
+    .select(
+        "id",
+        {
+            count:"exact",
+            head:true
+        }
+    );
 
 
-document
-.getElementById(
-"adminCount"
-)
-.textContent =
-admins || 0;
+    document
+    .getElementById(
+        "adminCount"
+    )
+    .textContent =
+    admins || 0;
 
 }
 
@@ -4163,110 +3681,118 @@ admins || 0;
 
 async function loadAdminColleges(){
 
-const {
-data,
-error
-} =
-await client
-.from("colleges")
-.select(`
-id,
-college_name,
-college_code,
-city,
-state
-`)
-.order(
-"college_name",
-{
-ascending:true
-}
-);
+    const {
+        data,
+        error
+    } =
+    await client
+    .from("colleges")
+    .select(`
+        id,
+        college_name,
+        college_code,
+        city,
+        state
+    `)
+    .order(
+        "college_name",
+        {
+            ascending:true
+        }
+    );
 
 
-const list =
-document.getElementById(
-"adminCollegeList"
-);
-
-list.innerHTML = "";
+    const list =
+    document.getElementById(
+        "adminCollegeList"
+    );
 
 
-if(error){
-
-console.error(error);
-
-list.innerHTML =
-`
-<div class="empty-box">
-Unable to load colleges.
-</div>
-`;
-
-return;
-
-}
+    list.innerHTML = "";
 
 
-if(!data || data.length === 0){
+    if(error){
 
-list.innerHTML =
-`
-<div class="empty-box">
-No colleges have been added yet.
-</div>
-`;
+        console.error(error);
 
-return;
+        list.innerHTML =
+        `
+        <div class="empty-box">
+            Unable to load colleges.
+        </div>
+        `;
 
-}
+        return;
 
-
-data.forEach(
-college => {
-
-const card =
-document.createElement("div");
-
-card.className =
-"college-card";
+    }
 
 
-card.innerHTML = `
+    if(!data || data.length === 0){
 
-<h3>
-${escapeHTML(college.college_name)}
-</h3>
+        list.innerHTML =
+        `
+        <div class="empty-box">
+            No colleges have been added yet.
+        </div>
+        `;
 
-<div class="college-code">
-Code: ${escapeHTML(college.college_code)}
-</div>
+        return;
 
-<div class="college-location">
-
-${escapeHTML(college.city || "")}
-
-${college.state
-? ", " +
-escapeHTML(college.state)
-: ""}
-
-</div>
+    }
 
 
-<button
-class="small-btn"
-onclick="viewCollege('${college.id}')">
+    data.forEach(
+        college => {
 
-MANAGE
+            const card =
+            document.createElement("div");
 
-</button>
+            card.className =
+            "college-card";
 
-`;
 
-list.appendChild(card);
+            card.innerHTML = `
 
-});
+                <h3>
+                    ${escapeHTML(
+                        college.college_name
+                    )}
+                </h3>
+
+                <div class="college-code">
+                    Code:
+                    ${escapeHTML(
+                        college.college_code
+                    )}
+                </div>
+
+                <div class="college-location">
+                    ${escapeHTML(
+                        college.city || ""
+                    )}
+                    ${
+                        college.state
+                        ? ", " +
+                          escapeHTML(
+                              college.state
+                          )
+                        : ""
+                    }
+                </div>
+
+                <button
+                    class="small-btn"
+                    onclick="viewCollege('${college.id}')">
+                    MANAGE
+                </button>
+
+            `;
+
+
+            list.appendChild(card);
+
+        }
+    );
 
 }
 
@@ -4277,115 +3803,123 @@ list.appendChild(card);
 
 async function addCollege(){
 
-const name =
-document
-.getElementById("collegeName")
-.value
-.trim();
+    const name =
+    document
+    .getElementById(
+        "collegeName"
+    )
+    .value
+    .trim();
 
 
-const code =
-document
-.getElementById("collegeCode")
-.value
-.trim()
-.toUpperCase();
+    const code =
+    document
+    .getElementById(
+        "collegeCode"
+    )
+    .value
+    .trim()
+    .toUpperCase();
 
 
-const city =
-document
-.getElementById("collegeCity")
-.value
-.trim();
+    const city =
+    document
+    .getElementById(
+        "collegeCity"
+    )
+    .value
+    .trim();
 
 
-const state =
-document
-.getElementById("collegeState")
-.value
-.trim();
+    const state =
+    document
+    .getElementById(
+        "collegeState"
+    )
+    .value
+    .trim();
 
 
-const message =
-document.getElementById(
-"adminMessage"
-);
+    const message =
+    document.getElementById(
+        "adminMessage"
+    );
 
 
-if(!name || !code){
+    if(!name || !code){
 
-message.textContent =
-"College name and code are required.";
+        message.textContent =
+        "College name and code are required.";
 
-return;
+        return;
 
-}
-
-
-message.textContent =
-"Adding college...";
+    }
 
 
-const {
-error
-} =
-await client
-.from("colleges")
-.insert({
-
-college_name:name,
-
-college_code:code,
-
-city:city || null,
-
-state:state || null,
-
-country:"India"
-
-});
+    message.textContent =
+    "Adding college...";
 
 
-if(error){
+    const {
+        error
+    } =
+    await client
+    .from("colleges")
+    .insert({
 
-console.error(error);
+        college_name:name,
 
-message.textContent =
-"Error: " +
-error.message;
+        college_code:code,
 
-return;
+        city:city || null,
 
-}
+        state:state || null,
 
+        country:"India"
 
-message.textContent =
-"College added successfully! 🏆";
-
-
-document.getElementById(
-"collegeName"
-).value="";
+    });
 
 
-document.getElementById(
-"collegeCode"
-).value="";
+    if(error){
+
+        console.error(error);
+
+        message.textContent =
+        "Error: " +
+        error.message;
+
+        return;
+
+    }
 
 
-document.getElementById(
-"collegeCity"
-).value="";
+    message.textContent =
+    "College added successfully! 🏆";
 
 
-document.getElementById(
-"collegeState"
-).value="";
+    document.getElementById(
+        "collegeName"
+    ).value = "";
 
 
-await loadAdminStats();
+    document.getElementById(
+        "collegeCode"
+    ).value = "";
 
-await loadAdminColleges();
+
+    document.getElementById(
+        "collegeCity"
+    ).value = "";
+
+
+    document.getElementById(
+        "collegeState"
+    ).value = "";
+
+
+    await loadAdminStats();
+
+    await loadAdminColleges();
 
 }
 
@@ -4396,126 +3930,126 @@ await loadAdminColleges();
 
 async function viewCollege(collegeId){
 
-selectedCollegeId =
-collegeId;
+    selectedCollegeId =
+    collegeId;
 
 
-const {
-data:college,
-error
-} =
-await client
-.from("colleges")
-.select(`
-id,
-college_name,
-college_code,
-city,
-state
-`)
-.eq(
-"id",
-collegeId
-)
-.single();
+    const {
+        data:college,
+        error
+    } =
+    await client
+    .from("colleges")
+    .select(`
+        id,
+        college_name,
+        college_code,
+        city,
+        state
+    `)
+    .eq(
+        "id",
+        collegeId
+    )
+    .single();
 
 
-if(error){
+    if(error){
 
-console.error(error);
+        console.error(error);
 
-alert(
-"Unable to load college."
-);
+        alert(
+            "Unable to load college."
+        );
 
-return;
+        return;
 
-}
-
-
-document
-.getElementById(
-"manageCollegeName"
-)
-.textContent =
-college.college_name;
+    }
 
 
-document
-.getElementById(
-"manageCollegeCode"
-)
-.textContent =
-college.college_code || "-";
+    document
+    .getElementById(
+        "manageCollegeName"
+    )
+    .textContent =
+    college.college_name;
 
 
-document
-.getElementById(
-"manageCollegeCity"
-)
-.textContent =
-college.city || "-";
+    document
+    .getElementById(
+        "manageCollegeCode"
+    )
+    .textContent =
+    college.college_code || "-";
 
 
-document
-.getElementById(
-"manageCollegeState"
-)
-.textContent =
-college.state || "-";
+    document
+    .getElementById(
+        "manageCollegeCity"
+    )
+    .textContent =
+    college.city || "-";
 
 
-document
-.getElementById(
-"manageCollegeLocation"
-)
-.textContent =
-(college.city || "") +
-(
-college.state
-? ", " + college.state
-: ""
-);
+    document
+    .getElementById(
+        "manageCollegeState"
+    )
+    .textContent =
+    college.state || "-";
 
 
-document
-.getElementById(
-"editCollegeName"
-)
-.value =
-college.college_name || "";
+    document
+    .getElementById(
+        "manageCollegeLocation"
+    )
+    .textContent =
+    (college.city || "") +
+    (
+        college.state
+        ? ", " + college.state
+        : ""
+    );
 
 
-document
-.getElementById(
-"editCollegeCode"
-)
-.value =
-college.college_code || "";
+    document
+    .getElementById(
+        "editCollegeName"
+    )
+    .value =
+    college.college_name || "";
 
 
-document
-.getElementById(
-"editCollegeCity"
-)
-.value =
-college.city || "";
+    document
+    .getElementById(
+        "editCollegeCode"
+    )
+    .value =
+    college.college_code || "";
 
 
-document
-.getElementById(
-"editCollegeState"
-)
-.value =
-college.state || "";
+    document
+    .getElementById(
+        "editCollegeCity"
+    )
+    .value =
+    college.city || "";
 
 
-await loadCollegeManagementCounts(
-collegeId
-);
+    document
+    .getElementById(
+        "editCollegeState"
+    )
+    .value =
+    college.state || "";
 
 
-showOnlyCollegeManagement();
+    await loadCollegeManagementCounts(
+        collegeId
+    );
+
+
+    showOnlyCollegeManagement();
 
 }
 
@@ -4525,93 +4059,93 @@ showOnlyCollegeManagement();
 ===================================================== */
 
 async function loadCollegeManagementCounts(
-collegeId
+    collegeId
 ){
 
-const {
-count:admins
-} =
-await client
-.from("college_admins")
-.select(
-"id",
-{
-count:"exact",
-head:true
-}
-)
-.eq(
-"college_id",
-collegeId
-);
+    const {
+        count:admins
+    } =
+    await client
+    .from("college_admins")
+    .select(
+        "id",
+        {
+            count:"exact",
+            head:true
+        }
+    )
+    .eq(
+        "college_id",
+        collegeId
+    );
 
 
-document
-.getElementById(
-"manageAdminCount"
-)
-.textContent =
-admins || 0;
+    document
+    .getElementById(
+        "manageAdminCount"
+    )
+    .textContent =
+    admins || 0;
 
 
-const {
-count:students
-} =
-await client
-.from("college_memberships")
-.select(
-"id",
-{
-count:"exact",
-head:true
-}
-)
-.eq(
-"college_id",
-collegeId
-)
-.eq(
-"is_active",
-true
-);
+    const {
+        count:students
+    } =
+    await client
+    .from("college_memberships")
+    .select(
+        "id",
+        {
+            count:"exact",
+            head:true
+        }
+    )
+    .eq(
+        "college_id",
+        collegeId
+    )
+    .eq(
+        "is_active",
+        true
+    );
 
 
-document
-.getElementById(
-"manageStudentCount"
-)
-.textContent =
-students || 0;
+    document
+    .getElementById(
+        "manageStudentCount"
+    )
+    .textContent =
+    students || 0;
 
 
-const {
-count:requests
-} =
-await client
-.from("college_join_requests")
-.select(
-"id",
-{
-count:"exact",
-head:true
-}
-)
-.eq(
-"college_id",
-collegeId
-)
-.eq(
-"status",
-"pending"
-);
+    const {
+        count:requests
+    } =
+    await client
+    .from("college_join_requests")
+    .select(
+        "id",
+        {
+            count:"exact",
+            head:true
+        }
+    )
+    .eq(
+        "college_id",
+        collegeId
+    )
+    .eq(
+        "status",
+        "pending"
+    );
 
 
-document
-.getElementById(
-"manageRequestCount"
-)
-.textContent =
-requests || 0;
+    document
+    .getElementById(
+        "manageRequestCount"
+    )
+    .textContent =
+    requests || 0;
 
 }
 
@@ -4622,134 +4156,134 @@ requests || 0;
 
 async function saveCollegeChanges(){
 
-if(!selectedCollegeId)
-return;
+    if(!selectedCollegeId)
+        return;
 
 
-const name =
-document
-.getElementById(
-"editCollegeName"
-)
-.value
-.trim();
+    const name =
+    document
+    .getElementById(
+        "editCollegeName"
+    )
+    .value
+    .trim();
 
 
-const code =
-document
-.getElementById(
-"editCollegeCode"
-)
-.value
-.trim()
-.toUpperCase();
+    const code =
+    document
+    .getElementById(
+        "editCollegeCode"
+    )
+    .value
+    .trim()
+    .toUpperCase();
 
 
-const city =
-document
-.getElementById(
-"editCollegeCity"
-)
-.value
-.trim();
+    const city =
+    document
+    .getElementById(
+        "editCollegeCity"
+    )
+    .value
+    .trim();
 
 
-const state =
-document
-.getElementById(
-"editCollegeState"
-)
-.value
-.trim();
+    const state =
+    document
+    .getElementById(
+        "editCollegeState"
+    )
+    .value
+    .trim();
 
 
-const message =
-document.getElementById(
-"editMessage"
-);
+    const message =
+    document.getElementById(
+        "editMessage"
+    );
 
 
-if(!name || !code){
+    if(!name || !code){
 
-message.textContent =
-"College name and code are required.";
+        message.textContent =
+        "College name and code are required.";
 
-return;
+        return;
 
-}
-
-
-message.textContent =
-"Saving changes...";
+    }
 
 
-const {
-error
-} =
-await client
-.from("colleges")
-.update({
-
-college_name:name,
-
-college_code:code,
-
-city:city || null,
-
-state:state || null
-
-})
-.eq(
-"id",
-selectedCollegeId
-);
+    message.textContent =
+    "Saving changes...";
 
 
-if(error){
+    const {
+        error
+    } =
+    await client
+    .from("colleges")
+    .update({
 
-message.textContent =
-"Error: " +
-error.message;
+        college_name:name,
 
-return;
+        college_code:code,
 
-}
+        city:city || null,
 
+        state:state || null
 
-message.textContent =
-"College updated successfully! 🏆";
-
-
-document
-.getElementById(
-"manageCollegeName"
-)
-.textContent =
-name;
-
-
-document
-.getElementById(
-"manageCollegeCode"
-)
-.textContent =
-code;
+    })
+    .eq(
+        "id",
+        selectedCollegeId
+    );
 
 
-document
-.getElementById(
-"manageCollegeCity"
-)
-.textContent =
-city || "-";
+    if(error){
+
+        message.textContent =
+        "Error: " +
+        error.message;
+
+        return;
+
+    }
 
 
-document
-.getElementById(
-"manageCollegeState"
-)
-.textContent =
-state || "-";
+    message.textContent =
+    "College updated successfully! 🏆";
+
+
+    document
+    .getElementById(
+        "manageCollegeName"
+    )
+    .textContent =
+    name;
+
+
+    document
+    .getElementById(
+        "manageCollegeCode"
+    )
+    .textContent =
+    code;
+
+
+    document
+    .getElementById(
+        "manageCollegeCity"
+    )
+    .textContent =
+    city || "-";
+
+
+    document
+    .getElementById(
+        "manageCollegeState"
+    )
+    .textContent =
+    state || "-";
 
 }
 
@@ -4760,33 +4294,38 @@ state || "-";
 
 async function openAdmins(){
 
-if(!selectedCollegeId)
-return;
+    if(!selectedCollegeId)
+        return;
 
 
-const {
-data:college
-} =
-await client
-.from("colleges")
-.select("college_name")
-.eq("id",selectedCollegeId)
-.single();
+    const {
+        data:college
+    } =
+    await client
+    .from("colleges")
+    .select(
+        "college_name"
+    )
+    .eq(
+        "id",
+        selectedCollegeId
+    )
+    .single();
 
 
-document
-.getElementById(
-"adminsCollegeName"
-)
-.textContent =
-college
-? college.college_name
-: "College";
+    document
+    .getElementById(
+        "adminsCollegeName"
+    )
+    .textContent =
+    college
+    ? college.college_name
+    : "College";
 
 
-await loadAdmins();
+    await loadAdmins();
 
-showOnlyAdmins();
+    showOnlyAdmins();
 
 }
 
@@ -4797,136 +4336,132 @@ showOnlyAdmins();
 
 async function loadAdmins(){
 
-const {
-data,
-error
-} =
-await client
-.from("college_admins")
-.select(`
-id,
-user_id,
-created_at,
-profiles!college_admins_user_id_fkey (
-full_name,
-inter_rivalry_id
-)
-`)
-.eq(
-"college_id",
-selectedCollegeId
-)
-.order(
-"created_at",
-{
-ascending:false
-}
-);
+    const {
+        data,
+        error
+    } =
+    await client
+    .from("college_admins")
+    .select(`
+        id,
+        user_id,
+        created_at,
+        profiles!college_admins_user_id_fkey (
+            full_name,
+            inter_rivalry_id
+        )
+    `)
+    .eq(
+        "college_id",
+        selectedCollegeId
+    )
+    .order(
+        "created_at",
+        {
+            ascending:false
+        }
+    );
 
 
-const list =
-document.getElementById(
-"adminsList"
-);
-
-list.innerHTML = "";
+    const list =
+    document.getElementById(
+        "adminsList"
+    );
 
 
-if(error){
-
-console.error(error);
-
-list.innerHTML =
-`
-<div class="empty-box">
-Unable to load admins.<br>
-${escapeHTML(error.message)}
-</div>
-`;
-
-return;
-
-}
+    list.innerHTML = "";
 
 
-if(!data || data.length === 0){
+    if(error){
 
-list.innerHTML =
-`
-<div class="empty-box">
-No college admins assigned yet.
-</div>
-`;
+        console.error(error);
 
-return;
+        list.innerHTML =
+        `
+        <div class="empty-box">
+            Unable to load admins.<br>
+            ${escapeHTML(error.message)}
+        </div>
+        `;
 
-}
+        return;
 
-
-data.forEach(
-admin => {
-
-const card =
-document.createElement("div");
-
-card.className =
-"admin-card";
+    }
 
 
-const profile =
-admin.profiles;
+    if(!data || data.length === 0){
+
+        list.innerHTML =
+        `
+        <div class="empty-box">
+            No college admins assigned yet.
+        </div>
+        `;
+
+        return;
+
+    }
 
 
-const name =
-profile
-? profile.full_name
-: "Unknown User";
+    data.forEach(
+        admin => {
+
+            const card =
+            document.createElement("div");
+
+            card.className =
+            "admin-card";
 
 
-const rivalryId =
-profile
-? profile.inter_rivalry_id
-: "Unknown";
+            const profile =
+            admin.profiles;
 
 
-card.innerHTML = `
-
-<h3>
-👤 ${escapeHTML(name)}
-</h3>
-
-
-<div class="admin-info">
-
-INTER RIVALRY ID:
-
-${escapeHTML(rivalryId)}
-
-<br>
-
-User ID:
-
-${escapeHTML(admin.user_id)}
-
-</div>
+            const name =
+            profile
+            ? profile.full_name
+            : "Unknown User";
 
 
-<br>
+            const rivalryId =
+            profile
+            ? profile.inter_rivalry_id
+            : "Unknown";
 
 
-<button
-class="small-btn danger-btn"
-onclick="removeCollegeAdmin('${admin.id}')">
+            card.innerHTML = `
 
-REMOVE ADMIN
+                <h3>
+                    👤 ${escapeHTML(name)}
+                </h3>
 
-</button>
+                <div class="admin-info">
 
-`;
+                    INTER RIVALRY ID:
+                    ${escapeHTML(rivalryId)}
 
-list.appendChild(card);
+                    <br>
 
-});
+                    User ID:
+                    ${escapeHTML(admin.user_id)}
+
+                </div>
+
+                <br>
+
+                <button
+                    class="small-btn danger-btn"
+                    onclick="removeCollegeAdmin('${admin.id}')">
+                    REMOVE ADMIN
+                </button>
+
+            `;
+
+
+            list.appendChild(card);
+
+        }
+    );
 
 }
 
@@ -4937,137 +4472,139 @@ list.appendChild(card);
 
 async function addCollegeAdmin(){
 
-const userId =
-document
-.getElementById(
-"adminUserId"
-)
-.value
-.trim();
+    const userId =
+    document
+    .getElementById(
+        "adminUserId"
+    )
+    .value
+    .trim();
 
 
-const message =
-document.getElementById(
-"adminManageMessage"
-);
+    const message =
+    document.getElementById(
+        "adminManageMessage"
+    );
 
 
-if(!userId){
+    if(!userId){
 
-message.textContent =
-"Enter the user's UUID.";
+        message.textContent =
+        "Enter the user's UUID.";
 
-return;
+        return;
 
-}
-
-
-message.textContent =
-"Checking user...";
+    }
 
 
-const {
-data:profile,
-error:profileError
-} =
-await client
-.from("profiles")
-.select(`
-id,
-full_name,
-role
-`)
-.eq(
-"id",
-userId
-)
-.single();
+    message.textContent =
+    "Checking user...";
 
 
-if(profileError || !profile){
-
-message.textContent =
-"User not found in profiles.";
-
-return;
-
-}
-
-
-const {
-error:roleError
-} =
-await client
-.from("profiles")
-.update({
-
-role:"college_admin",
-
-updated_at:new Date().toISOString()
-
-})
-.eq(
-"id",
-userId
-);
+    const {
+        data:profile,
+        error:profileError
+    } =
+    await client
+    .from("profiles")
+    .select(`
+        id,
+        full_name,
+        role
+    `)
+    .eq(
+        "id",
+        userId
+    )
+    .single();
 
 
-if(roleError){
+    if(profileError || !profile){
 
-message.textContent =
-"Could not update role: " +
-roleError.message;
+        message.textContent =
+        "User not found in profiles.";
 
-return;
+        return;
 
-}
-
-
-const {
-error
-} =
-await client
-.from("college_admins")
-.insert({
-
-college_id:
-selectedCollegeId,
-
-user_id:
-userId
-
-});
+    }
 
 
-if(error){
+    const {
+        error:roleError
+    } =
+    await client
+    .from("profiles")
+    .update({
 
-console.error(error);
+        role:"college_admin",
 
-message.textContent =
-"Could not add admin: " +
-error.message;
+        updated_at:
+        new Date().toISOString()
 
-return;
-
-}
-
-
-message.textContent =
-"College admin added successfully! 🏆";
-
-
-document
-.getElementById(
-"adminUserId"
-)
-.value = "";
+    })
+    .eq(
+        "id",
+        userId
+    );
 
 
-await loadAdmins();
+    if(roleError){
 
-await loadCollegeManagementCounts(
-selectedCollegeId
-);
+        message.textContent =
+        "Could not update role: " +
+        roleError.message;
+
+        return;
+
+    }
+
+
+    const {
+        error
+    } =
+    await client
+    .from("college_admins")
+    .insert({
+
+        college_id:
+        selectedCollegeId,
+
+        user_id:
+        userId
+
+    });
+
+
+    if(error){
+
+        console.error(error);
+
+        message.textContent =
+        "Could not add admin: " +
+        error.message;
+
+        return;
+
+    }
+
+
+    message.textContent =
+    "College admin added successfully! 🏆";
+
+
+    document
+    .getElementById(
+        "adminUserId"
+    )
+    .value = "";
+
+
+    await loadAdmins();
+
+
+    await loadCollegeManagementCounts(
+        selectedCollegeId
+    );
 
 }
 
@@ -5078,143 +4615,148 @@ selectedCollegeId
 
 async function removeCollegeAdmin(adminId){
 
-const confirmed =
-confirm(
-"Remove this college admin?"
-);
+    const confirmed =
+    confirm(
+        "Remove this college admin?"
+    );
 
 
-if(!confirmed)
-return;
+    if(!confirmed)
+        return;
 
 
-const {
-data:admin
-} =
-await client
-.from("college_admins")
-.select("user_id")
-.eq(
-"id",
-adminId
-)
-.single();
+    const {
+        data:admin
+    } =
+    await client
+    .from("college_admins")
+    .select(
+        "user_id"
+    )
+    .eq(
+        "id",
+        adminId
+    )
+    .single();
 
 
-if(!admin){
+    if(!admin){
 
-alert(
-"Admin not found."
-);
+        alert(
+            "Admin not found."
+        );
 
-return;
+        return;
 
-}
-
-
-const {
-error
-} =
-await client
-.from("college_admins")
-.delete()
-.eq(
-"id",
-adminId
-);
+    }
 
 
-if(error){
-
-alert(
-"Could not remove admin: " +
-error.message
-);
-
-return;
-
-}
-
-
-const {
-count
-} =
-await client
-.from("college_admins")
-.select(
-"id",
-{
-count:"exact",
-head:true
-}
-)
-.eq(
-"user_id",
-admin.user_id
-);
+    const {
+        error
+    } =
+    await client
+    .from("college_admins")
+    .delete()
+    .eq(
+        "id",
+        adminId
+    );
 
 
-if(!count || count === 0){
+    if(error){
 
-await client
-.from("profiles")
-.update({
+        alert(
+            "Could not remove admin: " +
+            error.message
+        );
 
-role:"student",
+        return;
 
-updated_at:
-new Date().toISOString()
-
-})
-.eq(
-"id",
-admin.user_id
-);
-
-}
+    }
 
 
-await loadAdmins();
+    const {
+        count
+    } =
+    await client
+    .from("college_admins")
+    .select(
+        "id",
+        {
+            count:"exact",
+            head:true
+        }
+    )
+    .eq(
+        "user_id",
+        admin.user_id
+    );
 
-await loadCollegeManagementCounts(
-selectedCollegeId
-);
+
+    if(!count || count === 0){
+
+        await client
+        .from("profiles")
+        .update({
+
+            role:"student",
+
+            updated_at:
+            new Date().toISOString()
+
+        })
+        .eq(
+            "id",
+            admin.user_id
+        );
+
+    }
+
+
+    await loadAdmins();
+
+
+    await loadCollegeManagementCounts(
+        selectedCollegeId
+    );
 
 }
 
 
 /* =====================================================
-   STUDENTS MODULE
+   STUDENTS
 ===================================================== */
 
 async function openStudents(){
 
-const {
-data:college
-} =
-await client
-.from("colleges")
-.select("college_name")
-.eq(
-"id",
-selectedCollegeId
-)
-.single();
+    const {
+        data:college
+    } =
+    await client
+    .from("colleges")
+    .select(
+        "college_name"
+    )
+    .eq(
+        "id",
+        selectedCollegeId
+    )
+    .single();
 
 
-document
-.getElementById(
-"studentsCollegeName"
-)
-.textContent =
-college
-? college.college_name
-: "College";
+    document
+    .getElementById(
+        "studentsCollegeName"
+    )
+    .textContent =
+    college
+    ? college.college_name
+    : "College";
 
 
-await loadStudents();
+    await loadStudents();
 
-showOnlyStudents();
+    showOnlyStudents();
 
 }
 
@@ -5225,187 +4767,191 @@ showOnlyStudents();
 
 async function loadStudents(){
 
-const list =
-document.getElementById(
-"studentsList"
-);
-
-list.innerHTML =
-"<div class='empty-box'>Loading students...</div>";
+    const list =
+    document.getElementById(
+        "studentsList"
+    );
 
 
-const {
-data,
-error
-} =
-await client
-.from("college_memberships")
-.select(`
-id,
-user_id,
-student_number,
-department,
-course,
-year_of_study,
-specialization,
-joined_at
-`)
-.eq(
-"college_id",
-selectedCollegeId
-)
-.eq(
-"is_active",
-true
-)
-.order(
-"joined_at",
-{
-ascending:false
-}
-);
+    list.innerHTML =
+    "<div class='empty-box'>Loading students...</div>";
 
 
-if(error){
-
-console.error(error);
-
-list.innerHTML =
-`
-<div class="empty-box">
-Unable to load students.<br>
-${escapeHTML(error.message)}
-</div>
-`;
-
-return;
-
-}
-
-
-if(!data || data.length === 0){
-
-list.innerHTML =
-`
-<div class="empty-box">
-No students have joined this college yet.
-</div>
-`;
-
-return;
-
-}
-
-
-list.innerHTML = "";
+    const {
+        data,
+        error
+    } =
+    await client
+    .from("college_memberships")
+    .select(`
+        id,
+        user_id,
+        student_number,
+        department,
+        course,
+        year_of_study,
+        specialization,
+        joined_at
+    `)
+    .eq(
+        "college_id",
+        selectedCollegeId
+    )
+    .eq(
+        "is_active",
+        true
+    )
+    .order(
+        "joined_at",
+        {
+            ascending:false
+        }
+    );
 
 
-for(const student of data){
+    if(error){
 
-let profile = null;
+        console.error(error);
 
+        list.innerHTML =
+        `
+        <div class="empty-box">
+            Unable to load students.<br>
+            ${escapeHTML(error.message)}
+        </div>
+        `;
 
-const result =
-await client
-.from("profiles")
-.select(`
-id,
-full_name,
-inter_rivalry_id
-`)
-.eq(
-"id",
-student.user_id
-)
-.maybeSingle();
+        return;
+
+    }
 
 
-profile =
-result.data;
+    if(!data || data.length === 0){
+
+        list.innerHTML =
+        `
+        <div class="empty-box">
+            No students have joined this college yet.
+        </div>
+        `;
+
+        return;
+
+    }
 
 
-const name =
-profile
-? profile.full_name
-: "Unknown Student";
+    list.innerHTML = "";
 
 
-const rivalryId =
-profile
-? profile.inter_rivalry_id
-: "Unknown";
+    for(
+        const student
+        of data
+    ){
+
+        const result =
+        await client
+        .from("profiles")
+        .select(`
+            id,
+            full_name,
+            inter_rivalry_id
+        `)
+        .eq(
+            "id",
+            student.user_id
+        )
+        .maybeSingle();
 
 
-const card =
-document.createElement("div");
-
-card.className =
-"student-card";
+        const profile =
+        result.data;
 
 
-card.innerHTML = `
-
-<h3>
-🎓 ${escapeHTML(name)}
-</h3>
-
-
-<div class="student-info">
-
-INTER RIVALRY ID:
-
-${escapeHTML(rivalryId)}
-
-<br>
-
-Course:
-
-${escapeHTML(student.course || "-")}
-
-<br>
-
-Year:
-
-${escapeHTML(student.year_of_study || "-")}
-
-<br>
-
-Department:
-
-${escapeHTML(student.department || "-")}
-
-<br>
-
-Specialization:
-
-${escapeHTML(student.specialization || "-")}
-
-<br>
-
-Student Number:
-
-${escapeHTML(student.student_number || "Not assigned")}
-
-</div>
+        const name =
+        profile
+        ? profile.full_name
+        : "Unknown Student";
 
 
-<div class="student-actions">
+        const rivalryId =
+        profile
+        ? profile.inter_rivalry_id
+        : "Unknown";
 
-<button
-class="small-btn"
-onclick="viewProfile('${student.user_id}')">
 
-VIEW PROFILE
+        const card =
+        document.createElement("div");
 
-</button>
 
-</div>
+        card.className =
+        "student-card";
 
-`;
 
-list.appendChild(card);
+        card.innerHTML = `
 
-}
+            <h3>
+                🎓 ${escapeHTML(name)}
+            </h3>
+
+            <div class="student-info">
+
+                INTER RIVALRY ID:
+                ${escapeHTML(rivalryId)}
+
+                <br>
+
+                Course:
+                ${escapeHTML(
+                    student.course || "-"
+                )}
+
+                <br>
+
+                Year:
+                ${escapeHTML(
+                    student.year_of_study || "-"
+                )}
+
+                <br>
+
+                Department:
+                ${escapeHTML(
+                    student.department || "-"
+                )}
+
+                <br>
+
+                Specialization:
+                ${escapeHTML(
+                    student.specialization || "-"
+                )}
+
+                <br>
+
+                Student Number:
+                ${escapeHTML(
+                    student.student_number ||
+                    "Not assigned"
+                )}
+
+            </div>
+
+            <div class="student-actions">
+
+                <button
+                    class="small-btn"
+                    onclick="viewProfile('${student.user_id}')">
+                    VIEW PROFILE
+                </button>
+
+            </div>
+
+        `;
+
+
+        list.appendChild(card);
+
+    }
 
 }
 
@@ -5416,32 +4962,34 @@ list.appendChild(card);
 
 async function openRequests(){
 
-const {
-data:college
-} =
-await client
-.from("colleges")
-.select("college_name")
-.eq(
-"id",
-selectedCollegeId
-)
-.single();
+    const {
+        data:college
+    } =
+    await client
+    .from("colleges")
+    .select(
+        "college_name"
+    )
+    .eq(
+        "id",
+        selectedCollegeId
+    )
+    .single();
 
 
-document
-.getElementById(
-"requestsCollegeName"
-)
-.textContent =
-college
-? college.college_name
-: "College";
+    document
+    .getElementById(
+        "requestsCollegeName"
+    )
+    .textContent =
+    college
+    ? college.college_name
+    : "College";
 
 
-await loadRequests();
+    await loadRequests();
 
-showOnlyRequests();
+    showOnlyRequests();
 
 }
 
@@ -5452,190 +5000,189 @@ showOnlyRequests();
 
 async function loadRequests(){
 
-const list =
-document.getElementById(
-"requestsList"
-);
-
-list.innerHTML =
-"<div class='empty-box'>Loading requests...</div>";
+    const list =
+    document.getElementById(
+        "requestsList"
+    );
 
 
-const {
-data,
-error
-} =
-await client
-.from("college_join_requests")
-.select(`
-id,
-student_id,
-department,
-course,
-year_of_study,
-specialization,
-status,
-created_at
-`)
-.eq(
-"college_id",
-selectedCollegeId
-)
-.eq(
-"status",
-"pending"
-)
-.order(
-"created_at",
-{
-ascending:true
-}
-);
+    list.innerHTML =
+    "<div class='empty-box'>Loading requests...</div>";
 
 
-if(error){
-
-console.error(error);
-
-list.innerHTML =
-`
-<div class="empty-box">
-Unable to load requests.<br>
-${escapeHTML(error.message)}
-</div>
-`;
-
-return;
-
-}
-
-
-if(!data || data.length === 0){
-
-list.innerHTML =
-`
-<div class="empty-box">
-🎉 No pending join requests.
-</div>
-`;
-
-return;
-
-}
-
-
-list.innerHTML = "";
+    const {
+        data,
+        error
+    } =
+    await client
+    .from("college_join_requests")
+    .select(`
+        id,
+        student_id,
+        department,
+        course,
+        year_of_study,
+        specialization,
+        status,
+        created_at
+    `)
+    .eq(
+        "college_id",
+        selectedCollegeId
+    )
+    .eq(
+        "status",
+        "pending"
+    )
+    .order(
+        "created_at",
+        {
+            ascending:true
+        }
+    );
 
 
-for(const request of data){
+    if(error){
 
-let profile = null;
+        console.error(error);
 
+        list.innerHTML =
+        `
+        <div class="empty-box">
+            Unable to load requests.<br>
+            ${escapeHTML(error.message)}
+        </div>
+        `;
 
-const result =
-await client
-.from("profiles")
-.select(`
-id,
-full_name,
-inter_rivalry_id
-`)
-.eq(
-"id",
-request.student_id
-)
-.maybeSingle();
+        return;
+
+    }
 
 
-profile =
-result.data;
+    if(!data || data.length === 0){
+
+        list.innerHTML =
+        `
+        <div class="empty-box">
+            🎉 No pending join requests.
+        </div>
+        `;
+
+        return;
+
+    }
 
 
-const name =
-profile
-? profile.full_name
-: "Unknown Student";
+    list.innerHTML = "";
 
 
-const rivalryId =
-profile
-? profile.inter_rivalry_id
-: "Unknown";
+    for(
+        const request
+        of data
+    ){
+
+        const result =
+        await client
+        .from("profiles")
+        .select(`
+            id,
+            full_name,
+            inter_rivalry_id
+        `)
+        .eq(
+            "id",
+            request.student_id
+        )
+        .maybeSingle();
 
 
-const card =
-document.createElement("div");
-
-card.className =
-"request-card";
+        const profile =
+        result.data;
 
 
-card.innerHTML = `
-
-<h3>
-📩 ${escapeHTML(name)}
-</h3>
-
-
-<div class="request-info">
-
-INTER RIVALRY ID:
-
-${escapeHTML(rivalryId)}
-
-<br>
-
-Course:
-
-${escapeHTML(request.course || "-")}
-
-<br>
-
-Year:
-
-${escapeHTML(request.year_of_study || "-")}
-
-<br>
-
-Department:
-
-${escapeHTML(request.department || "-")}
-
-<br>
-
-Specialization:
-
-${escapeHTML(request.specialization || "-")}
-
-</div>
+        const name =
+        profile
+        ? profile.full_name
+        : "Unknown Student";
 
 
-<div class="request-actions">
-
-<button
-class="small-btn approve-btn"
-onclick="reviewRequest('${request.id}',true)">
-
-✅ APPROVE
-
-</button>
+        const rivalryId =
+        profile
+        ? profile.inter_rivalry_id
+        : "Unknown";
 
 
-<button
-class="small-btn reject-btn"
-onclick="reviewRequest('${request.id}',false)">
+        const card =
+        document.createElement("div");
 
-❌ REJECT
 
-</button>
+        card.className =
+        "request-card";
 
-</div>
 
-`;
+        card.innerHTML = `
 
-list.appendChild(card);
+            <h3>
+                📩 ${escapeHTML(name)}
+            </h3>
 
-}
+            <div class="request-info">
+
+                INTER RIVALRY ID:
+                ${escapeHTML(rivalryId)}
+
+                <br>
+
+                Course:
+                ${escapeHTML(
+                    request.course || "-"
+                )}
+
+                <br>
+
+                Year:
+                ${escapeHTML(
+                    request.year_of_study || "-"
+                )}
+
+                <br>
+
+                Department:
+                ${escapeHTML(
+                    request.department || "-"
+                )}
+
+                <br>
+
+                Specialization:
+                ${escapeHTML(
+                    request.specialization || "-"
+                )}
+
+            </div>
+
+            <div class="request-actions">
+
+                <button
+                    class="small-btn approve-btn"
+                    onclick="reviewRequest('${request.id}',true)">
+                    ✅ APPROVE
+                </button>
+
+                <button
+                    class="small-btn reject-btn"
+                    onclick="reviewRequest('${request.id}',false)">
+                    ❌ REJECT
+                </button>
+
+            </div>
+
+        `;
+
+
+        list.appendChild(card);
+
+    }
 
 }
 
@@ -5645,68 +5192,72 @@ list.appendChild(card);
 ===================================================== */
 
 async function reviewRequest(
-requestId,
-approve
+    requestId,
+    approve
 ){
 
-const action =
-approve
-? "approve"
-: "reject";
+    const action =
+    approve
+    ? "approve"
+    : "reject";
 
 
-const confirmed =
-confirm(
-"Are you sure you want to " +
-action +
-" this request?"
-);
+    const confirmed =
+    confirm(
+        "Are you sure you want to " +
+        action +
+        " this request?"
+    );
 
 
-if(!confirmed)
-return;
+    if(!confirmed)
+        return;
 
 
-const {
-error
-} =
-await client.rpc(
-"review_college_join_request",
-{
-p_request_id:requestId,
-p_approve:approve
-}
-);
+    const {
+        error
+    } =
+    await client.rpc(
+        "review_college_join_request",
+        {
+            p_request_id:
+            requestId,
+
+            p_approve:
+            approve
+        }
+    );
 
 
-if(error){
+    if(error){
 
-console.error(error);
+        console.error(error);
 
-alert(
-"Could not " +
-action +
-" request:\n" +
-error.message
-);
+        alert(
+            "Could not " +
+            action +
+            " request:\n" +
+            error.message
+        );
 
-return;
+        return;
 
-}
-
-
-alert(
-approve
-? "Student approved successfully! 🎓"
-: "Request rejected."
-);
+    }
 
 
-await loadRequests();
+    alert(
+        approve
+        ? "Student approved successfully! 🎓"
+        : "Request rejected."
+    );
 
-await loadCollegeManagementCounts(
-selectedCollegeId
-);
+
+    await loadRequests();
+
+
+    await loadCollegeManagementCounts(
+        selectedCollegeId
+    );
 
 }
 
@@ -5716,67 +5267,67 @@ selectedCollegeId
 ===================================================== */
 
 async function loadCollegeAdminDashboard(
-user,
-profile
+    user,
+    profile
 ){
 
-const {
-data:admin,
-error
-} =
-await client
-.from("college_admins")
-.select(`
-college_id,
-colleges (
-college_name,
-college_code,
-city,
-state
-)
-`)
-.eq(
-"user_id",
-user.id
-)
-.maybeSingle();
+    const {
+        data:admin,
+        error
+    } =
+    await client
+    .from("college_admins")
+    .select(`
+        college_id,
+        colleges (
+            college_name,
+            college_code,
+            city,
+            state
+        )
+    `)
+    .eq(
+        "user_id",
+        user.id
+    )
+    .maybeSingle();
 
 
-if(error || !admin){
+    if(error || !admin){
 
-alert(
-"Your college admin account has not been assigned to a college yet."
-);
+        alert(
+            "Your college admin account has not been assigned to a college yet."
+        );
 
-showAuth();
+        showAuth();
 
-return;
+        return;
 
-}
-
-
-showOnlyAdmin();
+    }
 
 
-document
-.querySelector(
-"#adminDashboard .admin-header h1"
-)
-.textContent =
-"🏫 " +
-(
-admin.colleges
-? admin.colleges.college_name
-: "College Admin"
-);
+    showOnlyAdmin();
 
 
-document
-.querySelector(
-"#adminDashboard .admin-header p"
-)
-.textContent =
-"College Admin Panel";
+    document
+    .querySelector(
+        "#adminDashboard .admin-header h1"
+    )
+    .textContent =
+    "🏫 " +
+    (
+        admin.colleges
+        ? admin.colleges.college_name
+        : "College Admin"
+    );
+
+
+    document
+    .querySelector(
+        "#adminDashboard .admin-header p"
+    )
+    .textContent =
+    "College Admin Panel";
 
 }
 
@@ -5787,220 +5338,188 @@ document
 
 function backToAdmin(){
 
-selectedCollegeId =
-null;
+    selectedCollegeId =
+    null;
 
-loadAdminDashboard();
+    loadAdminDashboard();
 
 }
 
 
 function backToManagement(){
 
-showOnlyCollegeManagement();
+    showOnlyCollegeManagement();
 
 }
 
 
 function backToStudentDashboard(){
 
-selectedProfileId =
-null;
+    selectedProfileId =
+    null;
 
-loadStudentDashboardFromCurrentUser();
+    loadStudentDashboardFromCurrentUser();
 
 }
 
 
 async function loadStudentDashboardFromCurrentUser(){
 
-const {
-data:{
-user
-}
-} =
-await client.auth.getUser();
+    const {
+        data:{
+            user
+        }
+    } =
+    await client.auth.getUser();
 
 
-if(!user){
+    if(!user){
 
-showAuth();
+        showAuth();
 
-return;
+        return;
 
-}
-
-
-const {
-data:profile
-} =
-await client
-.from("profiles")
-.select(`
-id,
-full_name,
-inter_rivalry_id,
-role
-`)
-.eq(
-"id",
-user.id
-)
-.single();
+    }
 
 
-if(profile){
+    const {
+        data:profile
+    } =
+    await client
+    .from("profiles")
+    .select(`
+        id,
+        full_name,
+        inter_rivalry_id,
+        role
+    `)
+    .eq(
+        "id",
+        user.id
+    )
+    .single();
 
-await loadStudentDashboard(
-user,
-profile
-);
 
-}
+    if(profile){
+
+        await loadStudentDashboard(
+            user,
+            profile
+        );
+
+    }
 
 }
 
 
 function backToProfile(){
 
-showOnlyProfile();
+    showOnlyProfile();
 
 }
 
 
 /* =====================================================
-   SHOW STUDENT
+   SHOW FUNCTIONS
 ===================================================== */
 
 function showOnlyStudent(){
 
-hideAll();
+    hideAll();
 
-studentDashboard.classList.remove(
-"hidden"
-);
+    studentDashboard.classList.remove(
+        "hidden"
+    );
 
 }
 
-
-/* =====================================================
-   SHOW PROFILE
-===================================================== */
 
 function showOnlyProfile(){
 
-hideAll();
+    hideAll();
 
-profilePage.classList.remove(
-"hidden"
-);
+    profilePage.classList.remove(
+        "hidden"
+    );
 
 }
 
-
-/* =====================================================
-   SHOW CHALLENGE
-===================================================== */
 
 function showOnlyChallenge(){
 
-hideAll();
+    hideAll();
 
-challengePage.classList.remove(
-"hidden"
-);
+    challengePage.classList.remove(
+        "hidden"
+    );
 
 }
 
-
-/* =====================================================
-   SHOW CHALLENGES
-===================================================== */
 
 function showOnlyMyChallenges(){
 
-hideAll();
+    hideAll();
 
-myChallengesPage.classList.remove(
-"hidden"
-);
+    myChallengesPage.classList.remove(
+        "hidden"
+    );
 
-loadMyChallenges();
+    loadMyChallenges();
 
 }
 
-
-/* =====================================================
-   SHOW ADMIN
-===================================================== */
 
 function showOnlyAdmin(){
 
-hideAll();
+    hideAll();
 
-adminDashboard.classList.remove(
-"hidden"
-);
+    adminDashboard.classList.remove(
+        "hidden"
+    );
 
 }
 
-
-/* =====================================================
-   SHOW COLLEGE MANAGEMENT
-===================================================== */
 
 function showOnlyCollegeManagement(){
 
-hideAll();
+    hideAll();
 
-collegeManagement.classList.remove(
-"hidden"
-);
+    collegeManagement.classList.remove(
+        "hidden"
+    );
 
 }
 
-
-/* =====================================================
-   SHOW ADMINS
-===================================================== */
 
 function showOnlyAdmins(){
 
-hideAll();
+    hideAll();
 
-adminsPage.classList.remove(
-"hidden"
-);
+    adminsPage.classList.remove(
+        "hidden"
+    );
 
 }
 
-
-/* =====================================================
-   SHOW STUDENTS
-===================================================== */
 
 function showOnlyStudents(){
 
-hideAll();
+    hideAll();
 
-studentsPage.classList.remove(
-"hidden"
-);
+    studentsPage.classList.remove(
+        "hidden"
+    );
 
 }
 
 
-/* =====================================================
-   SHOW REQUESTS
-===================================================== */
-
 function showOnlyRequests(){
 
-hideAll();
+    hideAll();
 
-requestsPage.classList.remove(
-"hidden"
-);
+    requestsPage.classList.remove(
+        "hidden"
+    );
 
 }
 
@@ -6011,27 +5530,49 @@ requestsPage.classList.remove(
 
 function hideAll(){
 
-loadingScreen.classList.add("hidden");
+    loadingScreen.classList.add(
+        "hidden"
+    );
 
-authPage.classList.add("hidden");
+    authPage.classList.add(
+        "hidden"
+    );
 
-studentDashboard.classList.add("hidden");
+    studentDashboard.classList.add(
+        "hidden"
+    );
 
-profilePage.classList.add("hidden");
+    profilePage.classList.add(
+        "hidden"
+    );
 
-challengePage.classList.add("hidden");
+    challengePage.classList.add(
+        "hidden"
+    );
 
-myChallengesPage.classList.add("hidden");
+    myChallengesPage.classList.add(
+        "hidden"
+    );
 
-adminDashboard.classList.add("hidden");
+    adminDashboard.classList.add(
+        "hidden"
+    );
 
-collegeManagement.classList.add("hidden");
+    collegeManagement.classList.add(
+        "hidden"
+    );
 
-adminsPage.classList.add("hidden");
+    adminsPage.classList.add(
+        "hidden"
+    );
 
-studentsPage.classList.add("hidden");
+    studentsPage.classList.add(
+        "hidden"
+    );
 
-requestsPage.classList.add("hidden");
+    requestsPage.classList.add(
+        "hidden"
+    );
 
 }
 
@@ -6042,11 +5583,11 @@ requestsPage.classList.add("hidden");
 
 function showAuth(){
 
-hideAll();
+    hideAll();
 
-authPage.classList.remove(
-"hidden"
-);
+    authPage.classList.remove(
+        "hidden"
+    );
 
 }
 
@@ -6057,15 +5598,15 @@ authPage.classList.remove(
 
 async function logout(){
 
-await client.auth.signOut();
+    await client.auth.signOut();
 
-selectedCollegeId =
-null;
+    selectedCollegeId =
+    null;
 
-selectedProfileId =
-null;
+    selectedProfileId =
+    null;
 
-showAuth();
+    showAuth();
 
 }
 
@@ -6075,55 +5616,29 @@ showAuth();
 ===================================================== */
 
 client.auth.onAuthStateChange(
-async(event,session)=>{
+    async(
+        event,
+        session
+    )=>{
 
-/*
-   PASSWORD RECOVERY
+        if(session){
 
-   Supabase sends the user back to this page
-   with a recovery session.
+            setTimeout(
+                ()=>{
+                    loadUser();
+                },
+                0
+            );
 
-   We show the new-password screen instead
-   of automatically loading the dashboard.
-*/
+        }
+        else{
 
-if(event === "PASSWORD_RECOVERY"){
+            showAuth();
 
-setTimeout(
-()=>{
+        }
 
-showAuth();
-
-showResetPassword();
-
-},
-0
+    }
 );
-
-return;
-
-}
-
-
-if(session){
-
-setTimeout(
-()=>{
-
-loadUser();
-
-},
-0
-);
-
-}
-else{
-
-showAuth();
-
-}
-
-});
 
 
 /* =====================================================
@@ -6132,53 +5647,24 @@ showAuth();
 
 async function initialize(){
 
-/*
-   Check whether this page was opened from
-   a password recovery link.
-*/
-
-const hash =
-window.location.hash;
-
-
-const search =
-window.location.search;
+    const {
+        data:{
+            session
+        }
+    } =
+    await client.auth.getSession();
 
 
-const recoveryDetected =
-hash.includes("type=recovery") ||
-search.includes("type=recovery");
+    if(session){
 
+        await loadUser();
 
-if(recoveryDetected){
+    }
+    else{
 
-showAuth();
+        showAuth();
 
-showResetPassword();
-
-return;
-
-}
-
-
-const {
-data:{
-session
-}
-} =
-await client.auth.getSession();
-
-
-if(session){
-
-await loadUser();
-
-}
-else{
-
-showAuth();
-
-}
+    }
 
 }
 
@@ -6189,42 +5675,37 @@ showAuth();
 
 function escapeHTML(value){
 
-if(
-value === null ||
-value === undefined
-){
+    if(
+        value === null ||
+        value === undefined
+    ){
 
-return "";
+        return "";
 
-}
+    }
 
 
-return String(value)
-
-.replaceAll(
-"&",
-"&amp;"
-)
-
-.replaceAll(
-"<",
-"&lt;"
-)
-
-.replaceAll(
-">",
-"&gt;"
-)
-
-.replaceAll(
-'"',
-"&quot;"
-)
-
-.replaceAll(
-"'",
-"&#039;"
-);
+    return String(value)
+    .replaceAll(
+        "&",
+        "&amp;"
+    )
+    .replaceAll(
+        "<",
+        "&lt;"
+    )
+    .replaceAll(
+        ">",
+        "&gt;"
+    )
+    .replaceAll(
+        '"',
+        "&quot;"
+    )
+    .replaceAll(
+        "'",
+        "&#039;"
+    );
 
 }
 
@@ -6235,19 +5716,26 @@ return String(value)
 
 function formatDate(value){
 
-if(!value)
-return "-";
+    if(!value)
+        return "-";
 
 
-const date =
-new Date(value);
+    const date =
+    new Date(value);
 
 
-if(Number.isNaN(date.getTime()))
-return "-";
+    if(
+        Number.isNaN(
+            date.getTime()
+        )
+    ){
+
+        return "-";
+
+    }
 
 
-return date.toLocaleString();
+    return date.toLocaleString();
 
 }
 
