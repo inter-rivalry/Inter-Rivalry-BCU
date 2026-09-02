@@ -570,16 +570,6 @@ button{
     margin-bottom:12px;
 }
 
-.challenge-card h3{
-    margin-bottom:8px;
-}
-
-.challenge-info{
-    color:#999;
-    font-size:14px;
-    line-height:1.7;
-}
-
 /* ================= EMPTY ================= */
 
 .empty-box{
@@ -667,88 +657,236 @@ INTER RIVALRY
 Choose your battlefield.
 </div>
 
+
+<!-- ================= LOGIN ================= -->
+
 <div id="loginForm">
 
 <h2>Login</h2>
 
 <div class="input-group">
+
 <label>Email</label>
+
 <input
 id="loginEmail"
 type="email"
 placeholder="Enter your email"
 autocomplete="email">
+
 </div>
 
+
 <div class="input-group">
+
 <label>Password</label>
+
 <input
 id="loginPassword"
 type="password"
 placeholder="Enter your password"
 autocomplete="current-password">
+
 </div>
+
 
 <button
 class="primary-btn"
 onclick="login()">
+
 LOGIN
+
 </button>
+
+
+<!-- FORGOT PASSWORD -->
+
+<button
+class="secondary-btn"
+onclick="showForgotPassword()">
+
+FORGOT PASSWORD?
+
+</button>
+
 
 <button
 class="secondary-btn"
 onclick="showSignup()">
+
 CREATE ACCOUNT
+
 </button>
 
 </div>
 
+
+<!-- ================= SIGNUP ================= -->
 
 <div id="signupForm" class="hidden">
 
 <h2>Create Account</h2>
 
 <div class="input-group">
+
 <label>Full Name</label>
+
 <input
 id="signupName"
 type="text"
 placeholder="Enter your full name">
+
 </div>
 
+
 <div class="input-group">
+
 <label>Email</label>
+
 <input
 id="signupEmail"
 type="email"
 placeholder="Enter your email">
+
 </div>
 
+
 <div class="input-group">
+
 <label>Password</label>
+
 <input
 id="signupPassword"
 type="password"
 placeholder="Create a password">
+
 </div>
+
 
 <button
 class="primary-btn"
 onclick="signup()">
+
 CREATE ACCOUNT
+
 </button>
+
 
 <button
 class="secondary-btn"
 onclick="showLogin()">
+
 BACK TO LOGIN
+
 </button>
 
 </div>
 
-<div id="authMessage" class="message"></div>
+
+<!-- ================= FORGOT PASSWORD ================= -->
+
+<div id="forgotPasswordForm" class="hidden">
+
+<h2>Reset Password</h2>
+
+<p style="color:#888;margin-bottom:20px;line-height:1.5">
+
+Enter the email address connected to your INTER RIVALRY account.
+
+</p>
+
+
+<div class="input-group">
+
+<label>Email</label>
+
+<input
+id="forgotEmail"
+type="email"
+placeholder="Enter your email"
+autocomplete="email">
 
 </div>
+
+
+<button
+class="primary-btn"
+onclick="forgotPassword()">
+
+SEND RESET EMAIL
+
+</button>
+
+
+<button
+class="secondary-btn"
+onclick="showLogin()">
+
+BACK TO LOGIN
+
+</button>
+
+</div>
+
+
+<!-- ================= RESET PASSWORD ================= -->
+
+<div id="resetPasswordForm" class="hidden">
+
+<h2>Set New Password</h2>
+
+<p style="color:#888;margin-bottom:20px;line-height:1.5">
+
+Create a new password for your INTER RIVALRY account.
+
+</p>
+
+
+<div class="input-group">
+
+<label>New Password</label>
+
+<input
+id="newPassword"
+type="password"
+placeholder="Enter new password"
+autocomplete="new-password">
+
+</div>
+
+
+<div class="input-group">
+
+<label>Confirm Password</label>
+
+<input
+id="confirmPassword"
+type="password"
+placeholder="Confirm new password"
+autocomplete="new-password">
+
+</div>
+
+
+<button
+class="primary-btn"
+onclick="updatePassword()">
+
+UPDATE PASSWORD
+
+</button>
+
+</div>
+
+
+<div
+id="authMessage"
+class="message">
+
+</div>
+
+</div>
+
 </section>
 
 
@@ -773,7 +911,9 @@ STUDENT
 <button
 class="logout-btn"
 onclick="logout()">
+
 Logout
+
 </button>
 
 </div>
@@ -802,14 +942,21 @@ Your rivalry journey starts here.
 <h2>Your Profile</h2>
 
 <div class="profile-id">
+
 INTER RIVALRY ID:
-<span id="rivalryId">Loading...</span>
+<span id="rivalryId">
+Loading...
+</span>
+
 </div>
+
 
 <div
 class="college-status"
 id="collegeStatus">
+
 College: Not joined yet
+
 </div>
 
 </div>
@@ -826,6 +973,7 @@ Choose Your College
 <div
 id="collegeList"
 class="grid">
+
 </div>
 
 </div>
@@ -837,36 +985,91 @@ class="grid">
 Choose Your Battlefield
 </h2>
 
+
 <div class="category-grid">
 
 <div class="category-card">
-<div class="category-icon">🏏</div>
-<h3>Sports</h3>
-<p>Cricket • Football • Volleyball</p>
+
+<div class="category-icon">
+🏏
 </div>
 
-<div class="category-card">
-<div class="category-icon">🎓</div>
-<h3>Education</h3>
-<p>BCA • B.Com • BBA</p>
+<h3>
+Sports
+</h3>
+
+<p>
+Cricket • Football • Volleyball
+</p>
+
 </div>
 
-<div class="category-card">
-<div class="category-icon">🎭</div>
-<h3>Culture</h3>
-<p>Dance • Singing • Roast • Rap</p>
-</div>
 
 <div class="category-card">
-<div class="category-icon">🎮</div>
-<h3>Gaming</h3>
-<p>BGMI • Free Fire • EA Sports</p>
+
+<div class="category-icon">
+🎓
 </div>
 
+<h3>
+Education
+</h3>
+
+<p>
+BCA • B.Com • BBA
+</p>
+
+</div>
+
+
 <div class="category-card">
-<div class="category-icon">💻</div>
-<h3>Technology</h3>
-<p>Coding • Web Development</p>
+
+<div class="category-icon">
+🎭
+</div>
+
+<h3>
+Culture
+</h3>
+
+<p>
+Dance • Singing • Roast • Rap
+</p>
+
+</div>
+
+
+<div class="category-card">
+
+<div class="category-icon">
+🎮
+</div>
+
+<h3>
+Gaming
+</h3>
+
+<p>
+BGMI • Free Fire • EA Sports
+</p>
+
+</div>
+
+
+<div class="category-card">
+
+<div class="category-icon">
+💻
+</div>
+
+<h3>
+Technology
+</h3>
+
+<p>
+Coding • Web Development
+</p>
+
 </div>
 
 </div>
@@ -886,8 +1089,11 @@ Choose Your Battlefield
 
 
 <div class="empty-rank">
+
 No skill ranks yet.<br>
+
 Participate in a skill to begin your ranking journey.
+
 </div>
 
 </main>
@@ -916,19 +1122,24 @@ RIVAL PROFILE
 <button
 class="logout-btn"
 onclick="logout()">
+
 Logout
+
 </button>
 
 </div>
 
 </nav>
 
+
 <main class="container">
 
 <button
 class="back-btn"
 onclick="backToStudentDashboard()">
+
 ← BACK
+
 </button>
 
 
@@ -938,26 +1149,34 @@ onclick="backToStudentDashboard()">
 👤
 </div>
 
+
 <h1 id="viewProfileName">
 User
 </h1>
+
 
 <p id="viewProfileRivalry">
 IR-XXXX-XXXX
 </p>
 
+
 <div
 id="viewProfileCollege"
 style="margin-top:10px;color:#777">
+
 College
+
 </div>
+
 
 <div style="margin-top:20px">
 
 <button
 class="small-btn challenge-btn"
 onclick="openChallengePage()">
+
 ⚔️ CHALLENGE
+
 </button>
 
 </div>
@@ -974,6 +1193,7 @@ onclick="openChallengePage()">
 <div
 id="viewProfileSkills"
 style="margin-top:15px">
+
 </div>
 
 </div>
@@ -1004,19 +1224,24 @@ CHALLENGE
 <button
 class="logout-btn"
 onclick="logout()">
+
 Logout
+
 </button>
 
 </div>
 
 </nav>
 
+
 <main class="container">
 
 <button
 class="back-btn"
 onclick="backToProfile()">
+
 ← BACK
+
 </button>
 
 
@@ -1048,7 +1273,9 @@ User
 <span
 id="challengeOpponentId"
 style="color:#777">
+
 IR-XXXX-XXXX
+
 </span>
 
 </div>
@@ -1062,6 +1289,7 @@ Choose Skill
 
 <br>
 
+
 <div class="input-group">
 
 <label>
@@ -1069,9 +1297,11 @@ Skill
 </label>
 
 <select id="challengeSkill">
+
 <option value="">
 Loading skills...
 </option>
+
 </select>
 
 </div>
@@ -1087,6 +1317,7 @@ Challenge Title
 id="challengeTitle"
 type="text"
 placeholder="Example: BCA Coding Battle">
+
 </div>
 
 
@@ -1112,6 +1343,7 @@ Start Time
 <input
 id="challengeStart"
 type="datetime-local">
+
 </div>
 
 
@@ -1124,18 +1356,23 @@ End Time
 <input
 id="challengeEnd"
 type="datetime-local">
+
 </div>
 
 
 <button
 class="primary-btn"
 onclick="sendChallenge()">
+
 ⚔️ SEND CHALLENGE
+
 </button>
+
 
 <div
 id="challengeMessage"
 class="message">
+
 </div>
 
 </div>
@@ -1166,12 +1403,15 @@ CHALLENGES
 <button
 class="logout-btn"
 onclick="logout()">
+
 Logout
+
 </button>
 
 </div>
 
 </nav>
+
 
 <main class="container">
 
@@ -1179,9 +1419,13 @@ Logout
 ⚔️ My Challenges
 </h1>
 
-<p style="color:#888;margin-top:7px;margin-bottom:25px">
+<p
+style="color:#888;margin-top:7px;margin-bottom:25px">
+
 Challenges sent and received by you.
+
 </p>
+
 
 <div id="myChallengesList"></div>
 
@@ -1211,12 +1455,15 @@ SUPER ADMIN
 <button
 class="logout-btn"
 onclick="logout()">
+
 Logout
+
 </button>
 
 </div>
 
 </nav>
+
 
 <main class="container">
 
@@ -1244,7 +1491,9 @@ INTER RIVALRY platform management
 <div
 id="collegeCount"
 class="number">
+
 0
+
 </div>
 
 <div class="label">
@@ -1259,7 +1508,9 @@ Colleges
 <div
 id="requestCount"
 class="number">
+
 0
+
 </div>
 
 <div class="label">
@@ -1274,7 +1525,9 @@ Pending Requests
 <div
 id="adminCount"
 class="number">
+
 0
+
 </div>
 
 <div class="label">
@@ -1296,51 +1549,76 @@ College Admins
 
 <br>
 
+
 <div class="input-group">
-<label>College Name</label>
+
+<label>
+College Name
+</label>
 
 <input
 id="collegeName"
 type="text"
 placeholder="Example: Bengaluru City University">
+
 </div>
 
+
 <div class="input-group">
-<label>College Code</label>
+
+<label>
+College Code
+</label>
 
 <input
 id="collegeCode"
 type="text"
 placeholder="Example: BCU">
+
 </div>
 
+
 <div class="input-group">
-<label>City</label>
+
+<label>
+City
+</label>
 
 <input
 id="collegeCity"
 type="text"
 placeholder="Example: Bengaluru">
+
 </div>
 
+
 <div class="input-group">
-<label>State</label>
+
+<label>
+State
+</label>
 
 <input
 id="collegeState"
 type="text"
 placeholder="Example: Karnataka">
+
 </div>
+
 
 <button
 class="primary-btn"
 onclick="addCollege()">
+
 + ADD COLLEGE
+
 </button>
+
 
 <div
 id="adminMessage"
 class="message">
+
 </div>
 
 </div>
@@ -1350,12 +1628,15 @@ class="message">
 🏫 Colleges
 </h2>
 
+
 <div
 id="adminCollegeList"
 class="grid">
+
 </div>
 
 </main>
+
 </section>
 
 
@@ -1380,7 +1661,9 @@ SUPER ADMIN
 <button
 class="logout-btn"
 onclick="logout()">
+
 Logout
+
 </button>
 
 </div>
@@ -1393,18 +1676,24 @@ Logout
 <button
 class="back-btn"
 onclick="backToAdmin()">
+
 ← BACK TO DASHBOARD
+
 </button>
 
 
 <div class="management-header">
 
 <h1>
+
 🏫
+
 <span id="manageCollegeName">
 College
 </span>
+
 </h1>
+
 
 <p id="manageCollegeLocation">
 Loading...
@@ -1419,19 +1708,37 @@ Loading...
 College Information
 </h2>
 
+
 <p>
+
 College Code:
-<strong id="manageCollegeCode">-</strong>
+
+<strong id="manageCollegeCode">
+-
+</strong>
+
 </p>
 
+
 <p>
+
 City:
-<span id="manageCollegeCity">-</span>
+
+<span id="manageCollegeCity">
+-
+</span>
+
 </p>
 
+
 <p>
+
 State:
-<span id="manageCollegeState">-</span>
+
+<span id="manageCollegeState">
+-
+</span>
+
 </p>
 
 </div>
@@ -1448,7 +1755,9 @@ State:
 <div
 id="manageAdminCount"
 class="count">
+
 0
+
 </div>
 
 <div class="label">
@@ -1458,7 +1767,9 @@ College Admins
 <button
 class="small-btn"
 onclick="openAdmins()">
+
 MANAGE ADMINS
+
 </button>
 
 </div>
@@ -1473,7 +1784,9 @@ MANAGE ADMINS
 <div
 id="manageStudentCount"
 class="count">
+
 0
+
 </div>
 
 <div class="label">
@@ -1483,7 +1796,9 @@ Students
 <button
 class="small-btn"
 onclick="openStudents()">
+
 VIEW STUDENTS
+
 </button>
 
 </div>
@@ -1498,7 +1813,9 @@ VIEW STUDENTS
 <div
 id="manageRequestCount"
 class="count">
+
 0
+
 </div>
 
 <div class="label">
@@ -1508,7 +1825,9 @@ Join Requests
 <button
 class="small-btn"
 onclick="openRequests()">
+
 VIEW REQUESTS
+
 </button>
 
 </div>
@@ -1526,52 +1845,78 @@ VIEW REQUESTS
 
 <br>
 
+
 <div class="input-group">
-<label>College Name</label>
+
+<label>
+College Name
+</label>
 
 <input
 id="editCollegeName"
 type="text">
+
 </div>
 
+
 <div class="input-group">
-<label>College Code</label>
+
+<label>
+College Code
+</label>
 
 <input
 id="editCollegeCode"
 type="text">
+
 </div>
 
+
 <div class="input-group">
-<label>City</label>
+
+<label>
+City
+</label>
 
 <input
 id="editCollegeCity"
 type="text">
+
 </div>
 
+
 <div class="input-group">
-<label>State</label>
+
+<label>
+State
+</label>
 
 <input
 id="editCollegeState"
 type="text">
+
 </div>
+
 
 <button
 class="primary-btn"
 onclick="saveCollegeChanges()">
+
 SAVE CHANGES
+
 </button>
+
 
 <div
 id="editMessage"
 class="message">
+
 </div>
 
 </div>
 
 </main>
+
 </section>
 
 
@@ -1596,7 +1941,9 @@ SUPER ADMIN
 <button
 class="logout-btn"
 onclick="logout()">
+
 Logout
+
 </button>
 
 </div>
@@ -1609,17 +1956,23 @@ Logout
 <button
 class="back-btn"
 onclick="backToManagement()">
+
 ← BACK
+
 </button>
+
 
 <h1>
 👥 College Admins
 </h1>
 
+
 <p
 id="adminsCollegeName"
 style="color:#888;margin-top:8px;margin-bottom:25px">
+
 College
+
 </p>
 
 
@@ -1630,6 +1983,7 @@ College
 </h2>
 
 <br>
+
 
 <div class="input-group">
 
@@ -1644,15 +1998,20 @@ placeholder="Paste user's UUID">
 
 </div>
 
+
 <button
 class="primary-btn"
 onclick="addCollegeAdmin()">
+
 ADD ADMIN
+
 </button>
+
 
 <div
 id="adminManageMessage"
 class="message">
+
 </div>
 
 </div>
@@ -1662,9 +2021,11 @@ class="message">
 Current Admins
 </h2>
 
+
 <div id="adminsList"></div>
 
 </main>
+
 </section>
 
 
@@ -1689,7 +2050,9 @@ SUPER ADMIN
 <button
 class="logout-btn"
 onclick="logout()">
+
 Logout
+
 </button>
 
 </div>
@@ -1702,22 +2065,30 @@ Logout
 <button
 class="back-btn"
 onclick="backToManagement()">
+
 ← BACK
+
 </button>
+
 
 <h1>
 🎓 Students
 </h1>
 
+
 <p
 id="studentsCollegeName"
 style="color:#888;margin-top:8px;margin-bottom:25px">
+
 College
+
 </p>
+
 
 <div id="studentsList"></div>
 
 </main>
+
 </section>
 
 
@@ -1742,7 +2113,9 @@ SUPER ADMIN
 <button
 class="logout-btn"
 onclick="logout()">
+
 Logout
+
 </button>
 
 </div>
@@ -1755,22 +2128,30 @@ Logout
 <button
 class="back-btn"
 onclick="backToManagement()">
+
 ← BACK
+
 </button>
+
 
 <h1>
 📩 Join Requests
 </h1>
 
+
 <p
 id="requestsCollegeName"
 style="color:#888;margin-top:8px;margin-bottom:25px">
+
 College
+
 </p>
+
 
 <div id="requestsList"></div>
 
 </main>
+
 </section>
 
 
@@ -1866,6 +2247,16 @@ document
 .add("hidden");
 
 document
+.getElementById("forgotPasswordForm")
+.classList
+.add("hidden");
+
+document
+.getElementById("resetPasswordForm")
+.classList
+.add("hidden");
+
+document
 .getElementById("signupForm")
 .classList
 .remove("hidden");
@@ -1883,11 +2274,269 @@ document
 .add("hidden");
 
 document
+.getElementById("forgotPasswordForm")
+.classList
+.add("hidden");
+
+document
+.getElementById("resetPasswordForm")
+.classList
+.add("hidden");
+
+document
 .getElementById("loginForm")
 .classList
 .remove("hidden");
 
 showMessage("");
+
+}
+
+
+/* =====================================================
+   FORGOT PASSWORD FORM
+===================================================== */
+
+function showForgotPassword(){
+
+document
+.getElementById("loginForm")
+.classList
+.add("hidden");
+
+document
+.getElementById("signupForm")
+.classList
+.add("hidden");
+
+document
+.getElementById("resetPasswordForm")
+.classList
+.add("hidden");
+
+document
+.getElementById("forgotPasswordForm")
+.classList
+.remove("hidden");
+
+document
+.getElementById("forgotEmail")
+.value =
+document
+.getElementById("loginEmail")
+.value
+.trim();
+
+showMessage("");
+
+}
+
+
+/* =====================================================
+   FORGOT PASSWORD
+===================================================== */
+
+async function forgotPassword(){
+
+const email =
+document
+.getElementById("forgotEmail")
+.value
+.trim();
+
+
+if(!email){
+
+showMessage(
+"Enter your email first."
+);
+
+return;
+
+}
+
+
+showMessage(
+"Sending password reset email..."
+);
+
+
+const {
+error
+} =
+await client.auth.resetPasswordForEmail(
+email,
+{
+redirectTo:
+"https://inter-rivalry.github.io/Inter-Rivalry-BCU/"
+}
+);
+
+
+if(error){
+
+console.error(error);
+
+showMessage(
+error.message
+);
+
+return;
+
+}
+
+
+showMessage(
+"Password reset email sent! Check your inbox."
+);
+
+}
+
+
+/* =====================================================
+   RESET PASSWORD FORM
+===================================================== */
+
+function showResetPassword(){
+
+document
+.getElementById("loginForm")
+.classList
+.add("hidden");
+
+document
+.getElementById("signupForm")
+.classList
+.add("hidden");
+
+document
+.getElementById("forgotPasswordForm")
+.classList
+.add("hidden");
+
+document
+.getElementById("resetPasswordForm")
+.classList
+.remove("hidden");
+
+showMessage(
+"Enter your new password below."
+);
+
+}
+
+
+/* =====================================================
+   UPDATE PASSWORD
+===================================================== */
+
+async function updatePassword(){
+
+const newPassword =
+document
+.getElementById("newPassword")
+.value;
+
+const confirmPassword =
+document
+.getElementById("confirmPassword")
+.value;
+
+
+if(!newPassword || !confirmPassword){
+
+showMessage(
+"Please fill in both password fields."
+);
+
+return;
+
+}
+
+
+if(newPassword.length < 6){
+
+showMessage(
+"Password must be at least 6 characters."
+);
+
+return;
+
+}
+
+
+if(newPassword !== confirmPassword){
+
+showMessage(
+"Passwords do not match."
+);
+
+return;
+
+}
+
+
+showMessage(
+"Updating your password..."
+);
+
+
+const {
+error
+} =
+await client.auth.updateUser({
+
+password:newPassword
+
+});
+
+
+if(error){
+
+console.error(error);
+
+showMessage(
+"Could not update password: " +
+error.message
+);
+
+return;
+
+}
+
+
+showMessage(
+"Password updated successfully! You can now login with your new password."
+);
+
+
+document
+.getElementById("newPassword")
+.value = "";
+
+document
+.getElementById("confirmPassword")
+.value = "";
+
+
+/*
+   Give the user a moment to read the success message.
+*/
+
+setTimeout(
+()=>{
+
+client.auth.signOut();
+
+showLogin();
+
+showMessage(
+"Password updated successfully. Please login."
+);
+
+},
+1800
+);
 
 }
 
@@ -1904,11 +2553,13 @@ document
 .value
 .trim();
 
+
 const email =
 document
 .getElementById("signupEmail")
 .value
 .trim();
+
 
 const password =
 document
@@ -2005,6 +2656,7 @@ document
 .getElementById("loginEmail")
 .value
 .trim();
+
 
 const password =
 document
@@ -2148,6 +2800,7 @@ document
 .textContent =
 profile.full_name || "Student";
 
+
 document
 .getElementById("rivalryId")
 .textContent =
@@ -2203,6 +2856,7 @@ membership.colleges.college_name +
 membership.colleges.college_code +
 ")";
 
+
 document
 .getElementById(
 "studentCollegeSection"
@@ -2216,12 +2870,14 @@ else{
 collegeStatus.textContent =
 "College: Not joined yet";
 
+
 document
 .getElementById(
 "studentCollegeSection"
 )
 .classList
 .remove("hidden");
+
 
 await loadStudentColleges();
 
@@ -2324,7 +2980,9 @@ ${college.state
 <button
 class="small-btn success-btn"
 onclick="showJoinForm('${college.id}')">
+
 JOIN COLLEGE
+
 </button>
 
 `;
@@ -2488,6 +3146,7 @@ document.getElementById(
 "rivalsList"
 );
 
+
 if(!list)
 return;
 
@@ -2510,11 +3169,6 @@ return;
 
 }
 
-
-/*
-   Profiles are public according to your
-   current SELECT policy.
-*/
 
 const {
 data:profiles,
@@ -2600,7 +3254,9 @@ ${escapeHTML(profile.inter_rivalry_id || "-")}
 <button
 class="small-btn challenge-btn"
 onclick="viewProfile('${profile.id}')">
+
 VIEW PROFILE
+
 </button>
 
 </div>
@@ -2667,11 +3323,6 @@ document
 profile.inter_rivalry_id || "-";
 
 
-/*
-   Find college membership.
-   If RLS allows it, display college.
-*/
-
 const {
 data:membership
 } =
@@ -2722,11 +3373,6 @@ document.getElementById(
 skillsBox.innerHTML =
 "<div class='empty-box'>Loading skills...</div>";
 
-
-/*
-   At this stage skills are represented by
-   the categories/subcategories system.
-*/
 
 const {
 data:skills,
@@ -2786,11 +3432,13 @@ ${escapeHTML(skill.name)}
 </strong>
 
 <div style="color:#777;margin-top:5px">
+
 ${escapeHTML(
 skill.categories
 ? skill.categories.name
 : "Skill"
 )}
+
 </div>
 
 `;
@@ -3038,6 +3686,7 @@ document
 )
 .value;
 
+
 const title =
 document
 .getElementById(
@@ -3045,6 +3694,7 @@ document
 )
 .value
 .trim();
+
 
 const description =
 document
@@ -3054,12 +3704,14 @@ document
 .value
 .trim();
 
+
 const startValue =
 document
 .getElementById(
 "challengeStart"
 )
 .value;
+
 
 const endValue =
 document
@@ -3107,6 +3759,7 @@ return;
 
 const startDate =
 new Date(startValue);
+
 
 const endDate =
 new Date(endValue);
@@ -3176,6 +3829,7 @@ document
 "challengeTitle"
 )
 .value = "";
+
 
 document
 .getElementById(
@@ -3287,6 +3941,7 @@ for(const challenge of data){
 const isSender =
 challenge.challenger_id === user.id;
 
+
 const otherUserId =
 isSender
 ? challenge.opponent_id
@@ -3393,6 +4048,7 @@ ${challenge.description
 <strong>
 Description:
 </strong>
+
 ${escapeHTML(challenge.description)}
 `
 : ""}
@@ -3587,17 +4243,23 @@ Code: ${escapeHTML(college.college_code)}
 </div>
 
 <div class="college-location">
+
 ${escapeHTML(college.city || "")}
+
 ${college.state
 ? ", " +
 escapeHTML(college.state)
 : ""}
+
 </div>
+
 
 <button
 class="small-btn"
 onclick="viewCollege('${college.id}')">
+
 MANAGE
+
 </button>
 
 `;
@@ -3621,6 +4283,7 @@ document
 .value
 .trim();
 
+
 const code =
 document
 .getElementById("collegeCode")
@@ -3628,11 +4291,13 @@ document
 .trim()
 .toUpperCase();
 
+
 const city =
 document
 .getElementById("collegeCity")
 .value
 .trim();
+
 
 const state =
 document
@@ -3702,13 +4367,16 @@ document.getElementById(
 "collegeName"
 ).value="";
 
+
 document.getElementById(
 "collegeCode"
 ).value="";
 
+
 document.getElementById(
 "collegeCity"
 ).value="";
+
 
 document.getElementById(
 "collegeState"
@@ -3966,6 +4634,7 @@ document
 .value
 .trim();
 
+
 const code =
 document
 .getElementById(
@@ -3975,6 +4644,7 @@ document
 .trim()
 .toUpperCase();
 
+
 const city =
 document
 .getElementById(
@@ -3982,6 +4652,7 @@ document
 )
 .value
 .trim();
+
 
 const state =
 document
@@ -4211,6 +4882,7 @@ profile
 ? profile.full_name
 : "Unknown User";
 
+
 const rivalryId =
 profile
 ? profile.inter_rivalry_id
@@ -4223,24 +4895,31 @@ card.innerHTML = `
 👤 ${escapeHTML(name)}
 </h3>
 
+
 <div class="admin-info">
 
 INTER RIVALRY ID:
+
 ${escapeHTML(rivalryId)}
 
 <br>
 
 User ID:
+
 ${escapeHTML(admin.user_id)}
 
 </div>
 
+
 <br>
+
 
 <button
 class="small-btn danger-btn"
 onclick="removeCollegeAdmin('${admin.id}')">
+
 REMOVE ADMIN
+
 </button>
 
 `;
@@ -4265,6 +4944,7 @@ document
 )
 .value
 .trim();
+
 
 const message =
 document.getElementById(
@@ -4554,13 +5234,6 @@ list.innerHTML =
 "<div class='empty-box'>Loading students...</div>";
 
 
-/*
-   IMPORTANT:
-   We do NOT embed profiles here.
-   This avoids the relationship problem
-   you previously got from Supabase.
-*/
-
 const {
 data,
 error
@@ -4656,6 +5329,7 @@ profile
 ? profile.full_name
 : "Unknown Student";
 
+
 const rivalryId =
 profile
 ? profile.inter_rivalry_id
@@ -4675,44 +5349,54 @@ card.innerHTML = `
 🎓 ${escapeHTML(name)}
 </h3>
 
+
 <div class="student-info">
 
 INTER RIVALRY ID:
+
 ${escapeHTML(rivalryId)}
 
 <br>
 
 Course:
+
 ${escapeHTML(student.course || "-")}
 
 <br>
 
 Year:
+
 ${escapeHTML(student.year_of_study || "-")}
 
 <br>
 
 Department:
+
 ${escapeHTML(student.department || "-")}
 
 <br>
 
 Specialization:
+
 ${escapeHTML(student.specialization || "-")}
 
 <br>
 
 Student Number:
+
 ${escapeHTML(student.student_number || "Not assigned")}
 
 </div>
+
 
 <div class="student-actions">
 
 <button
 class="small-btn"
 onclick="viewProfile('${student.user_id}')">
+
 VIEW PROFILE
+
 </button>
 
 </div>
@@ -4776,17 +5460,6 @@ document.getElementById(
 list.innerHTML =
 "<div class='empty-box'>Loading requests...</div>";
 
-
-/*
-   IMPORTANT FIX:
-   Do NOT use:
-   profiles (...)
-   
-   Supabase found multiple relationships.
-   
-   We first load requests, then separately
-   load each profile.
-*/
 
 const {
 data,
@@ -4883,6 +5556,7 @@ profile
 ? profile.full_name
 : "Unknown Student";
 
+
 const rivalryId =
 profile
 ? profile.inter_rivalry_id
@@ -4902,45 +5576,57 @@ card.innerHTML = `
 📩 ${escapeHTML(name)}
 </h3>
 
+
 <div class="request-info">
 
 INTER RIVALRY ID:
+
 ${escapeHTML(rivalryId)}
 
 <br>
 
 Course:
+
 ${escapeHTML(request.course || "-")}
 
 <br>
 
 Year:
+
 ${escapeHTML(request.year_of_study || "-")}
 
 <br>
 
 Department:
+
 ${escapeHTML(request.department || "-")}
 
 <br>
 
 Specialization:
+
 ${escapeHTML(request.specialization || "-")}
 
 </div>
+
 
 <div class="request-actions">
 
 <button
 class="small-btn approve-btn"
 onclick="reviewRequest('${request.id}',true)">
+
 ✅ APPROVE
+
 </button>
+
 
 <button
 class="small-btn reject-btn"
 onclick="reviewRequest('${request.id}',false)">
+
 ❌ REJECT
+
 </button>
 
 </div>
@@ -5365,6 +6051,10 @@ authPage.classList.remove(
 }
 
 
+/* =====================================================
+   LOGOUT
+===================================================== */
+
 async function logout(){
 
 await client.auth.signOut();
@@ -5387,11 +6077,41 @@ showAuth();
 client.auth.onAuthStateChange(
 async(event,session)=>{
 
+/*
+   PASSWORD RECOVERY
+
+   Supabase sends the user back to this page
+   with a recovery session.
+
+   We show the new-password screen instead
+   of automatically loading the dashboard.
+*/
+
+if(event === "PASSWORD_RECOVERY"){
+
+setTimeout(
+()=>{
+
+showAuth();
+
+showResetPassword();
+
+},
+0
+);
+
+return;
+
+}
+
+
 if(session){
 
 setTimeout(
 ()=>{
+
 loadUser();
+
 },
 0
 );
@@ -5411,6 +6131,35 @@ showAuth();
 ===================================================== */
 
 async function initialize(){
+
+/*
+   Check whether this page was opened from
+   a password recovery link.
+*/
+
+const hash =
+window.location.hash;
+
+
+const search =
+window.location.search;
+
+
+const recoveryDetected =
+hash.includes("type=recovery") ||
+search.includes("type=recovery");
+
+
+if(recoveryDetected){
+
+showAuth();
+
+showResetPassword();
+
+return;
+
+}
+
 
 const {
 data:{
@@ -5449,12 +6198,33 @@ return "";
 
 }
 
+
 return String(value)
-.replaceAll("&","&amp;")
-.replaceAll("<","&lt;")
-.replaceAll(">","&gt;")
-.replaceAll('"',"&quot;")
-.replaceAll("'","&#039;");
+
+.replaceAll(
+"&",
+"&amp;"
+)
+
+.replaceAll(
+"<",
+"&lt;"
+)
+
+.replaceAll(
+">",
+"&gt;"
+)
+
+.replaceAll(
+'"',
+"&quot;"
+)
+
+.replaceAll(
+"'",
+"&#039;"
+);
 
 }
 
