@@ -3067,40 +3067,26 @@ async function openStudents(){
 LOAD STUDENTS
 ===================================================== */
 
-async function loadStudents(){
+ async function loadStudents() {
 
-    const list =
-        document.getElementById(
-            "studentsList"
-        );
-
-
-    list.innerHTML =
-    `
-    <div class="empty-box">
-        Loading students...
-    </div>
-    `;
-
-
-    if(!selectedCollegeId){
-
-        list.innerHTML =
-        `
-        <div class="empty-box">
-            No college selected.
-        </div>
-        `;
-
+    if (!selectedCollegeId) {
+        console.error("No college selected");
         return;
     }
 
+    const list = document.getElementById("studentsList");
 
+    list.innerHTML = `
+        <div class="empty-box">
+            Loading students...
+        </div>
+    `;
+
+    // Get memberships first
     const {
-        data:memberships,
-        error
-    } =
-    await client
+        data: memberships,
+        error: membershipError
+    } = await client
         .from("college_memberships")
         .select(`
             id,
@@ -3112,115 +3098,116 @@ async function loadStudents(){
             specialization,
             joined_at
         `)
-        .eq(
-            "college_id",
-            selectedCollegeId
-        )
-        .eq(
-            "is_active",
-            true
-        )
-        .order(
-            "joined_at",
-            {
-                ascending:false
-            }
+        .eq("college_id", selectedCollegeId)
+        .eq("is_active", true)
+        .order("joined_at", {
+            ascending: false
+        });
+
+    if (membershipError) {
+
+        console.error(
+            "Membership error:",
+            membershipError
         );
 
+        list.innerHTML = `
+            <div class="empty-box">
+                Unable to load students.<br><br>
+                ${escapeHTML(membershipError.message)}
+            </div>
+        `;
 
-    console.log(
-        "MEMBERSHIPS:",
-        memberships
+        return;
+    }
+
+    if (!memberships || memberships.length === 0) {
+
+        list.innerHTML = `
+            <div class="empty-box">
+                No students have joined this college yet.
+            </div>
+        `;
+
+        return;
+    }
+
+    // Get profiles separately
+    const userIds = memberships.map(
+        student => student.user_id
     );
 
+    const {
+        data: profiles,
+        error: profileError
+    } = await client
+        .from("profiles")
+        .select(`
+            id,
+            full_name,
+            inter_rivalry_id
+        `)
+        .in("id", userIds);
 
-    if(error){
+    if (profileError) {
 
-        list.innerHTML =
-        `
-        <div class="empty-box">
-            Unable to load students.<br><br>
-            ${escapeHTML(error.message)}
-        </div>
+        console.error(
+            "Profile error:",
+            profileError
+        );
+
+        list.innerHTML = `
+            <div class="empty-box">
+                Unable to load student profiles.<br><br>
+                ${escapeHTML(profileError.message)}
+            </div>
         `;
 
         return;
     }
 
+    // Match profiles with memberships
+    const profileMap = {};
 
-    if(
-        !memberships ||
-        memberships.length === 0
-    ){
+    (profiles || []).forEach(profile => {
 
-        list.innerHTML =
-        `
-        <div class="empty-box">
-            No students have joined this college yet.
-        </div>
-        `;
+        profileMap[profile.id] = profile;
 
-        return;
-    }
-
+    });
 
     list.innerHTML = "";
 
+    memberships.forEach(student => {
 
-    for(
-        const student
-        of memberships
-    ){
+        const profile =
+            profileMap[student.user_id];
 
-        const {
-            data:profile
-        } =
-        await client
-            .from("profiles")
-            .select(`
-                full_name,
-                inter_rivalry_id
-            `)
-            .eq(
-                "id",
-                student.user_id
-            )
-            .maybeSingle();
+        const name =
+            profile
+                ? profile.full_name
+                : "Unknown Student";
 
+        const rivalryId =
+            profile
+                ? profile.inter_rivalry_id
+                : "Unknown";
 
         const card =
-            document.createElement(
-                "div"
-            );
-
+            document.createElement("div");
 
         card.className =
             "student-card";
 
-
         card.innerHTML = `
 
             <h3>
-                🎓 ${escapeHTML(
-                    profile?.full_name ||
-                    "Unknown Student"
-                )}
+                🎓 ${escapeHTML(name)}
             </h3>
 
             <div class="student-info">
 
                 INTER RIVALRY ID:
-                ${escapeHTML(
-                    profile?.inter_rivalry_id ||
-                    "Not assigned"
-                )}
-
-                <br>
-
-                User ID:
-                ${escapeHTML(
-                    student.user_id
-                )}
+                ${escapeHTML(rivalryId)}
 
                 <br>
 
@@ -3233,11 +3220,7 @@ async function loadStudents(){
 
                 Year:
                 ${escapeHTML(
-                    student.year_of_study
-                    ? String(
-                        student.year_of_study
-                    )
-                    : "-"
+                    student.year_of_study || "-"
                 )}
 
                 <br>
@@ -3263,12 +3246,15 @@ async function loadStudents(){
                 )}
 
             </div>
+
         `;
 
-
         list.appendChild(card);
-    }
-}
+
+    });
+
+ }
+ 
 
 
 /* =====================================================
