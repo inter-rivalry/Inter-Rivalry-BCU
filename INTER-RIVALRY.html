@@ -1,0 +1,5520 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>INTER RIVALRY</title>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<style>
+
+*{
+    box-sizing:border-box;
+    margin:0;
+    padding:0;
+}
+
+body{
+    font-family:Arial,Helvetica,sans-serif;
+    background:#080808;
+    color:white;
+    min-height:100vh;
+}
+
+button,input,select,textarea{
+    font:inherit;
+}
+
+button{
+    cursor:pointer;
+}
+
+.hidden{
+    display:none!important;
+}
+
+/* ================= AUTH ================= */
+
+.auth-page{
+    min-height:100vh;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    padding:20px;
+}
+
+.auth-box{
+    width:100%;
+    max-width:450px;
+    background:#121212;
+    border:1px solid #292929;
+    border-radius:20px;
+    padding:32px;
+    box-shadow:0 20px 70px rgba(0,0,0,.5);
+}
+
+.logo{
+    text-align:center;
+    font-size:30px;
+    font-weight:900;
+    letter-spacing:4px;
+}
+
+.tagline{
+    text-align:center;
+    color:#8c8c8c;
+    margin-top:8px;
+    margin-bottom:30px;
+}
+
+.auth-box h2{
+    margin-bottom:20px;
+}
+
+.input-group{
+    margin-bottom:16px;
+}
+
+.input-group label{
+    display:block;
+    color:#aaa;
+    font-size:14px;
+    margin-bottom:7px;
+}
+
+.input-group input,
+.input-group select,
+.input-group textarea{
+    width:100%;
+    padding:14px;
+    background:#090909;
+    border:1px solid #303030;
+    border-radius:10px;
+    color:white;
+    outline:none;
+}
+
+.input-group textarea{
+    min-height:100px;
+    resize:vertical;
+}
+
+.input-group select option{
+    background:#111;
+}
+
+.primary-btn{
+    width:100%;
+    padding:14px;
+    border:none;
+    border-radius:10px;
+    background:white;
+    color:black;
+    font-weight:800;
+}
+
+.secondary-btn{
+    width:100%;
+    padding:13px;
+    border:1px solid #333;
+    border-radius:10px;
+    background:transparent;
+    color:white;
+    margin-top:10px;
+}
+
+.message{
+    text-align:center;
+    color:#aaa;
+    font-size:14px;
+    margin-top:16px;
+    line-height:1.5;
+}
+
+/* ================= NAVBAR ================= */
+
+.navbar{
+    min-height:70px;
+    padding:0 25px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    background:#0d0d0d;
+    border-bottom:1px solid #222;
+}
+
+.nav-logo{
+    font-size:20px;
+    font-weight:900;
+    letter-spacing:2px;
+}
+
+.nav-right{
+    display:flex;
+    align-items:center;
+    gap:12px;
+}
+
+.role-badge{
+    padding:7px 10px;
+    border:1px solid #333;
+    border-radius:8px;
+    font-size:12px;
+    color:#aaa;
+}
+
+.logout-btn{
+    padding:9px 15px;
+    border:1px solid #333;
+    background:transparent;
+    color:white;
+    border-radius:8px;
+}
+
+/* ================= CONTAINER ================= */
+
+.container{
+    width:100%;
+    max-width:1150px;
+    margin:auto;
+    padding:30px 20px;
+}
+
+.welcome{
+    margin-bottom:25px;
+}
+
+.welcome h1{
+    font-size:32px;
+    margin-bottom:7px;
+}
+
+.welcome p{
+    color:#888;
+}
+
+.section-title{
+    margin-bottom:16px;
+}
+
+/* ================= CARDS ================= */
+
+.profile-card,
+.admin-stat,
+.college-card,
+.management-card,
+.request-card,
+.student-card,
+.admin-card,
+.rival-card,
+.challenge-card{
+    background:#121212;
+    border:1px solid #292929;
+    border-radius:16px;
+    padding:23px;
+}
+
+.profile-card{
+    margin-bottom:28px;
+}
+
+.profile-card h2{
+    margin-bottom:10px;
+}
+
+.profile-id{
+    color:#999;
+}
+
+.profile-id span{
+    color:white;
+    font-weight:800;
+}
+
+.college-status{
+    margin-top:10px;
+    color:#888;
+    font-size:14px;
+}
+
+/* ================= GRIDS ================= */
+
+.grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+    gap:16px;
+}
+
+.category-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(210px,1fr));
+    gap:16px;
+}
+
+.management-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+    gap:16px;
+    margin-bottom:25px;
+}
+
+/* ================= CATEGORY ================= */
+
+.category-card{
+    background:#121212;
+    border:1px solid #292929;
+    border-radius:16px;
+    padding:22px;
+    transition:.2s ease;
+}
+
+.category-card:hover{
+    transform:translateY(-3px);
+    border-color:#555;
+}
+
+.category-icon{
+    font-size:32px;
+    margin-bottom:12px;
+}
+
+.category-card h3{
+    margin-bottom:7px;
+}
+
+.category-card p{
+    color:#888;
+    font-size:14px;
+    line-height:1.5;
+}
+
+/* ================= ADMIN ================= */
+
+.admin-header{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:25px;
+    flex-wrap:wrap;
+    gap:15px;
+}
+
+.admin-header h1{
+    font-size:30px;
+}
+
+.admin-header p{
+    color:#888;
+    margin-top:5px;
+}
+
+.admin-stat .number{
+    font-size:32px;
+    font-weight:900;
+    margin-bottom:5px;
+}
+
+.admin-stat .label{
+    color:#888;
+}
+
+.add-college-box{
+    margin-top:25px;
+    margin-bottom:25px;
+}
+
+.college-card h3{
+    margin-bottom:8px;
+}
+
+.college-code{
+    color:#888;
+    font-size:14px;
+    margin-bottom:10px;
+}
+
+.college-location{
+    color:#777;
+    font-size:13px;
+    margin-bottom:15px;
+}
+
+/* ================= BUTTONS ================= */
+
+.small-btn{
+    padding:9px 13px;
+    border:1px solid #333;
+    background:transparent;
+    color:white;
+    border-radius:8px;
+}
+
+.success-btn{
+    background:white;
+    color:black;
+    border-color:white;
+}
+
+.approve-btn{
+    background:white;
+    color:black;
+    border:none;
+}
+
+.reject-btn{
+    border-color:#555;
+}
+
+.danger-btn{
+    border-color:#555;
+}
+
+.challenge-btn{
+    background:white;
+    color:black;
+    border-color:white;
+    font-weight:800;
+}
+
+.back-btn{
+    margin-bottom:20px;
+    padding:10px 15px;
+    border:1px solid #333;
+    background:transparent;
+    color:white;
+    border-radius:9px;
+}
+
+/* ================= MANAGEMENT ================= */
+
+.management-header{
+    margin-bottom:25px;
+}
+
+.management-header h1{
+    font-size:30px;
+    margin-bottom:7px;
+}
+
+.management-header p{
+    color:#888;
+}
+
+.management-info{
+    margin-bottom:25px;
+}
+
+.management-info h2{
+    margin-bottom:10px;
+}
+
+.management-info p{
+    color:#888;
+    margin-top:7px;
+}
+
+.management-card{
+    text-align:center;
+}
+
+.management-card .icon{
+    font-size:32px;
+    margin-bottom:10px;
+}
+
+.management-card .count{
+    font-size:30px;
+    font-weight:900;
+    margin-bottom:5px;
+}
+
+.management-card .label{
+    color:#888;
+    margin-bottom:15px;
+}
+
+/* ================= REQUESTS ================= */
+
+.request-card{
+    margin-bottom:12px;
+}
+
+.request-card h3{
+    margin-bottom:8px;
+}
+
+.request-info{
+    color:#999;
+    font-size:14px;
+    line-height:1.7;
+}
+
+.request-actions{
+    display:flex;
+    gap:10px;
+    margin-top:15px;
+    flex-wrap:wrap;
+}
+
+/* ================= STUDENTS ================= */
+
+.student-card{
+    margin-bottom:12px;
+}
+
+.student-card h3{
+    margin-bottom:8px;
+}
+
+.student-info{
+    color:#999;
+    font-size:14px;
+    line-height:1.7;
+}
+
+.student-actions{
+    margin-top:15px;
+}
+
+/* ================= RIVALS ================= */
+
+.rival-card{
+    margin-bottom:12px;
+}
+
+.rival-card h3{
+    margin-bottom:7px;
+}
+
+.rival-info{
+    color:#999;
+    line-height:1.7;
+    font-size:14px;
+}
+
+.rival-actions{
+    margin-top:15px;
+}
+
+/* ================= PROFILE ================= */
+
+.profile-big{
+    text-align:center;
+    padding:30px;
+}
+
+.profile-avatar{
+    width:80px;
+    height:80px;
+    border-radius:50%;
+    background:#222;
+    border:1px solid #444;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    margin:0 auto 15px;
+    font-size:32px;
+}
+
+.profile-big h1{
+    margin-bottom:8px;
+}
+
+.profile-big p{
+    color:#888;
+}
+
+.skill-box{
+    margin-top:25px;
+}
+
+.skill-item{
+    background:#0e0e0e;
+    border:1px solid #282828;
+    border-radius:10px;
+    padding:14px;
+    margin-bottom:10px;
+}
+
+/* ================= CHALLENGE ================= */
+
+.challenge-header{
+    margin-bottom:20px;
+}
+
+.challenge-header h1{
+    font-size:30px;
+    margin-bottom:7px;
+}
+
+.challenge-header p{
+    color:#888;
+}
+
+.challenge-target{
+    background:#0e0e0e;
+    border:1px solid #292929;
+    padding:15px;
+    border-radius:12px;
+    margin-bottom:20px;
+}
+
+.challenge-card{
+    margin-bottom:12px;
+}
+
+.challenge-card h3{
+    margin-bottom:8px;
+}
+
+.challenge-info{
+    color:#999;
+    font-size:14px;
+    line-height:1.7;
+}
+
+/* ================= EMPTY ================= */
+
+.empty-box{
+    padding:30px;
+    text-align:center;
+    color:#777;
+    background:#101010;
+    border:1px solid #252525;
+    border-radius:14px;
+}
+
+.empty-rank{
+    margin-top:28px;
+    padding:20px;
+    background:#101010;
+    border:1px solid #252525;
+    border-radius:14px;
+    color:#888;
+    text-align:center;
+}
+
+/* ================= LOADING ================= */
+
+.loading{
+    min-height:100vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    color:#999;
+}
+
+/* ================= MOBILE ================= */
+
+@media(max-width:600px){
+
+    .navbar{
+        padding:0 15px;
+    }
+
+    .container{
+        padding:22px 15px;
+    }
+
+    .welcome h1{
+        font-size:26px;
+    }
+
+    .auth-box{
+        padding:24px;
+    }
+
+    .role-badge{
+        display:none;
+    }
+
+}
+
+
+
+/* ================= RIVALRY EXTENSION ================= */
+.action-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:15px}
+.action-row .small-btn{flex:1;min-width:110px}
+.accept-btn{background:white;color:black;border-color:white;font-weight:800}
+.result-btn{background:white;color:black;border-color:white;font-weight:800}
+.filter-row{display:grid;grid-template-columns:1fr 220px;gap:10px;margin-bottom:15px}
+.interest-category{margin-bottom:22px}
+.interest-category h3{margin-bottom:10px}
+.interest-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px}
+.interest-item{background:#0e0e0e;border:1px solid #282828;border-radius:10px;padding:12px;display:flex;align-items:center;gap:9px;color:#ddd}
+.interest-item input{accent-color:white}
+.stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:22px}
+.rival-stat{background:#121212;border:1px solid #292929;border-radius:14px;padding:18px;text-align:center}
+.rival-stat .num{font-size:28px;font-weight:900}
+.rival-stat .lbl{color:#888;font-size:13px;margin-top:4px}
+.status-pill{display:inline-block;padding:5px 9px;border:1px solid #333;border-radius:999px;font-size:12px;text-transform:uppercase;margin-top:7px}
+.status-pending{color:#ddd}.status-accepted{background:white;color:#000;border-color:white}.status-rejected{color:#999}.status-completed{background:#1b1b1b;color:white}
+.category-tag{display:inline-block;margin:4px 4px 0 0;padding:4px 8px;border:1px solid #333;border-radius:999px;color:#aaa;font-size:12px}
+@media(max-width:600px){.filter-row{grid-template-columns:1fr}.action-row .small-btn{flex:auto}}
+
+</style>
+</head>
+
+<body>
+
+<!-- =====================================================
+     LOADING
+===================================================== -->
+
+<div id="loadingScreen" class="loading">
+    Loading INTER RIVALRY...
+</div>
+
+
+<!-- =====================================================
+     AUTH
+===================================================== -->
+
+<section id="authPage" class="auth-page hidden">
+
+<div class="auth-box">
+
+<div class="logo">
+INTER RIVALRY
+</div>
+
+<div class="tagline">
+Choose your battlefield.
+</div>
+
+
+<!-- LOGIN -->
+
+<div id="loginForm">
+
+<h2>Login</h2>
+
+<div class="input-group">
+<label>Email</label>
+<input
+id="loginEmail"
+type="email"
+placeholder="Enter your email"
+autocomplete="email">
+</div>
+
+<div class="input-group">
+<label>Password</label>
+<input
+id="loginPassword"
+type="password"
+placeholder="Enter your password"
+autocomplete="current-password">
+</div>
+
+<button
+class="primary-btn"
+onclick="login()">
+LOGIN
+</button>
+
+<button
+class="secondary-btn"
+onclick="forgotPassword()">
+FORGOT PASSWORD?
+</button>
+
+<button
+class="secondary-btn"
+onclick="resendConfirmationEmail()">
+RESEND CONFIRMATION EMAIL
+</button>
+
+<button
+class="secondary-btn"
+onclick="showSignup()">
+CREATE ACCOUNT
+</button>
+
+</div>
+
+
+<!-- SIGNUP -->
+
+<div id="signupForm" class="hidden">
+
+<h2>Create Account</h2>
+
+<div class="input-group">
+<label>Full Name</label>
+<input
+id="signupName"
+type="text"
+placeholder="Enter your full name">
+</div>
+
+<div class="input-group">
+<label>Email</label>
+<input
+id="signupEmail"
+type="email"
+placeholder="Enter your email">
+</div>
+
+<div class="input-group">
+<label>Password</label>
+<input
+id="signupPassword"
+type="password"
+placeholder="Create a password">
+</div>
+
+<button
+class="primary-btn"
+onclick="signup()">
+CREATE ACCOUNT
+</button>
+
+<button
+class="secondary-btn"
+onclick="showLogin()">
+BACK TO LOGIN
+</button>
+
+</div>
+
+
+<div id="authMessage" class="message"></div>
+
+</div>
+</section>
+
+
+<!-- =====================================================
+     STUDENT DASHBOARD
+===================================================== -->
+
+<section id="studentDashboard" class="hidden">
+
+<nav class="navbar">
+
+<div class="nav-logo">
+INTER RIVALRY
+</div>
+
+<div class="nav-right">
+
+<div class="role-badge">
+STUDENT
+</div>
+
+<button
+class="logout-btn"
+onclick="logout()">
+Logout
+</button>
+
+</div>
+
+</nav>
+
+
+<main class="container">
+
+<div class="welcome">
+
+<h1>
+Welcome,
+<span id="userName">Student</span>
+</h1>
+
+<p>
+Your rivalry journey starts here.
+</p>
+
+</div>
+
+
+<div class="profile-card">
+
+<h2>Your Profile</h2>
+
+<div class="profile-id">
+INTER RIVALRY ID:
+<span id="rivalryId">Loading...</span>
+</div>
+
+<div
+class="college-status"
+id="collegeStatus">
+College: Not joined yet
+</div>
+
+</div>
+
+<div id="myQuickStats"></div>
+<div class="profile-card" style="margin-top:18px"><h2>🎯 Your Interests</h2><div id="myInterestSummary" style="margin-top:10px"></div><button class="small-btn" style="margin-top:15px" onclick="showOnlyInterests()">EDIT INTERESTS</button></div>
+
+<!-- COLLEGE -->
+
+<div id="studentCollegeSection">
+
+<h2 class="section-title">
+Choose Your College
+</h2>
+
+<div
+id="collegeList"
+class="grid">
+</div>
+
+</div>
+
+
+<!-- BATTLEFIELD -->
+
+<h2 class="section-title">
+Choose Your Battlefield
+</h2>
+
+<div class="category-grid">
+
+<div class="category-card">
+<div class="category-icon">🏏</div>
+<h3>Sports</h3>
+<p>Cricket • Football • Volleyball</p>
+</div>
+
+<div class="category-card">
+<div class="category-icon">🎓</div>
+<h3>Education</h3>
+<p>BCA • B.Com • BBA</p>
+</div>
+
+<div class="category-card">
+<div class="category-icon">🎭</div>
+<h3>Culture</h3>
+<p>Dance • Singing • Roast • Rap</p>
+</div>
+
+<div class="category-card">
+<div class="category-icon">🎮</div>
+<h3>Gaming</h3>
+<p>BGMI • Free Fire • EA Sports</p>
+</div>
+
+<div class="category-card">
+<div class="category-icon">💻</div>
+<h3>Technology</h3>
+<p>Coding • Web Development</p>
+</div>
+
+</div>
+
+
+<!-- RIVALS -->
+
+<div style="margin-top:35px">
+
+<h2 class="section-title">
+⚔️ Find Rivals
+</h2>
+
+<div id="rivalFilters" class="filter-row"></div>
+<div id="rivalsList"></div>
+
+</div>
+
+
+<!-- MY CHALLENGES -->
+
+<div style="margin-top:25px">
+
+<button
+class="primary-btn"
+onclick="showOnlyMyChallenges()">
+⚔️ MY CHALLENGES
+</button>
+
+</div>
+
+<div class="grid" style="margin-top:12px">
+    <button class="small-btn" onclick="showOnlyInterests()">🎯 MY INTERESTS</button>
+    <button class="small-btn" onclick="showOnlyResults()">🏆 RESULTS & WINS</button>
+</div>
+
+
+<div class="empty-rank">
+No skill ranks yet.<br>
+Participate in a skill to begin your ranking journey.
+</div>
+
+</main>
+
+</section>
+
+
+<!-- =====================================================
+     USER PROFILE
+===================================================== -->
+
+<section id="profilePage" class="hidden">
+
+<nav class="navbar">
+
+<div class="nav-logo">
+INTER RIVALRY
+</div>
+
+<div class="nav-right">
+
+<div class="role-badge">
+RIVAL PROFILE
+</div>
+
+<button
+class="logout-btn"
+onclick="logout()">
+Logout
+</button>
+
+</div>
+
+</nav>
+
+<main class="container">
+
+<button
+class="back-btn"
+onclick="backToStudentDashboard()">
+← BACK
+</button>
+
+
+<div class="profile-card profile-big">
+
+<div class="profile-avatar">
+👤
+</div>
+
+<h1 id="viewProfileName">
+User
+</h1>
+
+<p id="viewProfileRivalry">
+IR-XXXX-XXXX
+</p>
+
+<div
+id="viewProfileCollege"
+style="margin-top:10px;color:#777">
+College
+</div>
+
+<div style="margin-top:20px">
+
+<button
+class="small-btn challenge-btn"
+onclick="openChallengePage()">
+⚔️ CHALLENGE
+</button>
+
+</div>
+
+</div>
+
+
+<div class="profile-card skill-box">
+
+<h2>
+🎯 Skills
+</h2>
+
+<div
+id="viewProfileSkills"
+style="margin-top:15px">
+</div>
+
+<div id="viewProfileInterests" style="margin-top:20px"></div>
+<div id="viewProfileStats" style="margin-top:20px"></div>
+
+</div>
+
+</main>
+
+</section>
+
+
+<!-- =====================================================
+     CHALLENGE PAGE
+===================================================== -->
+
+<section id="challengePage" class="hidden">
+
+<nav class="navbar">
+
+<div class="nav-logo">
+INTER RIVALRY
+</div>
+
+<div class="nav-right">
+
+<div class="role-badge">
+CHALLENGE
+</div>
+
+<button
+class="logout-btn"
+onclick="logout()">
+Logout
+</button>
+
+</div>
+
+</nav>
+
+<main class="container">
+
+<button
+class="back-btn"
+onclick="backToProfile()">
+← BACK
+</button>
+
+<div class="challenge-header">
+
+<h1>
+⚔️ Challenge Rival
+</h1>
+
+<p>
+Choose the battlefield and send your challenge.
+</p>
+
+</div>
+
+
+<div class="challenge-target">
+
+<strong>
+Opponent:
+</strong>
+
+<span id="challengeOpponentName">
+User
+</span>
+
+<br>
+
+<span
+id="challengeOpponentId"
+style="color:#777">
+IR-XXXX-XXXX
+</span>
+
+</div>
+
+
+<div class="profile-card">
+
+<h2>
+Choose Skill
+</h2>
+
+<br>
+
+<div class="input-group">
+
+<label>
+Skill
+</label>
+
+<select id="challengeSkill">
+<option value="">
+Loading skills...
+</option>
+</select>
+
+</div>
+
+
+<div class="input-group">
+
+<label>
+Challenge Title
+</label>
+
+<input
+id="challengeTitle"
+type="text"
+placeholder="Example: BCA Coding Battle">
+</div>
+
+
+<div class="input-group">
+
+<label>
+Description
+</label>
+
+<textarea
+id="challengeDescription"
+placeholder="Describe your challenge..."></textarea>
+
+</div>
+
+
+<div class="input-group">
+
+<label>
+Start Time
+</label>
+
+<input
+id="challengeStart"
+type="datetime-local">
+</div>
+
+
+<div class="input-group">
+
+<label>
+End Time
+</label>
+
+<input
+id="challengeEnd"
+type="datetime-local">
+</div>
+
+
+<button
+class="primary-btn"
+onclick="sendChallenge()">
+⚔️ SEND CHALLENGE
+</button>
+
+<div
+id="challengeMessage"
+class="message">
+</div>
+
+</div>
+
+</main>
+
+</section>
+
+
+<!-- =====================================================
+     MY CHALLENGES
+===================================================== -->
+
+<section id="myChallengesPage" class="hidden">
+
+<nav class="navbar">
+
+<div class="nav-logo">
+INTER RIVALRY
+</div>
+
+<div class="nav-right">
+
+<div class="role-badge">
+CHALLENGES
+</div>
+
+<button
+class="logout-btn"
+onclick="logout()">
+Logout
+</button>
+
+</div>
+
+</nav>
+
+<main class="container">
+
+<button
+class="back-btn"
+onclick="backToStudentDashboard()">
+← BACK
+</button>
+
+<h1>
+⚔️ My Challenges
+</h1>
+
+<p style="color:#888;margin-top:7px;margin-bottom:25px">
+Challenges sent and received by you.
+</p>
+
+<div id="myChallengesList"></div>
+
+</main>
+
+</section>
+
+
+<!-- =====================================================
+     MY INTERESTS
+===================================================== -->
+<section id="interestsPage" class="hidden">
+<nav class="navbar">
+<div class="nav-logo">INTER RIVALRY</div>
+<div class="nav-right">
+<div class="role-badge">INTERESTS</div>
+<button class="logout-btn" onclick="logout()">Logout</button>
+</div>
+</nav>
+<main class="container">
+<button class="back-btn" onclick="backToStudentDashboard()">← BACK</button>
+<div class="challenge-header">
+<h1>🎯 My Interests</h1>
+<p>Choose the skills and categories you want to compete in.</p>
+</div>
+<div class="profile-card">
+<div id="interestEditor"><div class="empty-box">Loading interests...</div></div>
+<button class="primary-btn" style="margin-top:18px" onclick="saveInterests()">SAVE INTERESTS</button>
+<div id="interestMessage" class="message"></div>
+</div>
+</main>
+</section>
+
+<!-- =====================================================
+     RESULTS & WINS
+===================================================== -->
+<section id="resultsPage" class="hidden">
+<nav class="navbar">
+<div class="nav-logo">INTER RIVALRY</div>
+<div class="nav-right">
+<div class="role-badge">RESULTS</div>
+<button class="logout-btn" onclick="logout()">Logout</button>
+</div>
+</nav>
+<main class="container">
+<button class="back-btn" onclick="backToStudentDashboard()">← BACK</button>
+<h1>🏆 Results & Wins</h1>
+<p style="color:#888;margin-top:7px;margin-bottom:22px">Your completed rivalry record.</p>
+<div id="resultStats" class="stat-grid"></div>
+<div id="resultsList"></div>
+</main>
+</section>
+
+<!-- =====================================================
+     SUPER ADMIN DASHBOARD
+===================================================== -->
+
+<section id="adminDashboard" class="hidden">
+
+<nav class="navbar">
+
+<div class="nav-logo">
+INTER RIVALRY
+</div>
+
+<div class="nav-right">
+
+<div class="role-badge">
+SUPER ADMIN
+</div>
+
+<button
+class="logout-btn"
+onclick="logout()">
+Logout
+</button>
+
+</div>
+
+</nav>
+
+<main class="container">
+
+<div class="admin-header">
+
+<div>
+
+<h1>
+👑 Super Admin
+</h1>
+
+<p>
+INTER RIVALRY platform management
+</p>
+
+</div>
+
+</div>
+
+
+<div class="grid">
+
+<div class="admin-stat">
+
+<div
+id="collegeCount"
+class="number">
+0
+</div>
+
+<div class="label">
+Colleges
+</div>
+
+</div>
+
+
+<div class="admin-stat">
+
+<div
+id="requestCount"
+class="number">
+0
+</div>
+
+<div class="label">
+Pending Requests
+</div>
+
+</div>
+
+
+<div class="admin-stat">
+
+<div
+id="adminCount"
+class="number">
+0
+</div>
+
+<div class="label">
+College Admins
+</div>
+
+</div>
+
+</div>
+
+
+<!-- ADD COLLEGE -->
+
+<div class="profile-card add-college-box">
+
+<h2>
+🏫 Add College
+</h2>
+
+<br>
+
+<div class="input-group">
+<label>College Name</label>
+
+<input
+id="collegeName"
+type="text"
+placeholder="Example: Bengaluru City University">
+</div>
+
+<div class="input-group">
+<label>College Code</label>
+
+<input
+id="collegeCode"
+type="text"
+placeholder="Example: BCU">
+</div>
+
+<div class="input-group">
+<label>City</label>
+
+<input
+id="collegeCity"
+type="text"
+placeholder="Example: Bengaluru">
+</div>
+
+<div class="input-group">
+<label>State</label>
+
+<input
+id="collegeState"
+type="text"
+placeholder="Example: Karnataka">
+</div>
+
+<button
+class="primary-btn"
+onclick="addCollege()">
++ ADD COLLEGE
+</button>
+
+<div
+id="adminMessage"
+class="message">
+</div>
+
+</div>
+
+
+<h2 class="section-title">
+🏫 Colleges
+</h2>
+
+<div
+id="adminCollegeList"
+class="grid">
+</div>
+
+</main>
+</section>
+
+
+<!-- =====================================================
+     COLLEGE MANAGEMENT
+===================================================== -->
+
+<section id="collegeManagement" class="hidden">
+
+<nav class="navbar">
+
+<div class="nav-logo">
+INTER RIVALRY
+</div>
+
+<div class="nav-right">
+
+<div class="role-badge">
+SUPER ADMIN
+</div>
+
+<button
+class="logout-btn"
+onclick="logout()">
+Logout
+</button>
+
+</div>
+
+</nav>
+
+<main class="container">
+
+<button
+class="back-btn"
+onclick="backToAdmin()">
+← BACK TO DASHBOARD
+</button>
+
+
+<div class="management-header">
+
+<h1>
+🏫
+<span id="manageCollegeName">
+College
+</span>
+</h1>
+
+<p id="manageCollegeLocation">
+Loading...
+</p>
+
+</div>
+
+
+<div class="profile-card management-info">
+
+<h2>
+College Information
+</h2>
+
+<p>
+College Code:
+<strong id="manageCollegeCode">-</strong>
+</p>
+
+<p>
+City:
+<span id="manageCollegeCity">-</span>
+</p>
+
+<p>
+State:
+<span id="manageCollegeState">-</span>
+</p>
+
+</div>
+
+
+<div class="management-grid">
+
+<div class="management-card">
+
+<div class="icon">
+👥
+</div>
+
+<div
+id="manageAdminCount"
+class="count">
+0
+</div>
+
+<div class="label">
+College Admins
+</div>
+
+<button
+class="small-btn"
+onclick="openAdmins()">
+MANAGE ADMINS
+</button>
+
+</div>
+
+
+<div class="management-card">
+
+<div class="icon">
+🎓
+</div>
+
+<div
+id="manageStudentCount"
+class="count">
+0
+</div>
+
+<div class="label">
+Students
+</div>
+
+<button
+class="small-btn"
+onclick="openStudents()">
+VIEW STUDENTS
+</button>
+
+</div>
+
+
+<div class="management-card">
+
+<div class="icon">
+📩
+</div>
+
+<div
+id="manageRequestCount"
+class="count">
+0
+</div>
+
+<div class="label">
+Join Requests
+</div>
+
+<button
+class="small-btn"
+onclick="openRequests()">
+VIEW REQUESTS
+</button>
+
+</div>
+
+</div>
+
+
+<!-- EDIT COLLEGE -->
+
+<div class="profile-card">
+
+<h2>
+⚙️ Edit College
+</h2>
+
+<br>
+
+<div class="input-group">
+<label>College Name</label>
+<input id="editCollegeName" type="text">
+</div>
+
+<div class="input-group">
+<label>College Code</label>
+<input id="editCollegeCode" type="text">
+</div>
+
+<div class="input-group">
+<label>City</label>
+<input id="editCollegeCity" type="text">
+</div>
+
+<div class="input-group">
+<label>State</label>
+<input id="editCollegeState" type="text">
+</div>
+
+<button
+class="primary-btn"
+onclick="saveCollegeChanges()">
+SAVE CHANGES
+</button>
+
+<div
+id="editMessage"
+class="message">
+</div>
+
+</div>
+
+</main>
+</section>
+
+
+<!-- =====================================================
+     ADMINS PAGE
+===================================================== -->
+
+<section id="adminsPage" class="hidden">
+
+<nav class="navbar">
+
+<div class="nav-logo">
+INTER RIVALRY
+</div>
+
+<div class="nav-right">
+
+<div class="role-badge">
+SUPER ADMIN
+</div>
+
+<button
+class="logout-btn"
+onclick="logout()">
+Logout
+</button>
+
+</div>
+
+</nav>
+
+<main class="container">
+
+<button
+class="back-btn"
+onclick="backToManagement()">
+← BACK
+</button>
+
+<h1>
+👥 College Admins
+</h1>
+
+<p
+id="adminsCollegeName"
+style="color:#888;margin-top:8px;margin-bottom:25px">
+College
+</p>
+
+
+<div class="profile-card">
+
+<h2>
+➕ Add College Admin
+</h2>
+
+<br>
+
+<div class="input-group">
+
+<label>
+User ID
+</label>
+
+<input
+id="adminUserId"
+type="text"
+placeholder="Paste user's UUID">
+
+</div>
+
+<button
+class="primary-btn"
+onclick="addCollegeAdmin()">
+ADD ADMIN
+</button>
+
+<div
+id="adminManageMessage"
+class="message">
+</div>
+
+</div>
+
+
+<h2 class="section-title">
+Current Admins
+</h2>
+
+<div id="adminsList"></div>
+
+</main>
+</section>
+
+
+<!-- =====================================================
+     STUDENTS PAGE
+===================================================== -->
+
+<section id="studentsPage" class="hidden">
+
+<nav class="navbar">
+
+<div class="nav-logo">
+INTER RIVALRY
+</div>
+
+<div class="nav-right">
+
+<div class="role-badge">
+SUPER ADMIN
+</div>
+
+<button
+class="logout-btn"
+onclick="logout()">
+Logout
+</button>
+
+</div>
+
+</nav>
+
+<main class="container">
+
+<button
+class="back-btn"
+onclick="backToManagement()">
+← BACK
+</button>
+
+<h1>
+🎓 Students
+</h1>
+
+<p
+id="studentsCollegeName"
+style="color:#888;margin-top:8px;margin-bottom:25px">
+College
+</p>
+
+<div id="studentsList"></div>
+
+</main>
+</section>
+
+
+<!-- =====================================================
+     REQUESTS PAGE
+===================================================== -->
+
+<section id="requestsPage" class="hidden">
+
+<nav class="navbar">
+
+<div class="nav-logo">
+INTER RIVALRY
+</div>
+
+<div class="nav-right">
+
+<div class="role-badge">
+SUPER ADMIN
+</div>
+
+<button
+class="logout-btn"
+onclick="logout()">
+Logout
+</button>
+
+</div>
+
+</nav>
+
+<main class="container">
+
+<button
+class="back-btn"
+onclick="backToManagement()">
+← BACK
+</button>
+
+<h1>
+📩 Join Requests
+</h1>
+
+<p
+id="requestsCollegeName"
+style="color:#888;margin-top:8px;margin-bottom:25px">
+College
+</p>
+
+<div id="requestsList"></div>
+
+</main>
+</section>
+
+
+<script>
+
+/* =====================================================
+   SUPABASE
+===================================================== */
+
+const SUPABASE_URL =
+"https://qfkxvflyzucvkeyucbzn.supabase.co";
+
+const SUPABASE_PUBLISHABLE_KEY =
+"sb_publishable_Se88Rw_onDUYfnMHxogs2g_q6WGY_3T";
+
+const client =
+supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_PUBLISHABLE_KEY
+);
+
+
+/* =====================================================
+   GLOBAL
+===================================================== */
+
+let selectedCollegeId = null;
+let selectedProfileId = null;
+
+
+/* =====================================================
+   ELEMENTS
+===================================================== */
+
+const loadingScreen =
+document.getElementById("loadingScreen");
+
+const authPage =
+document.getElementById("authPage");
+
+const studentDashboard =
+document.getElementById("studentDashboard");
+
+const profilePage =
+document.getElementById("profilePage");
+
+const challengePage =
+document.getElementById("challengePage");
+
+const myChallengesPage =
+document.getElementById("myChallengesPage");
+
+const adminDashboard =
+document.getElementById("adminDashboard");
+
+const collegeManagement =
+document.getElementById("collegeManagement");
+
+const adminsPage =
+document.getElementById("adminsPage");
+
+const studentsPage =
+document.getElementById("studentsPage");
+
+const requestsPage =
+document.getElementById("requestsPage");
+
+const authMessage =
+document.getElementById("authMessage");
+
+
+/* =====================================================
+   AUTH MESSAGE
+===================================================== */
+
+function showMessage(message){
+
+    authMessage.textContent = message;
+
+}
+
+
+/* =====================================================
+   AUTH FORMS
+===================================================== */
+
+function showSignup(){
+
+    document
+    .getElementById("loginForm")
+    .classList
+    .add("hidden");
+
+    document
+    .getElementById("signupForm")
+    .classList
+    .remove("hidden");
+
+    showMessage("");
+
+}
+
+
+function showLogin(){
+
+    document
+    .getElementById("signupForm")
+    .classList
+    .add("hidden");
+
+    document
+    .getElementById("loginForm")
+    .classList
+    .remove("hidden");
+
+    showMessage("");
+
+}
+
+
+/* =====================================================
+   SIGNUP
+===================================================== */
+
+async function signup(){
+
+    const name =
+    document
+    .getElementById("signupName")
+    .value
+    .trim();
+
+    const email =
+    document
+    .getElementById("signupEmail")
+    .value
+    .trim();
+
+    const password =
+    document
+    .getElementById("signupPassword")
+    .value;
+
+
+    if(!name || !email || !password){
+
+        showMessage(
+            "Please fill in all fields."
+        );
+
+        return;
+
+    }
+
+
+    if(password.length < 6){
+
+        showMessage(
+            "Password must be at least 6 characters."
+        );
+
+        return;
+
+    }
+
+
+    showMessage(
+        "Creating your INTER RIVALRY account..."
+    );
+
+
+    const {
+        data,
+        error
+    } =
+    await client.auth.signUp({
+
+        email:email,
+
+        password:password,
+
+        options:{
+
+            emailRedirectTo:
+            "https://inter-rivalry.github.io/Inter-Rivalry-BCU/",
+
+            data:{
+                full_name:name
+            }
+
+        }
+
+    });
+
+
+    if(error){
+
+        showMessage(
+            error.message
+        );
+
+        return;
+
+    }
+
+
+    if(!data.session){
+
+        showMessage(
+            "Account created! Check your email and confirm your account before logging in."
+        );
+
+        return;
+
+    }
+
+
+    await loadUser();
+
+}
+
+
+/* =====================================================
+   LOGIN
+===================================================== */
+
+async function login(){
+
+    const email =
+    document
+    .getElementById("loginEmail")
+    .value
+    .trim();
+
+    const password =
+    document
+    .getElementById("loginPassword")
+    .value;
+
+
+    if(!email || !password){
+
+        showMessage(
+            "Please enter your email and password."
+        );
+
+        return;
+
+    }
+
+
+    showMessage(
+        "Logging in..."
+    );
+
+
+    const {
+        error
+    } =
+    await client.auth.signInWithPassword({
+
+        email:email,
+        password:password
+
+    });
+
+
+    if(error){
+
+        showMessage(
+            error.message
+        );
+
+        return;
+
+    }
+
+
+    await loadUser();
+
+}
+
+
+/* =====================================================
+   FORGOT PASSWORD
+===================================================== */
+
+async function forgotPassword(){
+
+    const email =
+    document
+    .getElementById("loginEmail")
+    .value
+    .trim();
+
+
+    if(!email){
+
+        showMessage(
+            "Enter your email first."
+        );
+
+        return;
+
+    }
+
+
+    showMessage(
+        "Sending password reset email..."
+    );
+
+
+    const {
+        error
+    } =
+    await client.auth.resetPasswordForEmail(
+        email,
+        {
+            redirectTo:
+            "https://inter-rivalry.github.io/Inter-Rivalry-BCU/"
+        }
+    );
+
+
+    if(error){
+
+        showMessage(
+            error.message
+        );
+
+        return;
+
+    }
+
+
+    showMessage(
+        "Password reset email sent! Check your inbox and spam folder."
+    );
+
+}
+
+
+/* =====================================================
+   RESEND CONFIRMATION EMAIL
+===================================================== */
+
+async function resendConfirmationEmail(){
+
+    const email =
+    document
+    .getElementById("loginEmail")
+    .value
+    .trim();
+
+
+    if(!email){
+
+        showMessage(
+            "Enter your email first."
+        );
+
+        return;
+
+    }
+
+
+    showMessage(
+        "Sending confirmation email..."
+    );
+
+
+    const {
+        error
+    } =
+    await client.auth.resend({
+
+        type:"signup",
+
+        email:email,
+
+        options:{
+            emailRedirectTo:
+            "https://inter-rivalry.github.io/Inter-Rivalry-BCU/"
+        }
+
+    });
+
+
+    if(error){
+
+        showMessage(
+            error.message
+        );
+
+        return;
+
+    }
+
+
+    showMessage(
+        "Confirmation email sent! Check your inbox and spam folder."
+    );
+
+}
+
+
+/* =====================================================
+   LOAD USER
+===================================================== */
+
+async function loadUser(){
+
+    const {
+        data:{
+            user
+        }
+    } =
+    await client.auth.getUser();
+
+
+    if(!user){
+
+        showAuth();
+
+        return;
+
+    }
+
+
+    const {
+        data:profile,
+        error
+    } =
+    await client
+    .from("profiles")
+    .select(`
+        id,
+        full_name,
+        inter_rivalry_id,
+        role
+    `)
+    .eq("id",user.id)
+    .single();
+
+
+    if(error || !profile){
+
+        console.error(error);
+
+        showAuth();
+
+        return;
+
+    }
+
+
+    if(profile.role === "super_admin"){
+
+        await loadAdminDashboard();
+
+        return;
+
+    }
+
+
+    if(profile.role === "college_admin"){
+
+        await loadCollegeAdminDashboard(
+            user,
+            profile
+        );
+
+        return;
+
+    }
+
+
+    await loadStudentDashboard(
+        user,
+        profile
+    );
+
+}
+
+
+/* =====================================================
+   STUDENT DASHBOARD
+===================================================== */
+
+async function loadStudentDashboard(
+    user,
+    profile
+){
+
+    document
+    .getElementById("userName")
+    .textContent =
+    profile.full_name || "Student";
+
+
+    document
+    .getElementById("rivalryId")
+    .textContent =
+    profile.inter_rivalry_id || "Not assigned";
+
+
+    const {
+        data:membership,
+        error
+    } =
+    await client
+    .from("college_memberships")
+    .select(`
+        college_id,
+        department,
+        course,
+        year_of_study,
+        specialization,
+        colleges (
+            college_name,
+            college_code,
+            city,
+            state
+        )
+    `)
+    .eq("user_id",user.id)
+    .eq("is_active",true)
+    .maybeSingle();
+
+
+    if(error){
+
+        console.error(
+            "Membership error:",
+            error
+        );
+
+    }
+
+
+    const collegeStatus =
+    document.getElementById(
+        "collegeStatus"
+    );
+
+
+    if(
+        membership &&
+        membership.colleges
+    ){
+
+        collegeStatus.textContent =
+        "College: " +
+        membership.colleges.college_name +
+        " (" +
+        membership.colleges.college_code +
+        ")";
+
+
+        document
+        .getElementById(
+            "studentCollegeSection"
+        )
+        .classList
+        .add("hidden");
+
+    }
+    else{
+
+        collegeStatus.textContent =
+        "College: Not joined yet";
+
+
+        document
+        .getElementById(
+            "studentCollegeSection"
+        )
+        .classList
+        .remove("hidden");
+
+
+        await loadStudentColleges();
+
+    }
+
+
+    await loadRivals();
+
+    showOnlyStudent();
+
+}
+
+
+/* =====================================================
+   STUDENT COLLEGES
+===================================================== */
+
+async function loadStudentColleges(){
+
+    const {
+        data,
+        error
+    } =
+    await client
+    .from("colleges")
+    .select(`
+        id,
+        college_name,
+        college_code,
+        city,
+        state
+    `)
+    .order(
+        "college_name",
+        {
+            ascending:true
+        }
+    );
+
+
+    const list =
+    document.getElementById(
+        "collegeList"
+    );
+
+
+    list.innerHTML = "";
+
+
+    if(error){
+
+        console.error(error);
+
+        list.innerHTML =
+        "<div class='empty-box'>Unable to load colleges.</div>";
+
+        return;
+
+    }
+
+
+    if(!data || data.length === 0){
+
+        list.innerHTML =
+        "<div class='empty-box'>No colleges available yet.</div>";
+
+        return;
+
+    }
+
+
+    data.forEach(
+        college => {
+
+            const card =
+            document.createElement("div");
+
+            card.className =
+            "college-card";
+
+
+            card.innerHTML = `
+
+                <h3>
+                    ${escapeHTML(college.college_name)}
+                </h3>
+
+                <div class="college-code">
+                    ${escapeHTML(college.college_code)}
+                </div>
+
+                <div class="college-location">
+                    ${escapeHTML(college.city || "")}
+                    ${college.state
+                    ? ", " + escapeHTML(college.state)
+                    : ""}
+                </div>
+
+                <button
+                    class="small-btn success-btn"
+                    onclick="showJoinForm('${college.id}')">
+                    JOIN COLLEGE
+                </button>
+
+            `;
+
+
+            list.appendChild(card);
+
+        }
+    );
+
+}
+
+
+/* =====================================================
+   JOIN COLLEGE
+===================================================== */
+
+async function showJoinForm(collegeId){
+
+    const course =
+    prompt(
+        "Enter course:\nBCA, BBA or B.Com"
+    );
+
+
+    if(!course)
+        return;
+
+
+    const normalizedCourse =
+    course
+    .trim()
+    .toUpperCase();
+
+
+    if(
+        normalizedCourse !== "BCA" &&
+        normalizedCourse !== "BBA" &&
+        normalizedCourse !== "B.COM"
+    ){
+
+        alert(
+            "Please enter BCA, BBA or B.Com."
+        );
+
+        return;
+
+    }
+
+
+    const year =
+    prompt(
+        "Enter year:\n1 = 1st Year\n2 = 2nd Year\n3 = 3rd Year"
+    );
+
+
+    const yearNumber =
+    Number(year);
+
+
+    if(
+        yearNumber !== 1 &&
+        yearNumber !== 2 &&
+        yearNumber !== 3
+    ){
+
+        alert(
+            "Please enter 1, 2 or 3."
+        );
+
+        return;
+
+    }
+
+
+    let specialization = null;
+
+
+    if(normalizedCourse === "BCA"){
+
+        specialization =
+        prompt(
+            "BCA specialization:\nAI ML\nData Science\nGeneral"
+        );
+
+
+        if(!specialization)
+            return;
+
+
+        specialization =
+        specialization.trim();
+
+    }
+
+
+    const {
+        data:{
+            user
+        }
+    } =
+    await client.auth.getUser();
+
+
+    if(!user){
+
+        alert(
+            "Please login first."
+        );
+
+        return;
+
+    }
+
+
+    const {
+        error
+    } =
+    await client
+    .from("college_join_requests")
+    .insert({
+
+        student_id:user.id,
+
+        college_id:collegeId,
+
+        course:normalizedCourse,
+
+        year_of_study:yearNumber,
+
+        specialization:specialization
+
+    });
+
+
+    if(error){
+
+        console.error(error);
+
+        alert(
+            "Could not send request: " +
+            error.message
+        );
+
+        return;
+
+    }
+
+
+    alert(
+        "Join request submitted! Waiting for college admin approval."
+    );
+
+}
+
+
+/* =====================================================
+   LOAD RIVALS
+===================================================== */
+
+let allRivalsCache = [];
+let rivalInterestMap = new Map();
+
+async function loadRivals(){
+    const list=document.getElementById("rivalsList");
+    if(!list)return;
+    list.innerHTML="<div class='empty-box'>Loading rivals...</div>";
+    const {data:{user}}=await client.auth.getUser();
+    if(!user)return;
+
+    const {data:profiles,error}=await client.from("profiles")
+        .select("id,full_name,inter_rivalry_id,role")
+        .neq("id",user.id).eq("role","student").order("full_name",{ascending:true});
+    if(error){
+        list.innerHTML=`<div class="empty-box">Unable to load rivals.<br>${escapeHTML(error.message)}</div>`;
+        return;
+    }
+    allRivalsCache=profiles||[];
+
+    rivalInterestMap=new Map();
+    if(allRivalsCache.length){
+        const ids=allRivalsCache.map(x=>x.id);
+        const {data:parts}=await client.from("participations")
+            .select("user_id,subcategory_id,subcategories(name,categories(name))")
+            .in("user_id",ids);
+        (parts||[]).forEach(x=>{
+            if(!rivalInterestMap.has(x.user_id))rivalInterestMap.set(x.user_id,[]);
+            rivalInterestMap.get(x.user_id).push(x);
+        });
+    }
+    buildRivalFilters();
+    renderRivals();
+}
+
+function buildRivalFilters(){
+    const wrap=document.getElementById("rivalFilters");
+    if(!wrap)return;
+    const cats=new Set();
+    rivalInterestMap.forEach(items=>items.forEach(x=>{if(x.subcategories?.categories?.name)cats.add(x.subcategories.categories.name)}));
+    wrap.innerHTML=`<input id="rivalSearch" placeholder="Search student or INTER RIVALRY ID" oninput="renderRivals()">
+    <select id="rivalCategory" onchange="renderRivals()"><option value="">All categories</option>${[...cats].sort().map(c=>`<option value="${escapeHTML(c)}">${escapeHTML(c)}</option>`).join("")}</select>`;
+}
+
+function renderRivals(){
+    const list=document.getElementById("rivalsList");
+    if(!list)return;
+    const q=(document.getElementById("rivalSearch")?.value||"").trim().toLowerCase();
+    const category=document.getElementById("rivalCategory")?.value||"";
+    const filtered=allRivalsCache.filter(p=>{
+        const items=rivalInterestMap.get(p.id)||[];
+        const cats=items.map(x=>x.subcategories?.categories?.name||"");
+        const hay=((p.full_name||"")+" "+(p.inter_rivalry_id||"")).toLowerCase();
+        return (!q||hay.includes(q))&&(!category||cats.includes(category));
+    });
+    if(!filtered.length){list.innerHTML="<div class='empty-box'>No rivals match your filters.</div>";return;}
+    list.innerHTML="";
+    filtered.forEach(profile=>{
+        const card=document.createElement("div");card.className="rival-card";
+        const items=rivalInterestMap.get(profile.id)||[];
+        const tags=[...new Set(items.map(x=>x.subcategories?.categories?.name).filter(Boolean))].slice(0,8);
+        card.innerHTML=`<h3>👤 ${escapeHTML(profile.full_name||"Student")}</h3>
+        <div class="rival-info">INTER RIVALRY ID: ${escapeHTML(profile.inter_rivalry_id||"-")}<br>
+        ${tags.length?tags.map(t=>`<span class="category-tag">${escapeHTML(t)}</span>`).join(""):"<span style='color:#666'>No interests added</span>"}</div>
+        <div class="rival-actions"><button class="small-btn challenge-btn" onclick="viewProfile('${profile.id}')">VIEW PROFILE</button></div>`;
+        list.appendChild(card);
+    });
+}
+
+/* =====================================================
+   VIEW PROFILE
+===================================================== */
+
+async function viewProfile(userId){
+
+    selectedProfileId =
+    userId;
+
+
+    const {
+        data:profile,
+        error
+    } =
+    await client
+    .from("profiles")
+    .select(`
+        id,
+        full_name,
+        inter_rivalry_id,
+        role
+    `)
+    .eq("id",userId)
+    .single();
+
+
+    if(error || !profile){
+
+        alert(
+            "Unable to load profile."
+        );
+
+        return;
+
+    }
+
+
+    document
+    .getElementById(
+        "viewProfileName"
+    )
+    .textContent =
+    profile.full_name || "User";
+
+
+    document
+    .getElementById(
+        "viewProfileRivalry"
+    )
+    .textContent =
+    profile.inter_rivalry_id || "-";
+
+
+    const {
+        data:membership
+    } =
+    await client
+    .from("college_memberships")
+    .select(`
+        course,
+        year_of_study,
+        specialization,
+        colleges(
+            college_name
+        )
+    `)
+    .eq("user_id",userId)
+    .eq("is_active",true)
+    .maybeSingle();
+
+
+    if(
+        membership &&
+        membership.colleges
+    ){
+
+        document
+        .getElementById(
+            "viewProfileCollege"
+        )
+        .textContent =
+        membership.colleges.college_name;
+
+    }
+    else{
+
+        document
+        .getElementById(
+            "viewProfileCollege"
+        )
+        .textContent =
+        "College information unavailable";
+
+    }
+
+
+    const skillsBox =
+    document.getElementById(
+        "viewProfileSkills"
+    );
+
+
+    skillsBox.innerHTML =
+    "<div class='empty-box'>Loading skills...</div>";
+
+
+    const {data:skills,error:skillsError}=await client
+        .from("participations")
+        .select(`subcategory_id,subcategories(id,name,categories(name))`)
+        .eq("user_id",userId);
+
+
+    if(skillsError){
+
+        console.error(skillsError);
+
+        skillsBox.innerHTML =
+        `
+        <div class="empty-box">
+            Skills could not be loaded.
+        </div>
+        `;
+
+    }
+    else if(!skills || skills.length === 0){
+
+        skillsBox.innerHTML =
+        `
+        <div class="empty-box">
+            No skills available yet.
+        </div>
+        `;
+
+    }
+    else{
+
+        skillsBox.innerHTML = "";
+
+
+        skills.forEach(
+            row => {
+
+                const skill =
+                row.subcategories;
+
+                if(!skill)
+                    return;
+
+                const item =
+                document.createElement("div");
+
+                item.className =
+                "skill-item";
+
+                item.innerHTML = `
+
+                    <strong>
+                        ${escapeHTML(skill.name)}
+                    </strong>
+
+                    <div style="color:#777;margin-top:5px">
+                        ${escapeHTML(
+                            skill.categories
+                            ? skill.categories.name
+                            : "Skill"
+                        )}
+                    </div>
+
+                `;
+
+                skillsBox.appendChild(item);
+
+            }
+        );
+
+    }
+
+
+    const {data:profileChallenges}=await client.from("challenges")
+        .select("id,challenger_id,opponent_id,status,rules")
+        .or(`challenger_id.eq.${userId},opponent_id.eq.${userId}`);
+    const completed=(profileChallenges||[]).filter(c=>c.status==="completed");
+    const wins=completed.filter(c=>c.rules?.winner_id===userId).length;
+    const losses=completed.filter(c=>c.rules?.winner_id && c.rules.winner_id!==userId && c.rules.result!=="draw").length;
+    const draws=completed.filter(c=>c.rules?.result==="draw").length;
+    document.getElementById("viewProfileStats").innerHTML=`<div class="stat-grid"><div class="rival-stat"><div class="num">${wins}</div><div class="lbl">Wins</div></div><div class="rival-stat"><div class="num">${losses}</div><div class="lbl">Losses</div></div><div class="rival-stat"><div class="num">${draws}</div><div class="lbl">Draws</div></div></div>`;
+    const interests=[...(skills||[])].map(x=>x.subcategories?.name).filter(Boolean);
+    document.getElementById("viewProfileInterests").innerHTML=interests.length?`<h2 style="margin-bottom:10px">🎯 Interests</h2><div>${interests.map(x=>`<span class="category-tag">${escapeHTML(x)}</span>`).join("")}</div>`:"";
+    showOnlyProfile();
+
+}
+
+
+/* =====================================================
+   OPEN CHALLENGE
+===================================================== */
+
+async function openChallengePage(){
+
+    if(!selectedProfileId){
+
+        alert(
+            "No opponent selected."
+        );
+
+        return;
+
+    }
+
+
+    const {
+        data:{
+            user
+        }
+    } =
+    await client.auth.getUser();
+
+
+    if(!user){
+
+        alert(
+            "Please login first."
+        );
+
+        return;
+
+    }
+
+
+    if(user.id === selectedProfileId){
+
+        alert(
+            "You cannot challenge yourself."
+        );
+
+        return;
+
+    }
+
+
+    const {
+        data:opponent
+    } =
+    await client
+    .from("profiles")
+    .select(`
+        full_name,
+        inter_rivalry_id
+    `)
+    .eq("id",selectedProfileId)
+    .single();
+
+
+    if(!opponent){
+
+        alert(
+            "Opponent not found."
+        );
+
+        return;
+
+    }
+
+
+    document
+    .getElementById(
+        "challengeOpponentName"
+    )
+    .textContent =
+    opponent.full_name || "User";
+
+
+    document
+    .getElementById(
+        "challengeOpponentId"
+    )
+    .textContent =
+    opponent.inter_rivalry_id || "-";
+
+
+    await loadChallengeSkills();
+
+    showOnlyChallenge();
+
+}
+
+
+/* =====================================================
+   LOAD CHALLENGE SKILLS
+===================================================== */
+
+async function loadChallengeSkills(){
+
+    const select =
+    document.getElementById(
+        "challengeSkill"
+    );
+
+
+    select.innerHTML =
+    "<option value=''>Loading skills...</option>";
+
+
+    const {
+        data,
+        error
+    } =
+    await client
+    .from("subcategories")
+    .select(`
+        id,
+        name,
+        categories(
+            name
+        )
+    `)
+    .order("name");
+
+
+    if(error){
+
+        console.error(error);
+
+        select.innerHTML =
+        "<option value=''>Unable to load skills</option>";
+
+        return;
+
+    }
+
+
+    if(!data || data.length === 0){
+
+        select.innerHTML =
+        "<option value=''>No skills available</option>";
+
+        return;
+
+    }
+
+
+    select.innerHTML =
+    "<option value=''>Select a skill</option>";
+
+
+    data.forEach(
+        skill => {
+
+            const option =
+            document.createElement("option");
+
+
+            option.value =
+            skill.id;
+
+
+            option.textContent =
+            skill.categories
+            ? skill.categories.name +
+              " • " +
+              skill.name
+            : skill.name;
+
+
+            select.appendChild(option);
+
+        }
+    );
+
+}
+
+
+/* =====================================================
+   SEND CHALLENGE
+===================================================== */
+
+async function sendChallenge(){
+    const {data:{user}}=await client.auth.getUser();
+    if(!user)return alert("Please login first.");
+    if(!selectedProfileId)return alert("No opponent selected.");
+    if(user.id===selectedProfileId)return alert("You cannot challenge yourself.");
+    const subcategoryId=document.getElementById("challengeSkill").value;
+    const title=document.getElementById("challengeTitle").value.trim();
+    const description=document.getElementById("challengeDescription").value.trim();
+    const startValue=document.getElementById("challengeStart").value;
+    const endValue=document.getElementById("challengeEnd").value;
+    const message=document.getElementById("challengeMessage");
+    if(!subcategoryId)return message.textContent="Please select a skill.";
+    if(!title)return message.textContent="Enter a challenge title.";
+    if(!startValue||!endValue)return message.textContent="Please select start and end times.";
+    const startDate=new Date(startValue),endDate=new Date(endValue);
+    if(endDate<=startDate)return message.textContent="End time must be after start time.";
+
+    const {data:existing}=await client.from("challenges").select("id")
+        .eq("challenger_id",user.id).eq("opponent_id",selectedProfileId)
+        .eq("status","pending").limit(1);
+    if(existing?.length)return message.textContent="You already have a pending challenge with this rival.";
+
+    message.textContent="Sending challenge...";
+    const {error}=await client.from("challenges").insert({
+        challenger_id:user.id,opponent_id:selectedProfileId,subcategory_id:subcategoryId,
+        title,description:description||null,rules:{},starts_at:startDate.toISOString(),
+        ends_at:endDate.toISOString(),status:"pending"
+    });
+    if(error){message.textContent="Could not send challenge: "+error.message;return;}
+    message.textContent="Challenge sent successfully! ⚔️";
+    document.getElementById("challengeTitle").value="";
+    document.getElementById("challengeDescription").value="";
+}
+
+
+/* =====================================================
+   MY CHALLENGES
+===================================================== */
+
+async function loadMyChallenges(){
+    const list=document.getElementById("myChallengesList");
+    list.innerHTML="<div class='empty-box'>Loading challenges...</div>";
+    const {data:{user}}=await client.auth.getUser();
+    if(!user)return;
+    const {data,error}=await client.from("challenges").select(`
+        id,challenger_id,opponent_id,title,description,starts_at,ends_at,status,created_at,subcategory_id,rules,
+        subcategories(name,categories(name))
+    `).or(`challenger_id.eq.${user.id},opponent_id.eq.${user.id}`).order("created_at",{ascending:false});
+    if(error){list.innerHTML=`<div class="empty-box">Unable to load challenges.<br>${escapeHTML(error.message)}</div>`;return;}
+    if(!data?.length){list.innerHTML="<div class='empty-box'>No challenges yet.</div>";return;}
+    list.innerHTML="";
+    for(const c of data){
+        const sender=c.challenger_id===user.id;
+        const otherId=sender?c.opponent_id:c.challenger_id;
+        const {data:p}=await client.from("profiles").select("full_name,inter_rivalry_id").eq("id",otherId).maybeSingle();
+        const skill=c.subcategories?((c.subcategories.categories?.name?c.subcategories.categories.name+" • ":"")+c.subcategories.name):"Skill";
+        const result=c.rules||{};
+        const card=document.createElement("div");card.className="challenge-card";
+        let actions="";
+        if(c.status==="pending" && !sender){
+            actions=`<div class="action-row"><button class="small-btn accept-btn" onclick="updateChallengeStatus('${c.id}','accepted')">✅ ACCEPT</button><button class="small-btn reject-btn" onclick="updateChallengeStatus('${c.id}','rejected')">❌ REJECT</button></div>`;
+        }else if(c.status==="pending" && sender){
+            actions=`<div class="action-row"><button class="small-btn danger-btn" onclick="deleteChallenge('${c.id}')">🗑️ DELETE</button></div>`;
+        }else if(c.status==="accepted"){
+            actions=`<div class="action-row"><button class="small-btn result-btn" onclick="recordChallengeResult('${c.id}')">🏆 REPORT RESULT</button>${sender?`<button class="small-btn danger-btn" onclick="deleteChallenge('${c.id}')">🗑️ DELETE</button>`:""}</div>`;
+        }else if(c.status==="completed"){
+            let winner=result.result==="draw"?"Draw":result.winner_id===user.id?"You won":(result.winner_name||"Opponent won");
+            actions=`<div class="challenge-info" style="margin-top:12px"><strong>Result:</strong> ${escapeHTML(winner)}${result.my_score!==undefined?`<br><strong>Score:</strong> ${escapeHTML(result.my_score)} - ${escapeHTML(result.opponent_score)}`:""}</div>`;
+        }else if(c.status==="rejected" && sender){
+            actions=`<div class="action-row"><button class="small-btn danger-btn" onclick="deleteChallenge('${c.id}')">🗑️ DELETE</button></div>`;
+        }
+        card.innerHTML=`<h3>⚔️ ${escapeHTML(c.title)}</h3><div class="challenge-info"><strong>${sender?"Opponent":"Challenger"}:</strong> ${escapeHTML(p?.full_name||"User")}<br><strong>INTER RIVALRY ID:</strong> ${escapeHTML(p?.inter_rivalry_id||"-")}<br><strong>Skill:</strong> ${escapeHTML(skill)}<br><strong>Status:</strong> <span class="status-pill status-${escapeHTML(c.status||"")}">${escapeHTML(c.status||"-")}</span><br><strong>Starts:</strong> ${escapeHTML(formatDate(c.starts_at))}<br><strong>Ends:</strong> ${escapeHTML(formatDate(c.ends_at))}${c.description?`<br><strong>Description:</strong> ${escapeHTML(c.description)}`:""}</div>${actions}`;
+        list.appendChild(card);
+    }
+}
+
+async function updateChallengeStatus(challengeId,status){
+    const label=status==="accepted"?"accept":"reject";
+    if(!confirm(`Are you sure you want to ${label} this challenge?`))return;
+    const {data:{user}}=await client.auth.getUser();if(!user)return;
+    const {data:c,error:readError}=await client.from("challenges").select("id,opponent_id,status").eq("id",challengeId).single();
+    if(readError||!c)return alert("Challenge not found.");
+    if(c.opponent_id!==user.id)return alert("Only the challenged student can accept or reject this challenge.");
+    if(c.status!=="pending")return alert("This challenge is no longer pending.");
+    const {error}=await client.from("challenges").update({status}).eq("id",challengeId).eq("opponent_id",user.id);
+    if(error)return alert("Could not update challenge: "+error.message);
+    await loadMyChallenges();
+}
+
+async function deleteChallenge(challengeId){
+    if(!confirm("Delete this challenge? This cannot be undone."))return;
+    const {data:{user}}=await client.auth.getUser();if(!user)return;
+    const {error}=await client.from("challenges").delete().eq("id",challengeId).eq("challenger_id",user.id);
+    if(error)return alert("Could not delete challenge: "+error.message);
+    await loadMyChallenges();
+}
+
+async function recordChallengeResult(challengeId){
+    const {data:{user}}=await client.auth.getUser();if(!user)return;
+    const {data:c,error}=await client.from("challenges").select("id,challenger_id,opponent_id,status,rules").eq("id",challengeId).single();
+    if(error||!c)return alert("Challenge not found.");
+    if(c.status!=="accepted")return alert("Only accepted challenges can receive a result.");
+    if(c.challenger_id!==user.id&&c.opponent_id!==user.id)return alert("You are not part of this challenge.");
+    const otherId=c.challenger_id===user.id?c.opponent_id:c.challenger_id;
+    const {data:other}=await client.from("profiles").select("full_name").eq("id",otherId).single();
+    const choice=prompt(`Enter result:\n1 = I won\n2 = ${other?.full_name||"Opponent"} won\n3 = Draw`);
+    if(!["1","2","3"].includes(choice))return;
+    const myScore=prompt("Enter your score (optional):");
+    const opponentScore=prompt("Enter opponent score (optional):");
+    const winnerId=choice==="1"?user.id:choice==="2"?otherId:null;
+    const rules={...(c.rules||{}),result:choice==="3"?"draw":"win",winner_id:winnerId,my_score:myScore===""?null:myScore,opponent_score:opponentScore===""?null:opponentScore,recorded_by:user.id,recorded_at:new Date().toISOString(),winner_name:choice==="2"?(other?.full_name||"Opponent"):null};
+    const {error:updateError}=await client.from("challenges").update({status:"completed",rules}).eq("id",challengeId).or(`challenger_id.eq.${user.id},opponent_id.eq.${user.id}`);
+    if(updateError)return alert("Could not save result: "+updateError.message);
+    alert("Result recorded! 🏆");
+    await loadMyChallenges();
+}
+
+
+
+/* =====================================================
+   ADMIN DASHBOARD
+===================================================== */
+
+async function loadAdminDashboard(){
+
+    showOnlyAdmin();
+
+    await loadAdminStats();
+
+    await loadAdminColleges();
+
+}
+
+
+/* =====================================================
+   ADMIN STATS
+===================================================== */
+
+async function loadAdminStats(){
+
+    const {
+        count:colleges
+    } =
+    await client
+    .from("colleges")
+    .select(
+        "id",
+        {
+            count:"exact",
+            head:true
+        }
+    );
+
+
+    document
+    .getElementById(
+        "collegeCount"
+    )
+    .textContent =
+    colleges || 0;
+
+
+    const {
+        count:requests
+    } =
+    await client
+    .from("college_join_requests")
+    .select(
+        "id",
+        {
+            count:"exact",
+            head:true
+        }
+    )
+    .eq(
+        "status",
+        "pending"
+    );
+
+
+    document
+    .getElementById(
+        "requestCount"
+    )
+    .textContent =
+    requests || 0;
+
+
+    const {
+        count:admins
+    } =
+    await client
+    .from("college_admins")
+    .select(
+        "id",
+        {
+            count:"exact",
+            head:true
+        }
+    );
+
+
+    document
+    .getElementById(
+        "adminCount"
+    )
+    .textContent =
+    admins || 0;
+
+}
+
+
+/* =====================================================
+   ADMIN COLLEGES
+===================================================== */
+
+async function loadAdminColleges(){
+
+    const {
+        data,
+        error
+    } =
+    await client
+    .from("colleges")
+    .select(`
+        id,
+        college_name,
+        college_code,
+        city,
+        state
+    `)
+    .order(
+        "college_name",
+        {
+            ascending:true
+        }
+    );
+
+
+    const list =
+    document.getElementById(
+        "adminCollegeList"
+    );
+
+
+    list.innerHTML = "";
+
+
+    if(error){
+
+        console.error(error);
+
+        list.innerHTML =
+        `
+        <div class="empty-box">
+            Unable to load colleges.
+        </div>
+        `;
+
+        return;
+
+    }
+
+
+    if(!data || data.length === 0){
+
+        list.innerHTML =
+        `
+        <div class="empty-box">
+            No colleges have been added yet.
+        </div>
+        `;
+
+        return;
+
+    }
+
+
+    data.forEach(
+        college => {
+
+            const card =
+            document.createElement("div");
+
+            card.className =
+            "college-card";
+
+
+            card.innerHTML = `
+
+                <h3>
+                    ${escapeHTML(
+                        college.college_name
+                    )}
+                </h3>
+
+                <div class="college-code">
+                    Code:
+                    ${escapeHTML(
+                        college.college_code
+                    )}
+                </div>
+
+                <div class="college-location">
+                    ${escapeHTML(
+                        college.city || ""
+                    )}
+                    ${
+                        college.state
+                        ? ", " +
+                          escapeHTML(
+                              college.state
+                          )
+                        : ""
+                    }
+                </div>
+
+                <button
+                    class="small-btn"
+                    onclick="viewCollege('${college.id}')">
+                    MANAGE
+                </button>
+
+            `;
+
+
+            list.appendChild(card);
+
+        }
+    );
+
+}
+
+
+/* =====================================================
+   ADD COLLEGE
+===================================================== */
+
+async function addCollege(){
+
+    const name =
+    document
+    .getElementById(
+        "collegeName"
+    )
+    .value
+    .trim();
+
+
+    const code =
+    document
+    .getElementById(
+        "collegeCode"
+    )
+    .value
+    .trim()
+    .toUpperCase();
+
+
+    const city =
+    document
+    .getElementById(
+        "collegeCity"
+    )
+    .value
+    .trim();
+
+
+    const state =
+    document
+    .getElementById(
+        "collegeState"
+    )
+    .value
+    .trim();
+
+
+    const message =
+    document.getElementById(
+        "adminMessage"
+    );
+
+
+    if(!name || !code){
+
+        message.textContent =
+        "College name and code are required.";
+
+        return;
+
+    }
+
+
+    message.textContent =
+    "Adding college...";
+
+
+    const {
+        error
+    } =
+    await client
+    .from("colleges")
+    .insert({
+
+        college_name:name,
+
+        college_code:code,
+
+        city:city || null,
+
+        state:state || null,
+
+        country:"India"
+
+    });
+
+
+    if(error){
+
+        console.error(error);
+
+        message.textContent =
+        "Error: " +
+        error.message;
+
+        return;
+
+    }
+
+
+    message.textContent =
+    "College added successfully! 🏆";
+
+
+    document.getElementById(
+        "collegeName"
+    ).value = "";
+
+
+    document.getElementById(
+        "collegeCode"
+    ).value = "";
+
+
+    document.getElementById(
+        "collegeCity"
+    ).value = "";
+
+
+    document.getElementById(
+        "collegeState"
+    ).value = "";
+
+
+    await loadAdminStats();
+
+    await loadAdminColleges();
+
+}
+
+
+/* =====================================================
+   VIEW COLLEGE
+===================================================== */
+
+async function viewCollege(collegeId){
+
+    selectedCollegeId =
+    collegeId;
+
+
+    const {
+        data:college,
+        error
+    } =
+    await client
+    .from("colleges")
+    .select(`
+        id,
+        college_name,
+        college_code,
+        city,
+        state
+    `)
+    .eq(
+        "id",
+        collegeId
+    )
+    .single();
+
+
+    if(error){
+
+        console.error(error);
+
+        alert(
+            "Unable to load college."
+        );
+
+        return;
+
+    }
+
+
+    document
+    .getElementById(
+        "manageCollegeName"
+    )
+    .textContent =
+    college.college_name;
+
+
+    document
+    .getElementById(
+        "manageCollegeCode"
+    )
+    .textContent =
+    college.college_code || "-";
+
+
+    document
+    .getElementById(
+        "manageCollegeCity"
+    )
+    .textContent =
+    college.city || "-";
+
+
+    document
+    .getElementById(
+        "manageCollegeState"
+    )
+    .textContent =
+    college.state || "-";
+
+
+    document
+    .getElementById(
+        "manageCollegeLocation"
+    )
+    .textContent =
+    (college.city || "") +
+    (
+        college.state
+        ? ", " + college.state
+        : ""
+    );
+
+
+    document
+    .getElementById(
+        "editCollegeName"
+    )
+    .value =
+    college.college_name || "";
+
+
+    document
+    .getElementById(
+        "editCollegeCode"
+    )
+    .value =
+    college.college_code || "";
+
+
+    document
+    .getElementById(
+        "editCollegeCity"
+    )
+    .value =
+    college.city || "";
+
+
+    document
+    .getElementById(
+        "editCollegeState"
+    )
+    .value =
+    college.state || "";
+
+
+    await loadCollegeManagementCounts(
+        collegeId
+    );
+
+
+    showOnlyCollegeManagement();
+
+}
+
+
+/* =====================================================
+   MANAGEMENT COUNTS
+===================================================== */
+
+async function loadCollegeManagementCounts(
+    collegeId
+){
+
+    const {
+        count:admins
+    } =
+    await client
+    .from("college_admins")
+    .select(
+        "id",
+        {
+            count:"exact",
+            head:true
+        }
+    )
+    .eq(
+        "college_id",
+        collegeId
+    );
+
+
+    document
+    .getElementById(
+        "manageAdminCount"
+    )
+    .textContent =
+    admins || 0;
+
+
+    const {
+        count:students
+    } =
+    await client
+    .from("college_memberships")
+    .select(
+        "id",
+        {
+            count:"exact",
+            head:true
+        }
+    )
+    .eq(
+        "college_id",
+        collegeId
+    )
+    .eq(
+        "is_active",
+        true
+    );
+
+
+    document
+    .getElementById(
+        "manageStudentCount"
+    )
+    .textContent =
+    students || 0;
+
+
+    const {
+        count:requests
+    } =
+    await client
+    .from("college_join_requests")
+    .select(
+        "id",
+        {
+            count:"exact",
+            head:true
+        }
+    )
+    .eq(
+        "college_id",
+        collegeId
+    )
+    .eq(
+        "status",
+        "pending"
+    );
+
+
+    document
+    .getElementById(
+        "manageRequestCount"
+    )
+    .textContent =
+    requests || 0;
+
+}
+
+
+/* =====================================================
+   EDIT COLLEGE
+===================================================== */
+
+async function saveCollegeChanges(){
+
+    if(!selectedCollegeId)
+        return;
+
+
+    const name =
+    document
+    .getElementById(
+        "editCollegeName"
+    )
+    .value
+    .trim();
+
+
+    const code =
+    document
+    .getElementById(
+        "editCollegeCode"
+    )
+    .value
+    .trim()
+    .toUpperCase();
+
+
+    const city =
+    document
+    .getElementById(
+        "editCollegeCity"
+    )
+    .value
+    .trim();
+
+
+    const state =
+    document
+    .getElementById(
+        "editCollegeState"
+    )
+    .value
+    .trim();
+
+
+    const message =
+    document.getElementById(
+        "editMessage"
+    );
+
+
+    if(!name || !code){
+
+        message.textContent =
+        "College name and code are required.";
+
+        return;
+
+    }
+
+
+    message.textContent =
+    "Saving changes...";
+
+
+    const {
+        error
+    } =
+    await client
+    .from("colleges")
+    .update({
+
+        college_name:name,
+
+        college_code:code,
+
+        city:city || null,
+
+        state:state || null
+
+    })
+    .eq(
+        "id",
+        selectedCollegeId
+    );
+
+
+    if(error){
+
+        message.textContent =
+        "Error: " +
+        error.message;
+
+        return;
+
+    }
+
+
+    message.textContent =
+    "College updated successfully! 🏆";
+
+
+    document
+    .getElementById(
+        "manageCollegeName"
+    )
+    .textContent =
+    name;
+
+
+    document
+    .getElementById(
+        "manageCollegeCode"
+    )
+    .textContent =
+    code;
+
+
+    document
+    .getElementById(
+        "manageCollegeCity"
+    )
+    .textContent =
+    city || "-";
+
+
+    document
+    .getElementById(
+        "manageCollegeState"
+    )
+    .textContent =
+    state || "-";
+
+}
+
+
+/* =====================================================
+   ADMINS
+===================================================== */
+
+async function openAdmins(){
+
+    if(!selectedCollegeId)
+        return;
+
+
+    const {
+        data:college
+    } =
+    await client
+    .from("colleges")
+    .select(
+        "college_name"
+    )
+    .eq(
+        "id",
+        selectedCollegeId
+    )
+    .single();
+
+
+    document
+    .getElementById(
+        "adminsCollegeName"
+    )
+    .textContent =
+    college
+    ? college.college_name
+    : "College";
+
+
+    await loadAdmins();
+
+    showOnlyAdmins();
+
+}
+
+
+/* =====================================================
+   LOAD ADMINS
+===================================================== */
+
+async function loadAdmins(){
+
+    const {
+        data,
+        error
+    } =
+    await client
+    .from("college_admins")
+    .select(`
+        id,
+        user_id,
+        created_at,
+        profiles!college_admins_user_id_fkey (
+            full_name,
+            inter_rivalry_id
+        )
+    `)
+    .eq(
+        "college_id",
+        selectedCollegeId
+    )
+    .order(
+        "created_at",
+        {
+            ascending:false
+        }
+    );
+
+
+    const list =
+    document.getElementById(
+        "adminsList"
+    );
+
+
+    list.innerHTML = "";
+
+
+    if(error){
+
+        console.error(error);
+
+        list.innerHTML =
+        `
+        <div class="empty-box">
+            Unable to load admins.<br>
+            ${escapeHTML(error.message)}
+        </div>
+        `;
+
+        return;
+
+    }
+
+
+    if(!data || data.length === 0){
+
+        list.innerHTML =
+        `
+        <div class="empty-box">
+            No college admins assigned yet.
+        </div>
+        `;
+
+        return;
+
+    }
+
+
+    data.forEach(
+        admin => {
+
+            const card =
+            document.createElement("div");
+
+            card.className =
+            "admin-card";
+
+
+            const profile =
+            admin.profiles;
+
+
+            const name =
+            profile
+            ? profile.full_name
+            : "Unknown User";
+
+
+            const rivalryId =
+            profile
+            ? profile.inter_rivalry_id
+            : "Unknown";
+
+
+            card.innerHTML = `
+
+                <h3>
+                    👤 ${escapeHTML(name)}
+                </h3>
+
+                <div class="admin-info">
+
+                    INTER RIVALRY ID:
+                    ${escapeHTML(rivalryId)}
+
+                    <br>
+
+                    User ID:
+                    ${escapeHTML(admin.user_id)}
+
+                </div>
+
+                <br>
+
+                <button
+                    class="small-btn danger-btn"
+                    onclick="removeCollegeAdmin('${admin.id}')">
+                    REMOVE ADMIN
+                </button>
+
+            `;
+
+
+            list.appendChild(card);
+
+        }
+    );
+
+}
+
+
+/* =====================================================
+   ADD ADMIN
+===================================================== */
+
+async function addCollegeAdmin(){
+
+    const userId =
+    document
+    .getElementById(
+        "adminUserId"
+    )
+    .value
+    .trim();
+
+
+    const message =
+    document.getElementById(
+        "adminManageMessage"
+    );
+
+
+    if(!userId){
+
+        message.textContent =
+        "Enter the user's UUID.";
+
+        return;
+
+    }
+
+
+    message.textContent =
+    "Checking user...";
+
+
+    const {
+        data:profile,
+        error:profileError
+    } =
+    await client
+    .from("profiles")
+    .select(`
+        id,
+        full_name,
+        role
+    `)
+    .eq(
+        "id",
+        userId
+    )
+    .single();
+
+
+    if(profileError || !profile){
+
+        message.textContent =
+        "User not found in profiles.";
+
+        return;
+
+    }
+
+
+    const {
+        error:roleError
+    } =
+    await client
+    .from("profiles")
+    .update({
+
+        role:"college_admin",
+
+        updated_at:
+        new Date().toISOString()
+
+    })
+    .eq(
+        "id",
+        userId
+    );
+
+
+    if(roleError){
+
+        message.textContent =
+        "Could not update role: " +
+        roleError.message;
+
+        return;
+
+    }
+
+
+    const {
+        error
+    } =
+    await client
+    .from("college_admins")
+    .insert({
+
+        college_id:
+        selectedCollegeId,
+
+        user_id:
+        userId
+
+    });
+
+
+    if(error){
+
+        console.error(error);
+
+        message.textContent =
+        "Could not add admin: " +
+        error.message;
+
+        return;
+
+    }
+
+
+    message.textContent =
+    "College admin added successfully! 🏆";
+
+
+    document
+    .getElementById(
+        "adminUserId"
+    )
+    .value = "";
+
+
+    await loadAdmins();
+
+
+    await loadCollegeManagementCounts(
+        selectedCollegeId
+    );
+
+}
+
+
+/* =====================================================
+   REMOVE ADMIN
+===================================================== */
+
+async function removeCollegeAdmin(adminId){
+
+    const confirmed =
+    confirm(
+        "Remove this college admin?"
+    );
+
+
+    if(!confirmed)
+        return;
+
+
+    const {
+        data:admin
+    } =
+    await client
+    .from("college_admins")
+    .select(
+        "user_id"
+    )
+    .eq(
+        "id",
+        adminId
+    )
+    .single();
+
+
+    if(!admin){
+
+        alert(
+            "Admin not found."
+        );
+
+        return;
+
+    }
+
+
+    const {
+        error
+    } =
+    await client
+    .from("college_admins")
+    .delete()
+    .eq(
+        "id",
+        adminId
+    );
+
+
+    if(error){
+
+        alert(
+            "Could not remove admin: " +
+            error.message
+        );
+
+        return;
+
+    }
+
+
+    const {
+        count
+    } =
+    await client
+    .from("college_admins")
+    .select(
+        "id",
+        {
+            count:"exact",
+            head:true
+        }
+    )
+    .eq(
+        "user_id",
+        admin.user_id
+    );
+
+
+    if(!count || count === 0){
+
+        await client
+        .from("profiles")
+        .update({
+
+            role:"student",
+
+            updated_at:
+            new Date().toISOString()
+
+        })
+        .eq(
+            "id",
+            admin.user_id
+        );
+
+    }
+
+
+    await loadAdmins();
+
+
+    await loadCollegeManagementCounts(
+        selectedCollegeId
+    );
+
+}
+
+
+/* =====================================================
+   STUDENTS
+===================================================== */
+
+async function openStudents(){
+
+    const {
+        data:college
+    } =
+    await client
+    .from("colleges")
+    .select(
+        "college_name"
+    )
+    .eq(
+        "id",
+        selectedCollegeId
+    )
+    .single();
+
+
+    document
+    .getElementById(
+        "studentsCollegeName"
+    )
+    .textContent =
+    college
+    ? college.college_name
+    : "College";
+
+
+    await loadStudents();
+
+    showOnlyStudents();
+
+}
+
+
+/* =====================================================
+   LOAD STUDENTS
+===================================================== */
+
+async function loadStudents(){
+
+    const list =
+    document.getElementById(
+        "studentsList"
+    );
+
+
+    list.innerHTML =
+    "<div class='empty-box'>Loading students...</div>";
+
+
+    const {
+        data,
+        error
+    } =
+    await client
+    .from("college_memberships")
+    .select(`
+        id,
+        user_id,
+        student_number,
+        department,
+        course,
+        year_of_study,
+        specialization,
+        joined_at
+    `)
+    .eq(
+        "college_id",
+        selectedCollegeId
+    )
+    .eq(
+        "is_active",
+        true
+    )
+    .order(
+        "joined_at",
+        {
+            ascending:false
+        }
+    );
+
+
+    if(error){
+
+        console.error(error);
+
+        list.innerHTML =
+        `
+        <div class="empty-box">
+            Unable to load students.<br>
+            ${escapeHTML(error.message)}
+        </div>
+        `;
+
+        return;
+
+    }
+
+
+    if(!data || data.length === 0){
+
+        list.innerHTML =
+        `
+        <div class="empty-box">
+            No students have joined this college yet.
+        </div>
+        `;
+
+        return;
+
+    }
+
+
+    list.innerHTML = "";
+
+
+    for(
+        const student
+        of data
+    ){
+
+        const result =
+        await client
+        .from("profiles")
+        .select(`
+            id,
+            full_name,
+            inter_rivalry_id
+        `)
+        .eq(
+            "id",
+            student.user_id
+        )
+        .maybeSingle();
+
+
+        const profile =
+        result.data;
+
+
+        const name =
+        profile
+        ? profile.full_name
+        : "Unknown Student";
+
+
+        const rivalryId =
+        profile
+        ? profile.inter_rivalry_id
+        : "Unknown";
+
+
+        const card =
+        document.createElement("div");
+
+
+        card.className =
+        "student-card";
+
+
+        card.innerHTML = `
+
+            <h3>
+                🎓 ${escapeHTML(name)}
+            </h3>
+
+            <div class="student-info">
+
+                INTER RIVALRY ID:
+                ${escapeHTML(rivalryId)}
+
+                <br>
+
+                Course:
+                ${escapeHTML(
+                    student.course || "-"
+                )}
+
+                <br>
+
+                Year:
+                ${escapeHTML(
+                    student.year_of_study || "-"
+                )}
+
+                <br>
+
+                Department:
+                ${escapeHTML(
+                    student.department || "-"
+                )}
+
+                <br>
+
+                Specialization:
+                ${escapeHTML(
+                    student.specialization || "-"
+                )}
+
+                <br>
+
+                Student Number:
+                ${escapeHTML(
+                    student.student_number ||
+                    "Not assigned"
+                )}
+
+            </div>
+
+            <div class="student-actions">
+
+                <button
+                    class="small-btn"
+                    onclick="viewProfile('${student.user_id}')">
+                    VIEW PROFILE
+                </button>
+
+            </div>
+
+        `;
+
+
+        list.appendChild(card);
+
+    }
+
+}
+
+
+/* =====================================================
+   REQUESTS
+===================================================== */
+
+async function openRequests(){
+
+    const {
+        data:college
+    } =
+    await client
+    .from("colleges")
+    .select(
+        "college_name"
+    )
+    .eq(
+        "id",
+        selectedCollegeId
+    )
+    .single();
+
+
+    document
+    .getElementById(
+        "requestsCollegeName"
+    )
+    .textContent =
+    college
+    ? college.college_name
+    : "College";
+
+
+    await loadRequests();
+
+    showOnlyRequests();
+
+}
+
+
+/* =====================================================
+   LOAD REQUESTS
+===================================================== */
+
+async function loadRequests(){
+
+    const list =
+    document.getElementById(
+        "requestsList"
+    );
+
+
+    list.innerHTML =
+    "<div class='empty-box'>Loading requests...</div>";
+
+
+    const {
+        data,
+        error
+    } =
+    await client
+    .from("college_join_requests")
+    .select(`
+        id,
+        student_id,
+        department,
+        course,
+        year_of_study,
+        specialization,
+        status,
+        created_at
+    `)
+    .eq(
+        "college_id",
+        selectedCollegeId
+    )
+    .eq(
+        "status",
+        "pending"
+    )
+    .order(
+        "created_at",
+        {
+            ascending:true
+        }
+    );
+
+
+    if(error){
+
+        console.error(error);
+
+        list.innerHTML =
+        `
+        <div class="empty-box">
+            Unable to load requests.<br>
+            ${escapeHTML(error.message)}
+        </div>
+        `;
+
+        return;
+
+    }
+
+
+    if(!data || data.length === 0){
+
+        list.innerHTML =
+        `
+        <div class="empty-box">
+            🎉 No pending join requests.
+        </div>
+        `;
+
+        return;
+
+    }
+
+
+    list.innerHTML = "";
+
+
+    for(
+        const request
+        of data
+    ){
+
+        const result =
+        await client
+        .from("profiles")
+        .select(`
+            id,
+            full_name,
+            inter_rivalry_id
+        `)
+        .eq(
+            "id",
+            request.student_id
+        )
+        .maybeSingle();
+
+
+        const profile =
+        result.data;
+
+
+        const name =
+        profile
+        ? profile.full_name
+        : "Unknown Student";
+
+
+        const rivalryId =
+        profile
+        ? profile.inter_rivalry_id
+        : "Unknown";
+
+
+        const card =
+        document.createElement("div");
+
+
+        card.className =
+        "request-card";
+
+
+        card.innerHTML = `
+
+            <h3>
+                📩 ${escapeHTML(name)}
+            </h3>
+
+            <div class="request-info">
+
+                INTER RIVALRY ID:
+                ${escapeHTML(rivalryId)}
+
+                <br>
+
+                Course:
+                ${escapeHTML(
+                    request.course || "-"
+                )}
+
+                <br>
+
+                Year:
+                ${escapeHTML(
+                    request.year_of_study || "-"
+                )}
+
+                <br>
+
+                Department:
+                ${escapeHTML(
+                    request.department || "-"
+                )}
+
+                <br>
+
+                Specialization:
+                ${escapeHTML(
+                    request.specialization || "-"
+                )}
+
+            </div>
+
+            <div class="request-actions">
+
+                <button
+                    class="small-btn approve-btn"
+                    onclick="reviewRequest('${request.id}',true)">
+                    ✅ APPROVE
+                </button>
+
+                <button
+                    class="small-btn reject-btn"
+                    onclick="reviewRequest('${request.id}',false)">
+                    ❌ REJECT
+                </button>
+
+            </div>
+
+        `;
+
+
+        list.appendChild(card);
+
+    }
+
+}
+
+
+/* =====================================================
+   APPROVE / REJECT
+===================================================== */
+
+async function reviewRequest(
+    requestId,
+    approve
+){
+
+    const action =
+    approve
+    ? "approve"
+    : "reject";
+
+
+    const confirmed =
+    confirm(
+        "Are you sure you want to " +
+        action +
+        " this request?"
+    );
+
+
+    if(!confirmed)
+        return;
+
+
+    const {
+        error
+    } =
+    await client.rpc(
+        "review_college_join_request",
+        {
+            p_request_id:
+            requestId,
+
+            p_approve:
+            approve
+        }
+    );
+
+
+    if(error){
+
+        console.error(error);
+
+        alert(
+            "Could not " +
+            action +
+            " request:\n" +
+            error.message
+        );
+
+        return;
+
+    }
+
+
+    alert(
+        approve
+        ? "Student approved successfully! 🎓"
+        : "Request rejected."
+    );
+
+
+    await loadRequests();
+
+
+    await loadCollegeManagementCounts(
+        selectedCollegeId
+    );
+
+}
+
+
+/* =====================================================
+   COLLEGE ADMIN DASHBOARD
+===================================================== */
+
+async function loadCollegeAdminDashboard(
+    user,
+    profile
+){
+
+    const {
+        data:admin,
+        error
+    } =
+    await client
+    .from("college_admins")
+    .select(`
+        college_id,
+        colleges (
+            college_name,
+            college_code,
+            city,
+            state
+        )
+    `)
+    .eq(
+        "user_id",
+        user.id
+    )
+    .maybeSingle();
+
+
+    if(error || !admin){
+
+        alert(
+            "Your college admin account has not been assigned to a college yet."
+        );
+
+        showAuth();
+
+        return;
+
+    }
+
+
+    showOnlyAdmin();
+
+
+    document
+    .querySelector(
+        "#adminDashboard .admin-header h1"
+    )
+    .textContent =
+    "🏫 " +
+    (
+        admin.colleges
+        ? admin.colleges.college_name
+        : "College Admin"
+    );
+
+
+    document
+    .querySelector(
+        "#adminDashboard .admin-header p"
+    )
+    .textContent =
+    "College Admin Panel";
+
+}
+
+
+/* =====================================================
+   NAVIGATION
+===================================================== */
+
+function backToAdmin(){
+
+    selectedCollegeId =
+    null;
+
+    loadAdminDashboard();
+
+}
+
+
+function backToManagement(){
+
+    showOnlyCollegeManagement();
+
+}
+
+
+function backToStudentDashboard(){
+
+    selectedProfileId =
+    null;
+
+    loadStudentDashboardFromCurrentUser();
+
+}
+
+
+async function loadStudentDashboardFromCurrentUser(){
+
+    const {
+        data:{
+            user
+        }
+    } =
+    await client.auth.getUser();
+
+
+    if(!user){
+
+        showAuth();
+
+        return;
+
+    }
+
+
+    const {
+        data:profile
+    } =
+    await client
+    .from("profiles")
+    .select(`
+        id,
+        full_name,
+        inter_rivalry_id,
+        role
+    `)
+    .eq(
+        "id",
+        user.id
+    )
+    .single();
+
+
+    if(profile){
+
+        await loadStudentDashboard(
+            user,
+            profile
+        );
+
+    }
+
+}
+
+
+function backToProfile(){
+
+    showOnlyProfile();
+
+}
+
+
+/* =====================================================
+   SHOW FUNCTIONS
+===================================================== */
+
+function showOnlyStudent(){
+
+    hideAll();
+
+    studentDashboard.classList.remove(
+        "hidden"
+    );
+
+}
+
+
+function showOnlyProfile(){
+
+    hideAll();
+
+    profilePage.classList.remove(
+        "hidden"
+    );
+
+}
+
+
+function showOnlyChallenge(){
+
+    hideAll();
+
+    challengePage.classList.remove(
+        "hidden"
+    );
+
+}
+
+
+function showOnlyMyChallenges(){
+
+    hideAll();
+
+    myChallengesPage.classList.remove(
+        "hidden"
+    );
+
+    loadMyChallenges();
+
+}
+
+
+function showOnlyAdmin(){
+
+    hideAll();
+
+    adminDashboard.classList.remove(
+        "hidden"
+    );
+
+}
+
+
+function showOnlyCollegeManagement(){
+
+    hideAll();
+
+    collegeManagement.classList.remove(
+        "hidden"
+    );
+
+}
+
+
+function showOnlyAdmins(){
+
+    hideAll();
+
+    adminsPage.classList.remove(
+        "hidden"
+    );
+
+}
+
+
+function showOnlyStudents(){
+
+    hideAll();
+
+    studentsPage.classList.remove(
+        "hidden"
+    );
+
+}
+
+
+function showOnlyRequests(){
+
+    hideAll();
+
+    requestsPage.classList.remove(
+        "hidden"
+    );
+
+}
+
+
+/* =====================================================
+   INTERESTS
+===================================================== */
+
+let interestSkillCache=[];
+let currentInterestIds=new Set();
+
+async function loadInterestsEditor(){
+    const box=document.getElementById("interestEditor");
+    box.innerHTML="<div class='empty-box'>Loading interests...</div>";
+    const {data:{user}}=await client.auth.getUser();if(!user)return;
+    const [{data:skills,error:skillError},{data:parts}]=await Promise.all([
+        client.from("subcategories").select("id,name,categories(name)").order("name"),
+        client.from("participations").select("subcategory_id").eq("user_id",user.id)
+    ]);
+    if(skillError){box.innerHTML=`<div class="empty-box">Unable to load skills.<br>${escapeHTML(skillError.message)}</div>`;return;}
+    interestSkillCache=skills||[];currentInterestIds=new Set((parts||[]).map(x=>x.subcategory_id));
+    const groups=new Map();
+    interestSkillCache.forEach(s=>{const cat=s.categories?.name||"Other";if(!groups.has(cat))groups.set(cat,[]);groups.get(cat).push(s)});
+    box.innerHTML=[...groups.entries()].sort((a,b)=>a[0].localeCompare(b[0])).map(([cat,items])=>`<div class="interest-category"><h3>${escapeHTML(cat)}</h3><div class="interest-list">${items.map(s=>`<label class="interest-item"><input type="checkbox" class="interest-check" value="${escapeHTML(s.id)}" ${currentInterestIds.has(s.id)?"checked":""}>${escapeHTML(s.name)}</label>`).join("")}</div></div>`).join("")||"<div class='empty-box'>No skills have been created yet.</div>";
+}
+
+async function saveInterests(){
+    const message=document.getElementById("interestMessage");
+    const {data:{user}}=await client.auth.getUser();if(!user)return;
+    const selected=[...document.querySelectorAll(".interest-check:checked")].map(x=>x.value);
+    message.textContent="Saving interests...";
+    const keep=new Set(selected);
+    const toDelete=[...currentInterestIds].filter(id=>!keep.has(id));
+    if(toDelete.length){const {error}=await client.from("participations").delete().eq("user_id",user.id).in("subcategory_id",toDelete);if(error){message.textContent="Could not remove interests: "+error.message;return;}}
+    const toInsert=selected.filter(id=>!currentInterestIds.has(id)).map(id=>({user_id:user.id,subcategory_id:id}));
+    if(toInsert.length){const {error}=await client.from("participations").insert(toInsert);if(error){message.textContent="Could not save interests: "+error.message;return;}}
+    currentInterestIds=new Set(selected);message.textContent="Interests saved successfully! 🎯";
+    await loadMyInterestSummary();await loadRivals();
+}
+
+async function loadMyInterestSummary(){
+    const box=document.getElementById("myInterestSummary");
+    if(!box)return;
+    const {data:{user}}=await client.auth.getUser();if(!user)return;
+    const {data}=await client.from("participations").select("subcategories(name,categories(name))").eq("user_id",user.id);
+    const rows=data||[];
+    box.innerHTML=rows.length?rows.map(x=>`<span class="category-tag">${escapeHTML(x.subcategories?.categories?.name||"Skill")} • ${escapeHTML(x.subcategories?.name||"")}</span>`).join(""):"<span style='color:#777'>No interests selected yet.</span>";
+}
+
+async function loadMyQuickStats(){
+    const box=document.getElementById("myQuickStats");if(!box)return;
+    const {data:{user}}=await client.auth.getUser();if(!user)return;
+    const {data}=await client.from("challenges").select("status,rules,challenger_id,opponent_id").or(`challenger_id.eq.${user.id},opponent_id.eq.${user.id}`);
+    const rows=data||[],wins=rows.filter(c=>c.status==="completed"&&c.rules?.winner_id===user.id).length,completed=rows.filter(c=>c.status==="completed").length,pending=rows.filter(c=>c.status==="pending").length;
+    box.innerHTML=`<div class="stat-grid"><div class="rival-stat"><div class="num">${wins}</div><div class="lbl">Wins</div></div><div class="rival-stat"><div class="num">${completed}</div><div class="lbl">Completed</div></div><div class="rival-stat"><div class="num">${pending}</div><div class="lbl">Pending</div></div></div>`;
+}
+
+async function loadResults(){
+    const list=document.getElementById("resultsList"),stats=document.getElementById("resultStats");
+    list.innerHTML="<div class='empty-box'>Loading results...</div>";
+    const {data:{user}}=await client.auth.getUser();if(!user)return;
+    const {data,error}=await client.from("challenges").select("id,challenger_id,opponent_id,title,starts_at,ends_at,rules,subcategory_id,subcategories(name,categories(name))").eq("status","completed").or(`challenger_id.eq.${user.id},opponent_id.eq.${user.id}`).order("ends_at",{ascending:false});
+    if(error){list.innerHTML=`<div class="empty-box">Unable to load results.<br>${escapeHTML(error.message)}</div>`;return;}
+    const rows=data||[],wins=rows.filter(c=>c.rules?.winner_id===user.id).length,draws=rows.filter(c=>c.rules?.result==="draw").length,losses=rows.length-wins-draws;
+    stats.innerHTML=`<div class="rival-stat"><div class="num">${wins}</div><div class="lbl">Wins</div></div><div class="rival-stat"><div class="num">${losses}</div><div class="lbl">Losses</div></div><div class="rival-stat"><div class="num">${draws}</div><div class="lbl">Draws</div></div><div class="rival-stat"><div class="num">${rows.length}</div><div class="lbl">Total</div></div>`;
+    if(!rows.length){list.innerHTML="<div class='empty-box'>No completed challenges yet.</div>";return;}
+    list.innerHTML="";
+    for(const c of rows){
+        const otherId=c.challenger_id===user.id?c.opponent_id:c.challenger_id;
+        const {data:p}=await client.from("profiles").select("full_name,inter_rivalry_id").eq("id",otherId).maybeSingle();
+        const winner=c.rules?.result==="draw"?"DRAW":c.rules?.winner_id===user.id?"WIN":"LOSS";
+        const skill=c.subcategories?((c.subcategories.categories?.name?c.subcategories.categories.name+" • ":"")+c.subcategories.name):"Skill";
+        const card=document.createElement("div");card.className="challenge-card";
+        card.innerHTML=`<h3>🏆 ${escapeHTML(c.title)}</h3><div class="challenge-info"><strong>Opponent:</strong> ${escapeHTML(p?.full_name||"User")}<br><strong>INTER RIVALRY ID:</strong> ${escapeHTML(p?.inter_rivalry_id||"-")}<br><strong>Skill:</strong> ${escapeHTML(skill)}<br><strong>Result:</strong> ${escapeHTML(winner)}<br><strong>Score:</strong> ${escapeHTML(c.rules?.my_score??"-")} - ${escapeHTML(c.rules?.opponent_score??"-")}<br><strong>Completed:</strong> ${escapeHTML(formatDate(c.ends_at))}</div>`;
+        list.appendChild(card);
+    }
+}
+
+function showOnlyInterests(){hideAll();document.getElementById("interestsPage").classList.remove("hidden");loadInterestsEditor();}
+function showOnlyResults(){hideAll();document.getElementById("resultsPage").classList.remove("hidden");loadResults();}
+
+/* =====================================================
+   HIDE EVERYTHING
+===================================================== */
+
+function hideAll(){
+
+    loadingScreen.classList.add(
+        "hidden"
+    );
+
+    authPage.classList.add(
+        "hidden"
+    );
+
+    studentDashboard.classList.add(
+        "hidden"
+    );
+
+    profilePage.classList.add(
+        "hidden"
+    );
+
+    challengePage.classList.add(
+        "hidden"
+    );
+
+    myChallengesPage.classList.add(
+        "hidden"
+    );
+
+    adminDashboard.classList.add(
+        "hidden"
+    );
+
+    collegeManagement.classList.add(
+        "hidden"
+    );
+
+    adminsPage.classList.add(
+        "hidden"
+    );
+
+    studentsPage.classList.add(
+        "hidden"
+    );
+
+    requestsPage.classList.add(
+        "hidden"
+    );
+
+    document.getElementById("interestsPage").classList.add("hidden");
+    document.getElementById("resultsPage").classList.add("hidden");
+
+}
+
+
+/* =====================================================
+   AUTH
+===================================================== */
+
+function showAuth(){
+
+    hideAll();
+
+    authPage.classList.remove(
+        "hidden"
+    );
+
+}
+
+
+/* =====================================================
+   LOGOUT
+===================================================== */
+
+async function logout(){
+
+    await client.auth.signOut();
+
+    selectedCollegeId =
+    null;
+
+    selectedProfileId =
+    null;
+
+    showAuth();
+
+}
+
+
+/* =====================================================
+   AUTH STATE
+===================================================== */
+
+client.auth.onAuthStateChange(
+    async(
+        event,
+        session
+    )=>{
+
+        if(session){
+
+            setTimeout(
+                ()=>{
+                    loadUser();
+                },
+                0
+            );
+
+        }
+        else{
+
+            showAuth();
+
+        }
+
+    }
+);
+
+
+/* =====================================================
+   INITIALIZE
+===================================================== */
+
+async function initialize(){
+
+    const {
+        data:{
+            session
+        }
+    } =
+    await client.auth.getSession();
+
+
+    if(session){
+
+        await loadUser();
+
+    }
+    else{
+
+        showAuth();
+
+    }
+
+}
+
+
+/* =====================================================
+   ESCAPE HTML
+===================================================== */
+
+function escapeHTML(value){
+
+    if(
+        value === null ||
+        value === undefined
+    ){
+
+        return "";
+
+    }
+
+
+    return String(value)
+    .replaceAll(
+        "&",
+        "&amp;"
+    )
+    .replaceAll(
+        "<",
+        "&lt;"
+    )
+    .replaceAll(
+        ">",
+        "&gt;"
+    )
+    .replaceAll(
+        '"',
+        "&quot;"
+    )
+    .replaceAll(
+        "'",
+        "&#039;"
+    );
+
+}
+
+
+/* =====================================================
+   FORMAT DATE
+===================================================== */
+
+function formatDate(value){
+
+    if(!value)
+        return "-";
+
+
+    const date =
+    new Date(value);
+
+
+    if(
+        Number.isNaN(
+            date.getTime()
+        )
+    ){
+
+        return "-";
+
+    }
+
+
+    return date.toLocaleString();
+
+}
+
+
+/* =====================================================
+   START
+===================================================== */
+
+initialize();
+
+</script>
+
+</body>
+</html>
