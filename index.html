@@ -22,7 +22,7 @@ button{cursor:pointer}
 .input-group textarea{min-height:100px;resize:vertical}
 .input-group select option{background:#111}
 .message{text-align:center;color:#aaa;font-size:14px;margin-top:16px;line-height:1.5}
-.navbar{min-height:70px;padding:0 25px;display:flex;align-items:center;justify-content:space-between;background:#0d0d0d;border-bottom:1px solid #222}
+.navbar{min-height:70px;padding:0 25px;display:flex;align-items:center;justify-content:space-between;background:#0d0d0d;border-bottom:1px solid #222;position:relative}
 .nav-logo{font-size:20px;font-weight:900;letter-spacing:2px}
 .nav-right{display:flex;align-items:center;gap:12px}
 .role-badge{padding:7px 10px;border:1px solid #333;border-radius:8px;font-size:12px;color:#aaa}
@@ -213,7 +213,7 @@ button{cursor:pointer}
 .btn-3d-xs-white-glow:active{transform:translateY(3px);box-shadow:0 1px 0 #b0b0b0,0 2px 8px rgba(255,255,255,0.06)}
 .btn-3d-xs-white-glow:hover{transform:translateY(-1px);box-shadow:0 5px 0 #b0b0b0,0 6px 18px rgba(255,255,255,0.15);border-color:rgba(255,255,255,0.4)}
 
-/* DANGER WHITE GLOW (for delete/reject) */
+/* DANGER WHITE GLOW */
 .btn-3d-sm-white-glow-danger{
     position:relative;
     padding:10px 20px;
@@ -238,7 +238,7 @@ button{cursor:pointer}
 .btn-3d-sm-white-glow-danger:active{transform:translateY(4px);box-shadow:0 1px 0 #b0b0b0,0 3px 10px rgba(255,255,255,0.08)}
 .btn-3d-sm-white-glow-danger:hover{transform:translateY(-1px);box-shadow:0 6px 0 #b0b0b0,0 8px 25px rgba(255,255,255,0.2);border-color:rgba(255,80,80,0.5)}
 
-/* GOLD WHITE GLOW (for special actions) */
+/* GOLD WHITE GLOW */
 .btn-3d-white-glow-gold{
     position:relative;
     padding:14px 32px;
@@ -263,11 +263,35 @@ button{cursor:pointer}
 .btn-3d-white-glow-gold:active{transform:translateY(6px);box-shadow:0 2px 0 #b7791f,0 5px 15px rgba(255,215,0,0.1)}
 .btn-3d-white-glow-gold:hover{transform:translateY(-2px);box-shadow:0 10px 0 #b7791f,0 12px 30px rgba(255,215,0,0.25);border-color:rgba(255,215,0,0.6)}
 
-.btn-3d:disabled,.btn-3d-white-glow:disabled,.btn-3d-sm-white-glow:disabled{opacity:0.5;cursor:not-allowed;transform:translateY(4px)!important;box-shadow:0 2px 0 #b0b0b0!important}
+.btn-3d-white-glow:disabled,.btn-3d-sm-white-glow:disabled{opacity:0.5;cursor:not-allowed;transform:translateY(4px)!important;box-shadow:0 2px 0 #b0b0b0!important}
 
 /* ============ RANK BADGE ANIMATION ============ */
 .rank-badge{animation:rankPulse 2s infinite}
 @keyframes rankPulse{0%{transform:scale(1)}50%{transform:scale(1.05)}100%{transform:scale(1)}}
+
+/* ============ NOTIFICATION DROPDOWN ============ */
+#notificationDropdown::-webkit-scrollbar{width:6px}
+#notificationDropdown::-webkit-scrollbar-track{background:#0a0a0a;border-radius:8px}
+#notificationDropdown::-webkit-scrollbar-thumb{background:#333;border-radius:8px}
+#notificationDropdown::-webkit-scrollbar-thumb:hover{background:#555}
+
+/* ============ RESTRICTED ACCESS BANNER ============ */
+.restricted-banner {
+    background: linear-gradient(135deg, #1a0a0a, #2d1b1b);
+    border: 2px solid #fdcb6e;
+    border-radius: 16px;
+    padding: 30px;
+    text-align: center;
+    margin: 20px 0;
+}
+.restricted-banner h2 {
+    color: #fdcb6e;
+    font-size: 24px;
+}
+.restricted-banner p {
+    color: #aaa;
+    margin-top: 10px;
+}
 </style>
 </head>
 <body>
@@ -305,20 +329,40 @@ button{cursor:pointer}
 <section id="studentDashboard" class="hidden">
 <nav class="navbar">
 <div class="nav-logo">INTER RIVALRY</div>
-<div class="nav-right"><div class="role-badge">STUDENT</div><button class="btn-3d-sm-white-glow-danger" style="width:auto;padding:8px 16px;font-size:12px;" onclick="logout()">🚪 LOGOUT</button></div>
+<div class="nav-right">
+    <div style="position:relative;cursor:pointer;" onclick="toggleNotifications()">
+        🔔
+        <span id="notificationBadge" style="position:absolute;top:-8px;right:-8px;background:#ff6b6b;color:white;border-radius:50%;padding:2px 6px;font-size:10px;display:none;min-width:18px;text-align:center;">0</span>
+    </div>
+    <div class="role-badge" id="roleBadge">STUDENT</div>
+    <button class="btn-3d-sm-white-glow-danger" style="width:auto;padding:8px 16px;font-size:12px;" onclick="logout()">🚪 LOGOUT</button>
+</div>
+<div id="notificationDropdown" style="display:none;position:absolute;top:70px;right:20px;background:#1a1a1a;border:1px solid #333;border-radius:12px;padding:15px;min-width:300px;max-width:400px;max-height:400px;overflow-y:auto;z-index:1000;box-shadow:0 10px 40px rgba(0,0,0,0.5);">
+    <div style="color:#888;text-align:center;">Loading...</div>
+</div>
 </nav>
 <main class="container">
-<div class="welcome"><h1>Welcome, <span id="userName">Student</span></h1><p>Your rivalry journey starts here.</p></div>
+<div class="welcome"><h1>Welcome, <span id="userName">Student</span></h1><p id="welcomeSubText">Your rivalry journey starts here.</p></div>
+
+<!-- Profile Card -->
 <div class="profile-card">
 <h2>Your Profile</h2>
-<div class="profile-id">INTER RIVALRY ID: <span id="rivalryId">Loading...</span></div>
-<div class="college-status" id="collegeStatus">College: Not joined yet</div>
+<div class="profile-id">INTER RIVALRY ID: <span id="rivalryId">Not assigned</span></div>
+<div class="college-status" id="collegeStatus">❗ College: Not joined yet</div>
 </div>
-<div id="myQuickStats"></div>
-<div class="profile-card" style="margin-top:18px"><h2>🎯 Your Interests</h2><div id="myInterestSummary" style="margin-top:10px"></div><button class="btn-3d-sm-white-glow" style="margin-top:15px;" onclick="showOnlyInterests()">✏️ EDIT INTERESTS</button></div>
 
-<!-- TEAMS SECTION -->
-<div style="margin-top:30px;margin-bottom:30px;">
+<!-- Quick Stats - Hidden until college joined -->
+<div id="myQuickStats"></div>
+
+<!-- Interests - Hidden until college joined -->
+<div class="profile-card" style="margin-top:18px;display:none;" id="interestsSection">
+    <h2>🎯 Your Interests</h2>
+    <div id="myInterestSummary" style="margin-top:10px"></div>
+    <button class="btn-3d-sm-white-glow" style="margin-top:15px;" onclick="showOnlyInterests()">✏️ EDIT INTERESTS</button>
+</div>
+
+<!-- TEAMS SECTION - Hidden until college joined -->
+<div style="margin-top:30px;margin-bottom:30px;display:none;" id="teamsSection">
 <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:16px;">
 <h2 class="section-title" style="margin-bottom:0;">👥 My Teams</h2>
 <button class="btn-3d-sm-white-glow" style="width:auto;padding:10px 24px;" onclick="showCreateTeam()">➕ CREATE TEAM</button>
@@ -326,33 +370,35 @@ button{cursor:pointer}
 <div id="myTeamsList"><div class="empty-box">Loading your teams...</div></div>
 </div>
 
-<!-- TEAM INVITES -->
-<div style="margin-top:30px;margin-bottom:30px;">
+<!-- TEAM INVITES - Hidden until college joined -->
+<div style="margin-top:30px;margin-bottom:30px;display:none;" id="teamInvitesSection">
 <h2 class="section-title">📩 Team Invites</h2>
 <div id="teamInvitesList"><div class="empty-box">Loading invites...</div></div>
 </div>
 
-<!-- COLLEGE -->
+<!-- COLLEGE SECTION - Always visible -->
 <div id="studentCollegeSection">
-<h2 class="section-title">Choose Your College</h2>
+<h2 class="section-title" style="color:#fdcb6e;">🏛️ Join Your College</h2>
+<p style="color:#888;margin-bottom:15px;">You must join a college to get your INTER RIVALRY ID and access all features!</p>
 <div id="collegeList" class="grid"></div>
 </div>
 
-<!-- BATTLEFIELD -->
+<!-- BATTLEFIELD - Hidden until college joined -->
+<div id="battlefieldSection" style="display:none;">
 <h2 class="section-title">Choose Your Battlefield</h2>
 <div class="category-grid">
 <div class="category-card"><div class="category-icon">🏏</div><h3>Sports</h3><p>Cricket • Football • Volleyball</p></div>
 <div class="category-card"><div class="category-icon">🎓</div><h3>Education</h3><p>BCA • B.Com • BBA</p></div>
 <div class="category-card"><div class="category-icon">🎭</div><h3>Culture</h3><p>Dance • Singing • Roast • Rap</p></div>
-<div class="category-card"><div class="category-icon">🎮</div><h3>Gaming</h3><p>BGMI • Free Fire • EA Sports</p></div>
+<div class="category-card"><div class="category-icon">🎮</div><h3>Gaming</h3><p>BGMI • Free Fire • EA Sports • ♟️ Chess</p></div>
 <div class="category-card"><div class="category-icon">💻</div><h3>Technology</h3><p>Coding • Web Development</p></div>
 </div>
+</div>
 
-<!-- RIVALS - HIDDEN BY DEFAULT -->
-<div style="margin-top:35px">
+<!-- RIVALS - Hidden until college joined -->
+<div style="margin-top:35px;display:none;" id="rivalsSectionFull">
     <button class="btn-3d-white-glow-gold" onclick="toggleRivals()" style="width:auto;padding:12px 30px;">⚔️ FIND RIVALS</button>
-    <div id="rivalsSection" style="display:none;margin-top:15px;">
-        <!-- Category Filter Buttons -->
+    <div id="rivalsSubSection" style="display:none;margin-top:15px;">
         <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px;">
             <button class="btn-3d-sm-white-glow filter-btn" onclick="filterRivals('all')" id="rivalFilterAll">📋 ALL</button>
             <button class="btn-3d-sm-white-glow filter-btn" onclick="filterRivals('BCA')" id="rivalFilterBCA">🎓 BCA</button>
@@ -363,17 +409,22 @@ button{cursor:pointer}
     </div>
 </div>
 
-<!-- MY CHALLENGES & LEADERBOARD -->
-<div style="margin-top:25px;display:flex;gap:10px;flex-wrap:wrap;">
-    <button class="btn-3d-white-glow" onclick="showOnlyMyChallenges()" style="flex:1;min-width:150px;">⚔️ MY CHALLENGES</button>
-    <button class="btn-3d-white-glow-gold" onclick="showLeaderboard()" style="flex:1;min-width:150px;">🏆 LEADERBOARD</button>
+<!-- MY CHALLENGES & LEADERBOARD & CATEGORY RANKINGS & TOURNAMENTS - Hidden until college joined -->
+<div style="margin-top:25px;display:flex;gap:10px;flex-wrap:wrap;display:none;" id="actionButtons">
+    <button class="btn-3d-white-glow" onclick="showOnlyMyChallenges()" style="flex:1;min-width:110px;">⚔️ CHALLENGES</button>
+    <button class="btn-3d-white-glow-gold" onclick="showLeaderboard()" style="flex:1;min-width:110px;">🏆 RANKINGS</button>
+    <button class="btn-3d-white-glow" onclick="showCategoryRankings()" style="flex:1;min-width:110px;">📊 CATEGORY</button>
+    <button class="btn-3d-white-glow" onclick="showTournaments()" style="flex:1;min-width:110px;">🏟️ TOURNAMENTS</button>
 </div>
 
-<div class="grid" style="margin-top:12px">
+<div class="grid" style="margin-top:12px;display:none;" id="bottomButtons">
 <button class="btn-3d-sm-white-glow" onclick="showOnlyInterests()">🎯 MY INTERESTS</button>
 <button class="btn-3d-sm-white-glow" onclick="showOnlyResults()">🏆 RESULTS & WINS</button>
 </div>
-<div class="empty-rank">No skill ranks yet.<br>Participate in a skill to begin your ranking journey.</div>
+
+<div class="empty-rank" id="emptyRankMessage">
+No skill ranks yet.<br>Participate in a skill to begin your ranking journey.
+</div>
 </main>
 </section>
 
@@ -505,13 +556,7 @@ button{cursor:pointer}
 </nav>
 <main class="container">
 <button class="btn-3d-white-glow" style="width:auto;padding:10px 24px;font-size:14px;margin-bottom:20px;" onclick="backToStudentDashboard()">⬅️ BACK</button>
-
-<div class="challenge-header">
-<h1>🏆 Rankings</h1>
-<p>Your rank determines your status on the battlefield</p>
-</div>
-
-<!-- Rank Legend -->
+<div class="challenge-header"><h1>🏆 Rankings</h1><p>Your rank determines your status on the battlefield</p></div>
 <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(80px,1fr));gap:10px;margin-bottom:25px;background:#121212;border:1px solid #292929;border-radius:16px;padding:20px;">
     <div style="text-align:center;"><span style="font-size:30px;font-weight:900;color:#ffd700;">S</span><br><span style="font-size:11px;color:#888;">LEGEND</span></div>
     <div style="text-align:center;"><span style="font-size:30px;font-weight:900;color:#00b894;">A</span><br><span style="font-size:11px;color:#888;">ELITE</span></div>
@@ -520,25 +565,122 @@ button{cursor:pointer}
     <div style="text-align:center;"><span style="font-size:30px;font-weight:900;color:#e17055;">D</span><br><span style="font-size:11px;color:#888;">RISING</span></div>
     <div style="text-align:center;"><span style="font-size:30px;font-weight:900;color:#636e72;">E</span><br><span style="font-size:11px;color:#888;">ROOKIE</span></div>
 </div>
-
-<!-- My Rank Card -->
 <div id="myRankCard" style="margin-bottom:25px;"></div>
-
-<!-- Filter Tabs -->
 <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:25px;">
     <button class="btn-3d-sm-white-glow filter-btn" onclick="loadLeaderboard('overall')" id="lbOverall">🏆 OVERALL</button>
     <button class="btn-3d-sm-white-glow filter-btn" onclick="loadLeaderboard('bca')" id="lbBCA">💻 BCA</button>
     <button class="btn-3d-sm-white-glow filter-btn" onclick="loadLeaderboard('bba')" id="lbBBA">📊 BBA</button>
     <button class="btn-3d-sm-white-glow filter-btn" onclick="loadLeaderboard('bcom')" id="lbBCOM">💰 B.Com</button>
 </div>
+<div id="leaderboardList"><div class="empty-box">Loading rankings...</div></div>
+</main>
+</section>
 
-<!-- Leaderboard List -->
-<div id="leaderboardList">
-    <div class="empty-box">Loading rankings...</div>
+<!-- ==================== CATEGORY RANKINGS PAGE ==================== -->
+<section id="categoryRankingsPage" class="hidden">
+<nav class="navbar">
+<div class="nav-logo">INTER RIVALRY</div>
+<div class="nav-right">
+<div class="role-badge">🏆 CATEGORY RANKS</div>
+<button class="btn-3d-sm-white-glow-danger" style="width:auto;padding:8px 16px;font-size:12px;" onclick="logout()">🚪 LOGOUT</button>
+</div>
+</nav>
+<main class="container">
+<button class="btn-3d-white-glow" style="width:auto;padding:10px 24px;font-size:14px;margin-bottom:20px;" onclick="backToStudentDashboard()">⬅️ BACK</button>
+
+<div class="challenge-header">
+<h1>🏆 Category Rankings</h1>
+<p>See who's the best in each category and game!</p>
+</div>
+
+<!-- Category Filter -->
+<div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:25px;">
+    <button class="btn-3d-sm-white-glow filter-btn" onclick="loadCategoryRankings('all')" id="catFilterAll">📋 ALL</button>
+    <button class="btn-3d-sm-white-glow filter-btn" onclick="loadCategoryRankings('Sports')" id="catFilterSports">🏏 SPORTS</button>
+    <button class="btn-3d-sm-white-glow filter-btn" onclick="loadCategoryRankings('Education')" id="catFilterEducation">🎓 EDUCATION</button>
+    <button class="btn-3d-sm-white-glow filter-btn" onclick="loadCategoryRankings('Culture')" id="catFilterCulture">🎭 CULTURE</button>
+    <button class="btn-3d-sm-white-glow filter-btn" onclick="loadCategoryRankings('Gaming')" id="catFilterGaming">🎮 GAMING</button>
+    <button class="btn-3d-sm-white-glow filter-btn" onclick="loadCategoryRankings('Technology')" id="catFilterTech">💻 TECHNOLOGY</button>
+</div>
+
+<!-- Category Rankings Display -->
+<div id="categoryRankingsList">
+    <div class="empty-box">Loading category rankings...</div>
 </div>
 
 </main>
 </section>
+
+<!-- ==================== TOURNAMENTS PAGE ==================== -->
+<section id="tournamentsPage" class="hidden">
+<nav class="navbar">
+<div class="nav-logo">INTER RIVALRY</div>
+<div class="nav-right">
+<div class="role-badge">🏆 TOURNAMENTS</div>
+<button class="btn-3d-sm-white-glow-danger" style="width:auto;padding:8px 16px;font-size:12px;" onclick="logout()">🚪 LOGOUT</button>
+</div>
+</nav>
+<main class="container">
+<button class="btn-3d-white-glow" style="width:auto;padding:10px 24px;font-size:14px;margin-bottom:20px;" onclick="backToStudentDashboard()">⬅️ BACK</button>
+
+<div class="challenge-header">
+<h1>🏆 Tournaments</h1>
+<p>Compete in tournaments and prove your skills!</p>
+</div>
+
+<div id="tournamentAdminControls" style="display:none;margin-bottom:20px;">
+    <button class="btn-3d-white-glow" onclick="showCreateTournament()" style="width:auto;padding:12px 24px;">➕ CREATE TOURNAMENT</button>
+</div>
+
+<div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px;">
+    <button class="btn-3d-sm-white-glow filter-btn" onclick="loadTournaments('all')" id="tournFilterAll">📋 ALL</button>
+    <button class="btn-3d-sm-white-glow filter-btn" onclick="loadTournaments('upcoming')" id="tournFilterUpcoming">⏳ UPCOMING</button>
+    <button class="btn-3d-sm-white-glow filter-btn" onclick="loadTournaments('ongoing')" id="tournFilterOngoing">⚡ ONGOING</button>
+    <button class="btn-3d-sm-white-glow filter-btn" onclick="loadTournaments('completed')" id="tournFilterCompleted">✅ COMPLETED</button>
+</div>
+
+<div id="tournamentsList">
+    <div class="empty-box">Loading tournaments...</div>
+</div>
+
+</main>
+</section>
+
+<!-- ==================== CREATE TOURNAMENT MODAL ==================== -->
+<div id="createTournamentModal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.85);z-index:9999;padding:20px;backdrop-filter:blur(10px);justify-content:center;align-items:center;">
+    <div style="background:#1a1a1a;border:1px solid #333;border-radius:20px;padding:40px;max-width:550px;width:100%;max-height:90vh;overflow-y:auto;">
+        <h2 style="color:white;text-align:center;margin-bottom:20px;">🏆 Create Tournament</h2>
+        <div class="input-group"><label>Tournament Title</label><input id="tournTitle" type="text" placeholder="Enter tournament name"></div>
+        <div class="input-group"><label>Category</label>
+            <select id="tournCategory">
+                <option value="Sports">🏏 Sports</option>
+                <option value="Education">🎓 Education</option>
+                <option value="Culture">🎭 Culture</option>
+                <option value="Gaming">🎮 Gaming</option>
+                <option value="Technology">💻 Technology</option>
+            </select>
+        </div>
+        <div class="input-group"><label>Game/Skill</label><input id="tournGame" type="text" placeholder="e.g., Chess, BGMI, BCA Quiz"></div>
+        <div class="input-group"><label>Description</label><textarea id="tournDescription" placeholder="Describe the tournament..."></textarea></div>
+        <div class="input-group"><label>Max Players</label>
+            <select id="tournMaxPlayers">
+                <option value="8">8</option>
+                <option value="16" selected>16</option>
+                <option value="32">32</option>
+                <option value="64">64</option>
+            </select>
+        </div>
+        <div class="input-group"><label>Start Date & Time</label><input id="tournStart" type="datetime-local"></div>
+        <div class="input-group"><label>End Date & Time</label><input id="tournEnd" type="datetime-local"></div>
+        <div class="input-group"><label>Prize (Optional)</label><input id="tournPrize" type="text" placeholder="e.g., ₹5000, Trophy"></div>
+        <div class="input-group"><label>Rules (Optional)</label><textarea id="tournRules" placeholder="Tournament rules..."></textarea></div>
+        <div id="tournMessage" class="message"></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:15px;">
+            <button class="btn-3d-white-glow" onclick="createTournament()">✅ CREATE</button>
+            <button class="btn-3d-sm-white-glow-danger" onclick="closeCreateTournament()">❌ CANCEL</button>
+        </div>
+    </div>
+</div>
 
 <!-- ==================== ADMIN DASHBOARD ==================== -->
 <section id="adminDashboard" class="hidden">
@@ -611,27 +753,20 @@ button{cursor:pointer}
 </main>
 </section>
 
-<!-- ==================== STUDENTS PAGE (CATEGORY FILTER) ==================== -->
+<!-- ==================== STUDENTS PAGE ==================== -->
 <section id="studentsPage" class="hidden">
 <nav class="navbar"><div class="nav-logo">INTER RIVALRY</div><div class="nav-right"><div class="role-badge">SUPER ADMIN</div><button class="btn-3d-sm-white-glow-danger" style="width:auto;padding:8px 16px;font-size:12px;" onclick="logout()">🚪 LOGOUT</button></div></nav>
 <main class="container">
 <button class="btn-3d-white-glow" style="width:auto;padding:10px 24px;font-size:14px;margin-bottom:20px;" onclick="backToManagement()">⬅️ BACK</button>
 <h1>🎓 Students</h1>
 <p id="studentsCollegeName" style="color:#888;margin-top:8px;margin-bottom:25px">College</p>
-
-<!-- Category Filter Buttons -->
 <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px;">
     <button class="btn-3d-sm-white-glow filter-btn" onclick="filterStudents('all')" id="filterAll">📋 ALL</button>
     <button class="btn-3d-sm-white-glow filter-btn" onclick="filterStudents('BCA')" id="filterBCA">🎓 BCA</button>
     <button class="btn-3d-sm-white-glow filter-btn" onclick="filterStudents('BBA')" id="filterBBA">📊 BBA</button>
     <button class="btn-3d-sm-white-glow filter-btn" onclick="filterStudents('B.COM')" id="filterBCOM">💰 B.Com</button>
 </div>
-
-<!-- Students Display Area -->
-<div id="studentsDisplay">
-    <div class="empty-box">Select a category above to view students</div>
-</div>
-
+<div id="studentsDisplay"><div class="empty-box">Select a category above to view students</div></div>
 </main>
 </section>
 
@@ -667,6 +802,10 @@ let currentUserRank = null;
 let allStudentsData = [];
 let allRivalsData = [];
 let rivalsVisible = false;
+let currentUserRole = '';
+let categoryRankingsCache = {};
+let categoryRankingsLoaded = false;
+let currentUserProfile = null;
 
 // ==================== AUTH FUNCTIONS ====================
 function showMessage(msg){ document.getElementById("authMessage").textContent = msg; }
@@ -681,12 +820,36 @@ async function signup(){
     if(!name || !email || !password){ showMessage("Please fill in all fields."); return; }
     if(password.length < 6){ showMessage("Password must be at least 6 characters."); return; }
     showMessage("Creating account...");
+    
     const { data, error } = await client.auth.signUp({
         email, password,
-        options: { emailRedirectTo: "https://inter-rivalry.github.io/Inter-Rivalry-BCU/", data: { full_name: name } }
+        options: {
+            emailRedirectTo: "https://inter-rivalry.github.io/Inter-Rivalry-BCU/",
+            data: { full_name: name }
+        }
     });
+    
     if(error){ showMessage(error.message); return; }
     if(!data.session){ showMessage("Account created! Check your email to confirm."); return; }
+    
+    // Create profile WITHOUT inter_rivalry_id (will be assigned after college join)
+    const { error: profileError } = await client
+        .from("profiles")
+        .insert({
+            id: data.user.id,
+            full_name: name,
+            role: 'student',
+            inter_rivalry_id: null,
+            college_joined: false
+        });
+    
+    if(profileError){
+        console.error("Profile creation error:", profileError);
+        showMessage("Account created but profile setup failed. Please contact support.");
+        return;
+    }
+    
+    showMessage("✅ Account created! Please join a college to get your INTER RIVALRY ID.");
     await loadUser();
 }
 
@@ -730,16 +893,21 @@ function hideAll(){
     document.querySelectorAll("section").forEach(s => s.classList.add("hidden"));
     document.getElementById("loadingScreen").classList.add("hidden");
     document.getElementById("leaderboardPage").classList.add("hidden");
+    document.getElementById("tournamentsPage").classList.add("hidden");
+    document.getElementById("categoryRankingsPage").classList.add("hidden");
 }
 
 function backToStudentDashboard(){
     document.getElementById("createTeamPage").classList.add("hidden");
     document.getElementById("teamDetailsPage").classList.add("hidden");
     document.getElementById("studentDashboard").classList.remove("hidden");
-    loadMyTeams();
-    loadTeamInvites();
-    loadMyInterestSummary();
-    loadMyQuickStats();
+    if(currentUserProfile && currentUserProfile.college_joined){
+        loadMyTeams();
+        loadTeamInvites();
+        loadMyInterestSummary();
+        loadMyQuickStats();
+        loadNotifications();
+    }
     loadStudentDashboardFromCurrentUser();
 }
 
@@ -759,14 +927,14 @@ function showOnlyInterests(){ hideAll(); document.getElementById("interestsPage"
 function showOnlyResults(){ hideAll(); document.getElementById("resultsPage").classList.remove("hidden"); loadResults(); }
 function showCreateTeam(){ document.getElementById("createTeamPage").classList.remove("hidden"); document.getElementById("studentDashboard").classList.add("hidden"); }
 function showLeaderboard(){ hideAll(); document.getElementById("leaderboardPage").classList.remove("hidden"); loadLeaderboard('overall'); }
+function showCategoryRankings(){ hideAll(); document.getElementById("categoryRankingsPage").classList.remove("hidden"); loadCategoryRankings('all'); }
+function showTournaments(){ hideAll(); document.getElementById("tournamentsPage").classList.remove("hidden"); loadTournaments('all'); }
 
 // ==================== TOGGLE RIVALS ====================
 function toggleRivals(){
-    const section = document.getElementById("rivalsSection");
+    const section = document.getElementById("rivalsSubSection");
     const btn = document.querySelector(".btn-3d-white-glow-gold[onclick='toggleRivals()']");
-    
     rivalsVisible = !rivalsVisible;
-    
     if(rivalsVisible){
         section.style.display = "block";
         btn.textContent = "❌ CLOSE RIVALS";
@@ -786,80 +954,74 @@ function toggleRivals(){
 }
 
 // ==================== LOAD RIVALS WITH CATEGORIES ====================
+let rivalsLoading = false;
+let rivalsLoaded = false;
+
 async function loadRivalsData(){
     const list = document.getElementById("rivalsList");
     if(!list) return;
-    list.innerHTML = "<div class='empty-box'>Loading students...</div>";
-    
-    const { data: { user } } = await client.auth.getUser();
-    if(!user) return;
-    
-    const { data: profiles, error } = await client
-        .from("profiles")
-        .select("id, full_name, inter_rivalry_id, role")
-        .neq("id", user.id)
-        .eq("role", "student")
-        .order("full_name", { ascending: true });
-    
-    if(error){ 
-        list.innerHTML = `<div class='empty-box'>${escapeHTML(error.message)}</div>`; 
-        return; 
-    }
-    
-    if(!profiles || profiles.length === 0){
-        list.innerHTML = "<div class='empty-box'>No students found.</div>";
+    if(rivalsLoaded && allRivalsData.length){
+        displayRivalsByCategory('all');
         return;
     }
+    if(rivalsLoading) return;
+    rivalsLoading = true;
+    list.innerHTML = "<div class='empty-box'>⏳ Loading students...</div>";
     
-    const ids = profiles.map(p => p.id);
+    const { data: { user } } = await client.auth.getUser();
+    if(!user) { list.innerHTML = "<div class='empty-box'>Please login first.</div>"; rivalsLoading = false; return; }
     
-    const { data: memberships } = await client
-        .from("college_memberships")
-        .select("user_id, course, year_of_study, specialization, colleges(college_name)")
-        .in("user_id", ids)
-        .eq("is_active", true);
-    
-    const { data: interests } = await client
-        .from("participations")
-        .select("user_id, subcategories(name, categories(name))")
-        .in("user_id", ids);
-    
-    allRivalsData = profiles.map(profile => {
-        const membership = memberships?.find(m => m.user_id === profile.id) || {};
-        const userInterests = interests?.filter(i => i.user_id === profile.id) || [];
-        const tags = [...new Set(userInterests.map(i => i.subcategories?.categories?.name).filter(Boolean))];
+    try {
+        const { data: profiles, error } = await client
+            .from("profiles")
+            .select("id, full_name, inter_rivalry_id, role")
+            .neq("id", user.id)
+            .eq("role", "student")
+            .order("full_name", { ascending: true });
         
-        return {
-            ...profile,
-            course: membership?.course || 'Unknown',
-            year: membership?.year_of_study || null,
-            college: membership?.colleges?.college_name || 'Unknown',
-            specialization: membership?.specialization || null,
-            interests: tags.slice(0, 8)
-        };
-    });
-    
-    displayRivalsByCategory('all');
+        if(error){ list.innerHTML = `<div class='empty-box'>${escapeHTML(error.message)}</div>`; rivalsLoading = false; return; }
+        if(!profiles || profiles.length === 0){ list.innerHTML = "<div class='empty-box'>No students found.</div>"; rivalsLoading = false; return; }
+        
+        const ids = profiles.map(p => p.id);
+        
+        const [membershipsResult, interestsResult] = await Promise.all([
+            client.from("college_memberships").select("user_id, course, year_of_study, specialization, colleges(college_name)").in("user_id", ids).eq("is_active", true),
+            client.from("participations").select("user_id, subcategories(name, categories(name))").in("user_id", ids)
+        ]);
+        
+        const memberships = membershipsResult.data || [];
+        const interests = interestsResult.data || [];
+        
+        allRivalsData = profiles.map(profile => {
+            const membership = memberships.find(m => m.user_id === profile.id) || {};
+            const userInterests = interests.filter(i => i.user_id === profile.id) || [];
+            const tags = [...new Set(userInterests.map(i => i.subcategories?.categories?.name).filter(Boolean))];
+            return {
+                ...profile,
+                course: membership?.course || 'Unknown',
+                year: membership?.year_of_study || null,
+                college: membership?.colleges?.college_name || 'Unknown',
+                specialization: membership?.specialization || null,
+                interests: tags.slice(0, 8)
+            };
+        });
+        
+        rivalsLoaded = true;
+        displayRivalsByCategory('all');
+    } catch(err) {
+        list.innerHTML = `<div class='empty-box'>Error: ${escapeHTML(err.message)}</div>`;
+    }
+    rivalsLoading = false;
 }
 
 function displayRivalsByCategory(category){
     const list = document.getElementById("rivalsList");
     const data = allRivalsData || [];
-    
-    if(!data.length){ 
-        list.innerHTML = "<div class='empty-box'>No students found.</div>"; 
-        return; 
-    }
+    if(!data.length){ list.innerHTML = "<div class='empty-box'>No students found.</div>"; return; }
     
     let filtered = data;
-    if(category !== 'all'){
-        filtered = data.filter(s => s.course === category);
-    }
-    
-    if(!filtered.length){ 
-        list.innerHTML = `<div class='empty-box'>No students found in ${category} category.</div>`; 
-        return; 
-    }
+    if(category !== 'all'){ filtered = data.filter(s => s.course === category); }
+    if(!filtered.length){ list.innerHTML = `<div class='empty-box'>No students found in ${category} category.</div>`; return; }
     
     const grouped = {};
     filtered.forEach(student => {
@@ -884,94 +1046,66 @@ function displayRivalsByCategory(category){
     
     sortedCourses.forEach(course => {
         const years = grouped[course];
-        const yearKeys = Object.keys(years).sort((a, b) => { 
-            const numA = parseInt(a); 
-            const numB = parseInt(b); 
-            return numA - numB; 
-        });
-        
+        const yearKeys = Object.keys(years).sort((a, b) => { const numA = parseInt(a); const numB = parseInt(b); return numA - numB; });
         let courseColor = '#6c5ce7';
         if(course === 'BCA') courseColor = '#6c5ce7';
         else if(course === 'BBA') courseColor = '#00b894';
         else if(course === 'B.COM') courseColor = '#fdcb6e';
         
-        html += `
-            <div style="background:#121212;border:1px solid #292929;border-radius:16px;padding:20px;margin-bottom:16px;">
-                <h2 style="color:${courseColor};margin-bottom:15px;display:flex;align-items:center;gap:10px;">
-                    <span style="font-size:28px;">${course === 'BCA' ? '💻' : course === 'BBA' ? '📊' : '💰'}</span>
-                    ${escapeHTML(course)}
-                    <span style="font-size:14px;color:#888;font-weight:400;">(${filtered.filter(s => s.course === course).length} students)</span>
-                </h2>
-                <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:15px;">
-        `;
+        html += `<div style="background:#121212;border:1px solid #292929;border-radius:16px;padding:20px;margin-bottom:16px;">
+            <h2 style="color:${courseColor};margin-bottom:15px;display:flex;align-items:center;gap:10px;">
+                <span style="font-size:28px;">${course === 'BCA' ? '💻' : course === 'BBA' ? '📊' : '💰'}</span>
+                ${escapeHTML(course)}
+                <span style="font-size:14px;color:#888;font-weight:400;">(${filtered.filter(s => s.course === course).length} students)</span>
+            </h2>
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:15px;">`;
         
         yearKeys.forEach(year => {
             const students = years[year];
-            const numStudents = students.length;
-            
-            html += `
-                <div style="background:#0e0e0e;border:1px solid #282828;border-radius:12px;padding:16px;">
-                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
-                        <h3 style="color:#00d2ff;font-size:16px;">📅 ${escapeHTML(year)}</h3>
-                        <span style="background:#1a1a1a;padding:4px 12px;border-radius:999px;font-size:12px;color:#888;">${numStudents} students</span>
-                    </div>
-                    <div style="display:flex;flex-direction:column;gap:6px;">
-            `;
+            html += `<div style="background:#0e0e0e;border:1px solid #282828;border-radius:12px;padding:16px;">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+                    <h3 style="color:#00d2ff;font-size:16px;">📅 ${escapeHTML(year)}</h3>
+                    <span style="background:#1a1a1a;padding:4px 12px;border-radius:999px;font-size:12px;color:#888;">${students.length} students</span>
+                </div>
+                <div style="display:flex;flex-direction:column;gap:6px;">`;
             
             students.forEach(student => {
                 const name = student.full_name || 'Unknown';
                 const rivalryId = student.inter_rivalry_id || 'Not assigned';
                 const spec = student.specialization || '';
                 const tags = student.interests || [];
-                
-                html += `
-                    <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:#0a0a0a;border-radius:8px;border-left:3px solid ${courseColor};">
-                        <div>
-                            <span style="font-weight:600;">👤 ${escapeHTML(name)}</span>
-                            <br><span style="font-size:11px;color:#666;">ID: ${escapeHTML(rivalyId)}</span>
-                            ${spec ? `<br><span style="font-size:11px;color:#888;">🎯 ${escapeHTML(spec)}</span>` : ''}
-                            ${tags.length ? `<br><span style="font-size:10px;color:#555;">${tags.map(t => `#${escapeHTML(t)}`).join(' ')}</span>` : ''}
-                        </div>
-                        <button class="btn-3d-xs-white-glow" style="width:auto;padding:4px 12px;font-size:10px;" onclick="viewProfile('${student.id}')">VIEW</button>
-                    </div>
-                `;
+                html += `<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:#0a0a0a;border-radius:8px;border-left:3px solid ${courseColor};">
+                    <div><span style="font-weight:600;">👤 ${escapeHTML(name)}</span>
+                    <br><span style="font-size:11px;color:#666;">ID: ${escapeHTML(rivalyId)}</span>
+                    ${spec ? `<br><span style="font-size:11px;color:#888;">🎯 ${escapeHTML(spec)}</span>` : ''}
+                    ${tags.length ? `<br><span style="font-size:10px;color:#555;">${tags.map(t => `#${escapeHTML(t)}`).join(' ')}</span>` : ''}</div>
+                    <button class="btn-3d-xs-white-glow" style="width:auto;padding:4px 12px;font-size:10px;" onclick="viewProfile('${student.id}')">VIEW</button>
+                </div>`;
             });
-            
-            html += `
-                    </div>
-                </div>
-            `;
+            html += `</div></div>`;
         });
-        
-        html += `
-                </div>
-            </div>
-        `;
+        html += `</div></div>`;
     });
-    
     list.innerHTML = html;
     
-    document.querySelectorAll('#rivalsSection .filter-btn').forEach(btn => {
-        btn.style.opacity = '0.5';
-        btn.style.transform = 'scale(0.95)';
+    document.querySelectorAll('#rivalsSubSection .filter-btn').forEach(btn => {
+        btn.style.opacity = '0.5'; btn.style.transform = 'scale(0.95)';
     });
     const activeBtn = document.getElementById(`rivalFilter${category === 'all' ? 'All' : category}`);
-    if(activeBtn) {
-        activeBtn.style.opacity = '1';
-        activeBtn.style.transform = 'scale(1)';
-    }
+    if(activeBtn) { activeBtn.style.opacity = '1'; activeBtn.style.transform = 'scale(1)'; }
 }
 
-function filterRivals(category){
-    displayRivalsByCategory(category);
-}
+function filterRivals(category){ displayRivalsByCategory(category); }
 
 // ==================== LOAD USER ====================
 async function loadUser(){
     const { data: { user } } = await client.auth.getUser();
     if(!user){ showAuth(); return; }
-    const { data: profile, error } = await client.from("profiles").select("id,full_name,inter_rivalry_id,role").eq("id",user.id).single();
+    const { data: profile, error } = await client.from("profiles").select("*").eq("id",user.id).single();
     if(error || !profile){ console.error(error); showAuth(); return; }
+    currentUserRole = profile.role || '';
+    currentUserProfile = profile;
+    
     if(profile.role === "super_admin"){ await loadAdminDashboard(); return; }
     if(profile.role === "college_admin"){ await loadCollegeAdminDashboard(user, profile); return; }
     await loadStudentDashboard(user, profile);
@@ -980,41 +1114,137 @@ async function loadUser(){
 async function loadStudentDashboardFromCurrentUser(){
     const { data: { user } } = await client.auth.getUser();
     if(!user){ showAuth(); return; }
-    const { data: profile } = await client.from("profiles").select("id,full_name,inter_rivalry_id,role").eq("id",user.id).single();
-    if(profile){ await loadStudentDashboard(user, profile); }
+    const { data: profile } = await client.from("profiles").select("*").eq("id",user.id).single();
+    if(profile){ 
+        currentUserProfile = profile;
+        await loadStudentDashboard(user, profile); 
+    }
 }
 
 // ==================== STUDENT DASHBOARD ====================
 async function loadStudentDashboard(user, profile){
     document.getElementById("userName").textContent = profile.full_name || "Student";
-    document.getElementById("rivalryId").textContent = profile.inter_rivalry_id || "Not assigned";
-    const { data: membership } = await client.from("college_memberships").select("college_id,department,course,year_of_study,specialization,colleges(college_name,college_code,city,state)").eq("user_id",user.id).eq("is_active",true).maybeSingle();
+    
+    // Check if user has joined a college
+    const { data: membership } = await client
+        .from("college_memberships")
+        .select("college_id,department,course,year_of_study,specialization,colleges(college_name,college_code,city,state)")
+        .eq("user_id", user.id)
+        .eq("is_active", true)
+        .maybeSingle();
+    
     const collegeStatus = document.getElementById("collegeStatus");
-    if(membership && membership.colleges){
-        collegeStatus.textContent = "College: " + membership.colleges.college_name + " (" + membership.colleges.college_code + ")";
-        document.getElementById("studentCollegeSection").classList.add("hidden");
-    } else {
-        collegeStatus.textContent = "College: Not joined yet";
-        document.getElementById("studentCollegeSection").classList.remove("hidden");
+    const hasJoinedCollege = membership && membership.colleges;
+    
+    // If no college membership, show restricted view
+    if(!hasJoinedCollege){
+        // Show college selection only
+        document.getElementById("studentCollegeSection").style.display = "block";
         await loadStudentColleges();
+        
+        // Hide all other sections
+        document.getElementById("myQuickStats").innerHTML = "";
+        document.getElementById("interestsSection").style.display = "none";
+        document.getElementById("teamsSection").style.display = "none";
+        document.getElementById("teamInvitesSection").style.display = "none";
+        document.getElementById("battlefieldSection").style.display = "none";
+        document.getElementById("rivalsSectionFull").style.display = "none";
+        document.getElementById("actionButtons").style.display = "none";
+        document.getElementById("bottomButtons").style.display = "none";
+        
+        document.getElementById("rivalryId").textContent = "Not assigned";
+        document.getElementById("rivalryId").style.color = "#ff6b6b";
+        collegeStatus.textContent = "❗ College: Not joined yet - Please join below!";
+        collegeStatus.style.color = "#fdcb6e";
+        
+        document.getElementById("welcomeSubText").textContent = "⚠️ Join a college to unlock all features!";
+        document.getElementById("emptyRankMessage").innerHTML = `
+            <div style="color:#fdcb6e;font-size:18px;font-weight:700;margin-bottom:10px;">🏛️ College Required</div>
+            <p style="color:#888;">You must join a college to access all features.</p>
+            <p style="color:#666;font-size:14px;margin-top:10px;">Select a college above to get started!</p>
+        `;
+        
+        showOnlyStudent();
+        return;
     }
+    
+    // User has joined college - assign ID if not already assigned
+    if(!profile.inter_rivalry_id){
+        // Generate INTER RIVALRY ID
+        const collegeCode = membership.colleges?.college_code || 'XXXX';
+        const randomNum = String(Math.floor(1000 + Math.random() * 9000));
+        const rivalryId = `IR-${collegeCode}-${randomNum}`;
+        
+        await client
+            .from("profiles")
+            .update({ 
+                inter_rivalry_id: rivalryId,
+                college_joined: true
+            })
+            .eq("id", user.id);
+        
+        profile.inter_rivalry_id = rivalryId;
+        profile.college_joined = true;
+        currentUserProfile = profile;
+        
+        showMessage(`🎉 Welcome! Your INTER RIVALRY ID: ${rivalyId}`);
+    }
+    
+    // Show full dashboard
+    document.getElementById("rivalryId").textContent = profile.inter_rivalry_id || "Not assigned";
+    document.getElementById("rivalryId").style.color = "#00d2ff";
+    collegeStatus.textContent = "✅ College: " + membership.colleges.college_name + " (" + membership.colleges.college_code + ")";
+    collegeStatus.style.color = "#00b894";
+    document.getElementById("studentCollegeSection").style.display = "none";
+    document.getElementById("welcomeSubText").textContent = "Your rivalry journey starts here.";
+    document.getElementById("emptyRankMessage").innerHTML = "No skill ranks yet.<br>Participate in a skill to begin your ranking journey.";
+    
+    // Show all sections
+    document.getElementById("interestsSection").style.display = "block";
+    document.getElementById("teamsSection").style.display = "block";
+    document.getElementById("teamInvitesSection").style.display = "block";
+    document.getElementById("battlefieldSection").style.display = "block";
+    document.getElementById("rivalsSectionFull").style.display = "block";
+    document.getElementById("actionButtons").style.display = "flex";
+    document.getElementById("bottomButtons").style.display = "grid";
+    
+    // Load all features
     await loadMyTeams();
     await loadTeamInvites();
     await loadMyInterestSummary();
     await loadMyQuickStats();
+    await loadNotifications();
     showOnlyStudent();
 }
 
 // ==================== STUDENT COLLEGES ====================
 async function loadStudentColleges(){
-    const { data, error } = await client.from("colleges").select("id,college_name,college_code,city,state").order("college_name",{ascending:true});
+    const { data, error } = await client
+        .from("colleges")
+        .select("id,college_name,college_code,city,state")
+        .order("college_name", { ascending: true });
+    
     const list = document.getElementById("collegeList");
     list.innerHTML = "";
-    if(error || !data || data.length === 0){ list.innerHTML = "<div class='empty-box'>No colleges available.</div>"; return; }
+    
+    if(error || !data || data.length === 0){
+        list.innerHTML = "<div class='empty-box'>No colleges available.</div>";
+        return;
+    }
+    
     data.forEach(college => {
         const card = document.createElement("div");
         card.className = "college-card";
-        card.innerHTML = `<h3>${escapeHTML(college.college_name)}</h3><div class="college-code">${escapeHTML(college.college_code)}</div><div class="college-location">${escapeHTML(college.city || "")}${college.state ? ", " + escapeHTML(college.state) : ""}</div><button class="btn-3d-sm-white-glow" onclick="showJoinForm('${college.id}')">🏫 JOIN COLLEGE</button>`;
+        card.style.borderColor = "#fdcb6e";
+        card.style.borderWidth = "2px";
+        card.innerHTML = `
+            <h3 style="color:#fdcb6e;">🏛️ ${escapeHTML(college.college_name)}</h3>
+            <div class="college-code">${escapeHTML(college.college_code)}</div>
+            <div class="college-location">${escapeHTML(college.city || "")}${college.state ? ", " + escapeHTML(college.state) : ""}</div>
+            <button class="btn-3d-white-glow-gold" onclick="showJoinForm('${college.id}')" style="margin-top:10px;padding:12px;">
+                🎯 JOIN COLLEGE TO GET ID
+            </button>
+        `;
         list.appendChild(card);
     });
 }
@@ -1028,7 +1258,7 @@ async function showJoinForm(collegeId){
     let selectedCourse = null; let selectedYear = null; let selectedSpecialization = null;
     modal.innerHTML = `
         <h2 style="color:white;margin-bottom:10px;text-align:center;">🎓 Join College</h2>
-        <p style="color:#888;text-align:center;margin-bottom:25px;">Select your details below</p>
+        <p style="color:#888;text-align:center;margin-bottom:25px;">Select your details below to get your INTER RIVALRY ID</p>
         <div style="margin-bottom:20px;"><label style="color:#aaa;display:block;margin-bottom:10px;font-weight:700;">📚 Select Course</label>
         <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;">
             <button class="course-btn btn-3d-sm-white-glow" data-value="BCA">BCA</button>
@@ -1056,6 +1286,7 @@ async function showJoinForm(collegeId){
             <button id="confirmJoinBtn" class="btn-3d-white-glow" disabled style="opacity:0.5;">⚠️ SELECT ALL</button>
             <button id="cancelJoinBtn" class="btn-3d-sm-white-glow-danger">❌ CANCEL</button>
         </div>
+        <div id="joinMessage" style="color:#888;text-align:center;margin-top:12px;"></div>
     `;
     overlay.appendChild(modal); document.body.appendChild(overlay);
     modal.querySelectorAll('.course-btn').forEach(btn => {
@@ -1104,19 +1335,33 @@ async function showJoinForm(collegeId){
     }
     document.getElementById('cancelJoinBtn').addEventListener('click', function() { document.body.removeChild(overlay); });
     document.getElementById('confirmJoinBtn').addEventListener('click', async function() {
-        if(!selectedCourse || !selectedYear || (selectedCourse === 'BCA' && !selectedSpecialization)) { alert('Please select all fields'); return; }
+        const msg = document.getElementById('joinMessage');
+        if(!selectedCourse || !selectedYear || (selectedCourse === 'BCA' && !selectedSpecialization)) { 
+            msg.textContent = 'Please select all fields';
+            msg.style.color = '#ff6b6b';
+            return; 
+        }
         this.textContent = '⏳ PROCESSING...'; this.disabled = true;
         const { data: { user } } = await client.auth.getUser();
         if(!user){ alert('Please login first.'); document.body.removeChild(overlay); return; }
         const { error } = await client.from('college_join_requests').insert({
-            student_id: user.id, college_id: collegeId,
-            course: selectedCourse, year_of_study: parseInt(selectedYear),
+            student_id: user.id,
+            college_id: collegeId,
+            course: selectedCourse,
+            year_of_study: parseInt(selectedYear),
             specialization: selectedSpecialization
         });
-        if(error){ alert('Could not send request: ' + error.message); document.body.removeChild(overlay); return; }
-        alert('✅ Join request submitted! Waiting for approval.');
-        document.body.removeChild(overlay);
-        await loadStudentColleges();
+        if(error){ 
+            msg.textContent = 'Error: ' + error.message;
+            msg.style.color = '#ff6b6b';
+            return; 
+        }
+        msg.textContent = '✅ Join request submitted! Your ID will be assigned after approval.';
+        msg.style.color = '#00b894';
+        setTimeout(() => {
+            document.body.removeChild(overlay);
+            loadStudentColleges();
+        }, 2000);
     });
     overlay.addEventListener('click', function(e) { if(e.target === overlay) document.body.removeChild(overlay); });
 }
@@ -1495,7 +1740,6 @@ function getRank(winRate, points) {
 
 async function loadLeaderboard(filter){
     currentLeaderboardFilter = filter;
-    
     document.querySelectorAll('.filter-btn').forEach(btn => {
         btn.style.opacity = '0.5';
         btn.style.transform = 'scale(0.95)';
@@ -1641,6 +1885,600 @@ async function loadLeaderboard(filter){
         `;
     });
     list.innerHTML = html;
+}
+
+// ==================== CATEGORY RANKINGS ====================
+function getCategoryEmoji(category) {
+    const emojis = {
+        'Sports': '🏏',
+        'Education': '🎓',
+        'Culture': '🎭',
+        'Gaming': '🎮',
+        'Technology': '💻'
+    };
+    return emojis[category] || '🏆';
+}
+
+async function loadCategoryRankings(category) {
+    const list = document.getElementById("categoryRankingsList");
+    if (!list) return;
+    list.innerHTML = "<div class='empty-box'>Loading category rankings...</div>";
+    
+    document.querySelectorAll('#categoryRankingsPage .filter-btn').forEach(btn => {
+        btn.style.opacity = '0.5';
+        btn.style.transform = 'scale(0.95)';
+    });
+    const btnId = `catFilter${category === 'all' ? 'All' : category}`;
+    const activeBtn = document.getElementById(btnId);
+    if (activeBtn) {
+        activeBtn.style.opacity = '1';
+        activeBtn.style.transform = 'scale(1)';
+    }
+    
+    const { data: { user } } = await client.auth.getUser();
+    if (!user) return;
+    
+    const { data: challenges, error } = await client
+        .from("challenges")
+        .select(`
+            challenger_id,
+            opponent_id,
+            status,
+            rules,
+            subcategory_id,
+            subcategories (
+                id,
+                name,
+                categories (
+                    id,
+                    name
+                )
+            )
+        `)
+        .eq("status", "completed");
+    
+    if (error || !challenges || challenges.length === 0) {
+        list.innerHTML = "<div class='empty-box'>No completed challenges yet. Start competing to see rankings!</div>";
+        return;
+    }
+    
+    const { data: profiles } = await client
+        .from("profiles")
+        .select("id, full_name, inter_rivalry_id, role")
+        .eq("role", "student");
+    
+    if (!profiles) return;
+    
+    const { data: memberships } = await client
+        .from("college_memberships")
+        .select("user_id, course, year_of_study, specialization, colleges(college_name)")
+        .in("user_id", profiles.map(p => p.id))
+        .eq("is_active", true);
+    
+    const userMap = {};
+    profiles.forEach(p => {
+        const membership = memberships?.find(m => m.user_id === p.id) || {};
+        userMap[p.id] = {
+            ...p,
+            course: membership?.course || 'Unknown',
+            year: membership?.year_of_study || null,
+            specialization: membership?.specialization || null,
+            college: membership?.colleges?.college_name || 'Unknown'
+        };
+    });
+    
+    const categoryStats = {};
+    const userStats = {};
+    
+    challenges.forEach(c => {
+        const challengerId = c.challenger_id;
+        const opponentId = c.opponent_id;
+        const rules = c.rules || {};
+        const subcategory = c.subcategories;
+        const categoryName = subcategory?.categories?.name || 'Unknown';
+        const gameName = subcategory?.name || 'Unknown';
+        
+        if (!categoryStats[categoryName]) {
+            categoryStats[categoryName] = {};
+        }
+        if (!categoryStats[categoryName][gameName]) {
+            categoryStats[categoryName][gameName] = {};
+        }
+        
+        if (rules.winner_id) {
+            const winnerId = rules.winner_id;
+            const loserId = winnerId === challengerId ? opponentId : challengerId;
+            
+            if (!userStats[winnerId]) {
+                userStats[winnerId] = { wins: 0, losses: 0, draws: 0, total: 0, games: {} };
+            }
+            if (!userStats[winnerId].games[gameName]) {
+                userStats[winnerId].games[gameName] = { wins: 0, losses: 0, draws: 0, total: 0 };
+            }
+            userStats[winnerId].wins++;
+            userStats[winnerId].total++;
+            userStats[winnerId].games[gameName].wins++;
+            userStats[winnerId].games[gameName].total++;
+            
+            if (!userStats[loserId]) {
+                userStats[loserId] = { wins: 0, losses: 0, draws: 0, total: 0, games: {} };
+            }
+            if (!userStats[loserId].games[gameName]) {
+                userStats[loserId].games[gameName] = { wins: 0, losses: 0, draws: 0, total: 0 };
+            }
+            userStats[loserId].losses++;
+            userStats[loserId].total++;
+            userStats[loserId].games[gameName].losses++;
+            userStats[loserId].games[gameName].total++;
+            
+            if (!categoryStats[categoryName][gameName][winnerId]) {
+                categoryStats[categoryName][gameName][winnerId] = 0;
+            }
+            categoryStats[categoryName][gameName][winnerId]++;
+            
+        } else if (rules.result === 'draw') {
+            [challengerId, opponentId].forEach(id => {
+                if (!userStats[id]) {
+                    userStats[id] = { wins: 0, losses: 0, draws: 0, total: 0, games: {} };
+                }
+                if (!userStats[id].games[gameName]) {
+                    userStats[id].games[gameName] = { wins: 0, losses: 0, draws: 0, total: 0 };
+                }
+                userStats[id].draws++;
+                userStats[id].total++;
+                userStats[id].games[gameName].draws++;
+                userStats[id].games[gameName].total++;
+            });
+        }
+    });
+    
+    Object.keys(userStats).forEach(userId => {
+        const stats = userStats[userId];
+        stats.winRate = stats.total > 0 ? Math.round((stats.wins / stats.total) * 100) : 0;
+        Object.keys(stats.games).forEach(gameName => {
+            const game = stats.games[gameName];
+            game.winRate = game.total > 0 ? Math.round((game.wins / game.total) * 100) : 0;
+            const rankInfo = getRank(game.winRate, game.wins * 3 + game.draws);
+            game.rank = rankInfo.rank;
+            game.rankLabel = rankInfo.label;
+            game.rankColor = rankInfo.color;
+            game.rankEmoji = rankInfo.emoji;
+        });
+    });
+    
+    let html = '';
+    const categories = Object.keys(categoryStats).sort();
+    const filteredCategories = category === 'all' ? categories : categories.filter(c => c === category);
+    
+    if (filteredCategories.length === 0) {
+        list.innerHTML = `<div class='empty-box'>No rankings found for ${category} category.</div>`;
+        return;
+    }
+    
+    filteredCategories.forEach(catName => {
+        const games = Object.keys(categoryStats[catName]).sort();
+        
+        html += `
+            <div style="background:#121212;border:1px solid #292929;border-radius:16px;padding:23px;margin-bottom:20px;">
+                <h2 style="color:#fdcb6e;margin-bottom:15px;display:flex;align-items:center;gap:10px;">
+                    <span style="font-size:28px;">${getCategoryEmoji(catName)}</span>
+                    ${escapeHTML(catName)}
+                    <span style="font-size:14px;color:#888;font-weight:400;">(${games.length} games)</span>
+                </h2>
+                <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(350px,1fr));gap:20px;">
+        `;
+        
+        games.forEach(gameName => {
+            const players = categoryStats[catName][gameName];
+            const playerIds = Object.keys(players);
+            playerIds.sort((a, b) => players[b] - players[a]);
+            const topPlayers = playerIds.slice(0, 10);
+            
+            html += `
+                <div style="background:#0e0e0e;border:1px solid #282828;border-radius:12px;padding:16px;">
+                    <h3 style="color:#00d2ff;margin-bottom:12px;font-size:16px;">🎯 ${escapeHTML(gameName)}</h3>
+                    <div style="display:flex;flex-direction:column;gap:6px;">
+            `;
+            
+            if (topPlayers.length === 0) {
+                html += `<div style="color:#888;font-size:12px;text-align:center;padding:10px;">No players yet</div>`;
+            } else {
+                topPlayers.forEach((playerId, index) => {
+                    const player = userMap[playerId];
+                    const stats = userStats[playerId];
+                    const gameStats = stats?.games[gameName] || { wins: 0, losses: 0, draws: 0, total: 0, winRate: 0, rank: 'E', rankColor: '#636e72', rankEmoji: '🌱' };
+                    const wins = players[playerId] || 0;
+                    
+                    let medal = '';
+                    let bgColor = '#0a0a0a';
+                    if (index === 0) { medal = '🥇'; bgColor = '#1a1508'; }
+                    else if (index === 1) { medal = '🥈'; bgColor = '#151515'; }
+                    else if (index === 2) { medal = '🥉'; bgColor = '#1a0f0a'; }
+                    
+                    html += `
+                        <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:${bgColor};border-radius:8px;border-left:3px solid ${gameStats.rankColor || '#636e72'};">
+                            <div style="display:flex;align-items:center;gap:10px;">
+                                <span style="font-size:16px;min-width:30px;">${medal || `#${index + 1}`}</span>
+                                <div>
+                                    <span style="font-weight:600;">${escapeHTML(player?.full_name || 'Unknown')}</span>
+                                    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:2px;">
+                                        <span style="font-size:10px;color:#888;">${escapeHTML(player?.course || '')}</span>
+                                        <span style="font-size:10px;color:${gameStats.rankColor || '#636e72'};font-weight:700;">${gameStats.rankEmoji || '🌱'} ${gameStats.rank || 'E'}</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div style="display:flex;align-items:center;gap:12px;">
+                                <div style="text-align:center;">
+                                    <span style="font-size:16px;font-weight:700;color:#00b894;">${wins}</span>
+                                    <div style="font-size:9px;color:#888;">Wins</div>
+                                </div>
+                                <div style="text-align:center;">
+                                    <span style="font-size:14px;font-weight:600;color:${gameStats.rankColor || '#636e72'};">${gameStats.winRate || 0}%</span>
+                                    <div style="font-size:9px;color:#888;">Rate</div>
+                                </div>
+                                <button class="btn-3d-xs-white-glow" style="width:auto;padding:3px 10px;font-size:9px;" onclick="viewProfile('${playerId}')">VIEW</button>
+                            </div>
+                        </div>
+                    `;
+                });
+            }
+            
+            if (playerIds.length > 10) {
+                html += `<div style="text-align:center;margin-top:6px;"><span style="font-size:11px;color:#555;">+${playerIds.length - 10} more players</span></div>`;
+            }
+            
+            html += `
+                    </div>
+                </div>
+            `;
+        });
+        
+        html += `
+                </div>
+            </div>
+        `;
+    });
+    
+    list.innerHTML = html;
+}
+
+// ==================== TOURNAMENT FUNCTIONS ====================
+async function loadTournaments(filter) {
+    const list = document.getElementById("tournamentsList");
+    list.innerHTML = "<div class='empty-box'>Loading tournaments...</div>";
+    
+    const { data: { user } } = await client.auth.getUser();
+    if (user) {
+        const { data: profile } = await client.from("profiles").select("role").eq("id", user.id).single();
+        currentUserRole = profile?.role || '';
+        const adminControls = document.getElementById("tournamentAdminControls");
+        if (adminControls) {
+            adminControls.style.display = (currentUserRole === 'super_admin' || currentUserRole === 'college_admin') ? 'block' : 'none';
+        }
+    }
+    
+    document.querySelectorAll('#tournamentsPage .filter-btn').forEach(btn => {
+        btn.style.opacity = '0.5';
+        btn.style.transform = 'scale(0.95)';
+    });
+    const btnId = `tournFilter${filter.charAt(0).toUpperCase() + filter.slice(1)}`;
+    const activeBtn = document.getElementById(btnId);
+    if (activeBtn) {
+        activeBtn.style.opacity = '1';
+        activeBtn.style.transform = 'scale(1)';
+    }
+    
+    let query = client.from("tournaments").select(`
+        *,
+        profiles!tournaments_created_by_fkey(full_name, inter_rivalry_id)
+    `);
+    
+    if (filter !== 'all') {
+        query = query.eq("status", filter);
+    }
+    
+    const { data, error } = await query.order("start_date", { ascending: true });
+    
+    if (error) {
+        list.innerHTML = `<div class='empty-box'>Error: ${escapeHTML(error.message)}</div>`;
+        return;
+    }
+    
+    if (!data || data.length === 0) {
+        list.innerHTML = `<div class='empty-box'>No ${filter !== 'all' ? filter : ''} tournaments found.</div>`;
+        return;
+    }
+    
+    list.innerHTML = "";
+    
+    for (const tournament of data) {
+        let isRegistered = false;
+        let isFull = false;
+        let participantCount = 0;
+        
+        if (user) {
+            const { count } = await client
+                .from("tournament_participants")
+                .select("id", { count: "exact", head: true })
+                .eq("tournament_id", tournament.id);
+            participantCount = count || 0;
+            isFull = participantCount >= tournament.max_players;
+            
+            const { data: reg } = await client
+                .from("tournament_participants")
+                .select("id")
+                .eq("tournament_id", tournament.id)
+                .eq("user_id", user.id)
+                .maybeSingle();
+            isRegistered = !!reg;
+        }
+        
+        const statusColors = {
+            'upcoming': '#fdcb6e',
+            'ongoing': '#00d2ff',
+            'completed': '#00b894'
+        };
+        const statusEmojis = {
+            'upcoming': '⏳',
+            'ongoing': '⚡',
+            'completed': '✅'
+        };
+        
+        const card = document.createElement("div");
+        card.className = "challenge-card";
+        card.innerHTML = `
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:10px;">
+                <div>
+                    <h3>🏆 ${escapeHTML(tournament.title)}</h3>
+                    <div class="challenge-info">
+                        <strong>Category:</strong> ${escapeHTML(tournament.category)} • ${escapeHTML(tournament.game)}
+                        <br><strong>Created by:</strong> ${escapeHTML(tournament.profiles?.full_name || 'Unknown')}
+                        <br><strong>Players:</strong> ${participantCount}/${tournament.max_players}
+                        <br><strong>Starts:</strong> ${formatDate(tournament.start_date)}
+                        <br><strong>Ends:</strong> ${formatDate(tournament.end_date)}
+                        ${tournament.prize ? `<br><strong>🏅 Prize:</strong> ${escapeHTML(tournament.prize)}` : ''}
+                        ${tournament.description ? `<br><strong>Description:</strong> ${escapeHTML(tournament.description)}` : ''}
+                        ${tournament.rules ? `<br><strong>Rules:</strong> ${escapeHTML(tournament.rules)}` : ''}
+                    </div>
+                </div>
+                <div style="text-align:right;">
+                    <span class="status-pill status-${escapeHTML(tournament.status)}" style="background:${statusColors[tournament.status] || '#888'};color:${tournament.status === 'upcoming' ? '#2d3436' : 'white'};">
+                        ${statusEmojis[tournament.status]} ${escapeHTML(tournament.status)}
+                    </span>
+                    <div style="margin-top:10px;">
+                        ${tournament.status !== 'completed' && !isFull && !isRegistered ? 
+                            `<button class="btn-3d-sm-white-glow" onclick="joinTournament('${tournament.id}')" style="width:auto;padding:6px 16px;">🎯 JOIN</button>` : ''}
+                        ${isRegistered && tournament.status !== 'completed' ? 
+                            `<button class="btn-3d-sm-white-glow-danger" onclick="leaveTournament('${tournament.id}')" style="width:auto;padding:6px 16px;">🚪 LEAVE</button>` : ''}
+                        ${isFull && !isRegistered && tournament.status !== 'completed' ? 
+                            `<span style="color:#ff6b6b;font-size:12px;">🔴 FULL</span>` : ''}
+                        ${tournament.status === 'completed' && isRegistered ? 
+                            `<span style="color:#00b894;">✅ Participated</span>` : ''}
+                    </div>
+                </div>
+            </div>
+        `;
+        list.appendChild(card);
+    }
+}
+
+function showCreateTournament() {
+    document.getElementById("createTournamentModal").style.display = "flex";
+}
+
+function closeCreateTournament() {
+    document.getElementById("createTournamentModal").style.display = "none";
+    document.getElementById("tournMessage").textContent = "";
+}
+
+async function createTournament() {
+    const title = document.getElementById("tournTitle").value.trim();
+    const category = document.getElementById("tournCategory").value;
+    const game = document.getElementById("tournGame").value.trim();
+    const description = document.getElementById("tournDescription").value.trim();
+    const maxPlayers = parseInt(document.getElementById("tournMaxPlayers").value);
+    const startDate = document.getElementById("tournStart").value;
+    const endDate = document.getElementById("tournEnd").value;
+    const prize = document.getElementById("tournPrize").value.trim();
+    const rules = document.getElementById("tournRules").value.trim();
+    const msg = document.getElementById("tournMessage");
+    
+    if (!title || !game || !startDate || !endDate) {
+        msg.textContent = "Please fill in all required fields.";
+        msg.style.color = "#ff6b6b";
+        return;
+    }
+    
+    if (new Date(endDate) <= new Date(startDate)) {
+        msg.textContent = "End time must be after start time.";
+        msg.style.color = "#ff6b6b";
+        return;
+    }
+    
+    const { data: { user } } = await client.auth.getUser();
+    if (!user) {
+        msg.textContent = "Please login first.";
+        msg.style.color = "#ff6b6b";
+        return;
+    }
+    
+    msg.textContent = "Creating tournament...";
+    msg.style.color = "#888";
+    
+    const { data: tournament, error } = await client.from("tournaments").insert({
+        title,
+        description: description || null,
+        category,
+        game,
+        max_players: maxPlayers,
+        start_date: startDate,
+        end_date: endDate,
+        status: new Date(startDate) > new Date() ? 'upcoming' : 'ongoing',
+        prize: prize || null,
+        rules: rules || null,
+        created_by: user.id
+    }).select("id").single();
+    
+    if (error) {
+        msg.textContent = "Error: " + error.message;
+        msg.style.color = "#ff6b6b";
+        return;
+    }
+    
+    msg.textContent = "✅ Tournament created successfully!";
+    msg.style.color = "#00b894";
+    
+    await sendNotificationToAll(
+        "🏆 New Tournament!",
+        `A new tournament "${title}" has been created in ${category}! Join now!`,
+        "tournament",
+        "/tournaments"
+    );
+    
+    setTimeout(() => {
+        closeCreateTournament();
+        loadTournaments('all');
+    }, 1500);
+}
+
+async function joinTournament(tournamentId) {
+    const { data: { user } } = await client.auth.getUser();
+    if (!user) { alert("Please login first."); return; }
+    
+    const { error } = await client.from("tournament_participants").insert({
+        tournament_id: tournamentId,
+        user_id: user.id
+    });
+    
+    if (error) {
+        alert("Could not join: " + error.message);
+        return;
+    }
+    
+    alert("🎯 You joined the tournament!");
+    loadTournaments(document.querySelector('#tournamentsPage .filter-btn[style*="opacity: 1"]')?.id?.replace('tournFilter', '').toLowerCase() || 'all');
+}
+
+async function leaveTournament(tournamentId) {
+    if (!confirm("Are you sure you want to leave this tournament?")) return;
+    
+    const { data: { user } } = await client.auth.getUser();
+    if (!user) return;
+    
+    const { error } = await client.from("tournament_participants")
+        .delete()
+        .eq("tournament_id", tournamentId)
+        .eq("user_id", user.id);
+    
+    if (error) {
+        alert("Could not leave: " + error.message);
+        return;
+    }
+    
+    alert("You left the tournament.");
+    loadTournaments(document.querySelector('#tournamentsPage .filter-btn[style*="opacity: 1"]')?.id?.replace('tournFilter', '').toLowerCase() || 'all');
+}
+
+// ==================== NOTIFICATION FUNCTIONS ====================
+async function sendNotificationToAll(title, message, type = 'info', link = null) {
+    const { data: profiles } = await client.from("profiles").select("id").eq("role", "student");
+    if (!profiles || profiles.length === 0) return;
+    
+    const notifications = profiles.map(p => ({
+        user_id: p.id,
+        title: title,
+        message: message,
+        type: type,
+        link: link,
+        is_read: false
+    }));
+    
+    const { data: admins } = await client.from("profiles").select("id").in("role", ['super_admin', 'college_admin']);
+    if (admins && admins.length > 0) {
+        admins.forEach(a => {
+            notifications.push({
+                user_id: a.id,
+                title: title,
+                message: message,
+                type: type,
+                link: link,
+                is_read: false
+            });
+        });
+    }
+    
+    const batchSize = 50;
+    for (let i = 0; i < notifications.length; i += batchSize) {
+        const batch = notifications.slice(i, i + batchSize);
+        await client.from("notifications").insert(batch);
+    }
+}
+
+async function loadNotifications() {
+    const { data: { user } } = await client.auth.getUser();
+    if (!user) return;
+    
+    const { data, error } = await client
+        .from("notifications")
+        .select("*")
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: false })
+        .limit(20);
+    
+    if (error) return;
+    
+    const unreadCount = (data || []).filter(n => !n.is_read).length;
+    const badge = document.getElementById("notificationBadge");
+    if (badge) {
+        badge.textContent = unreadCount;
+        badge.style.display = unreadCount > 0 ? 'flex' : 'none';
+    }
+}
+
+async function loadNotificationList() {
+    const dropdown = document.getElementById("notificationDropdown");
+    if (!dropdown) return;
+    
+    const { data: { user } } = await client.auth.getUser();
+    if (!user) return;
+    
+    const { data, error } = await client
+        .from("notifications")
+        .select("*")
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: false })
+        .limit(10);
+    
+    if (error || !data || data.length === 0) {
+        dropdown.innerHTML = "<div style='color:#888;padding:10px;text-align:center;'>No notifications</div>";
+        return;
+    }
+    
+    dropdown.innerHTML = data.map(n => `
+        <div style="padding:10px;border-bottom:1px solid #222;cursor:pointer;${n.is_read ? 'opacity:0.6;' : ''}" onclick="markNotificationRead('${n.id}')">
+            <div style="font-weight:700;font-size:14px;">${escapeHTML(n.title)}</div>
+            <div style="font-size:12px;color:#888;">${escapeHTML(n.message)}</div>
+            <div style="font-size:10px;color:#555;margin-top:4px;">${formatDate(n.created_at)}</div>
+        </div>
+    `).join('');
+}
+
+async function markNotificationRead(notificationId) {
+    await client.from("notifications")
+        .update({ is_read: true })
+        .eq("id", notificationId);
+    loadNotifications();
+    loadNotificationList();
+}
+
+function toggleNotifications() {
+    const dropdown = document.getElementById("notificationDropdown");
+    if (dropdown) {
+        dropdown.style.display = dropdown.style.display === 'none' ? 'block' : 'none';
+        if (dropdown.style.display === 'block') {
+            loadNotificationList();
+        }
+    }
 }
 
 // ==================== STUDENTS CATEGORY FILTER (ADMIN) ====================
@@ -2126,23 +2964,81 @@ async function reviewRequest(requestId, approve){
             .eq("id", requestId).single();
         if(fetchError || !request){ alert("Request not found."); return; }
         if(approve){
-            await client.from("college_join_requests").update({ status: "approved", reviewed_at: new Date().toISOString() }).eq("id", requestId);
-            const { data: existing } = await client.from("college_memberships").select("id").eq("user_id", request.student_id).eq("college_id", request.college_id).eq("is_active", true).maybeSingle();
+            // Get college code for ID generation
+            const { data: college } = await client
+                .from("colleges")
+                .select("college_code")
+                .eq("id", request.college_id)
+                .single();
+            
+            // Generate INTER RIVALRY ID
+            const collegeCode = college?.college_code || 'XXXX';
+            const randomNum = String(Math.floor(1000 + Math.random() * 9000));
+            const rivalryId = `IR-${collegeCode}-${randomNum}`;
+            
+            // Update request status
+            await client
+                .from("college_join_requests")
+                .update({ 
+                    status: "approved",
+                    reviewed_at: new Date().toISOString()
+                })
+                .eq("id", requestId);
+            
+            // Check if membership already exists
+            const { data: existing } = await client
+                .from("college_memberships")
+                .select("id")
+                .eq("user_id", request.student_id)
+                .eq("college_id", request.college_id)
+                .eq("is_active", true)
+                .maybeSingle();
+            
             if(!existing){
-                await client.from("college_memberships").insert({
-                    user_id: request.student_id, college_id: request.college_id,
-                    course: request.course, year_of_study: request.year_of_study,
-                    specialization: request.specialization, department: request.department,
-                    is_active: true, joined_at: new Date().toISOString()
-                });
+                // Create membership
+                await client
+                    .from("college_memberships")
+                    .insert({
+                        user_id: request.student_id,
+                        college_id: request.college_id,
+                        course: request.course,
+                        year_of_study: request.year_of_study,
+                        specialization: request.specialization,
+                        department: request.department,
+                        is_active: true,
+                        joined_at: new Date().toISOString()
+                    });
             }
-            alert("✅ Student approved successfully!");
+            
+            // Update profile with INTER RIVALRY ID
+            await client
+                .from("profiles")
+                .update({
+                    inter_rivalry_id: rivalryId,
+                    college_joined: true
+                })
+                .eq("id", request.student_id);
+            
+            alert(`✅ Student approved successfully!\n🎯 INTER RIVALRY ID: ${rivalyId}`);
+            
         } else {
-            await client.from("college_join_requests").update({ status: "rejected", reviewed_at: new Date().toISOString() }).eq("id", requestId);
+            await client
+                .from("college_join_requests")
+                .update({ 
+                    status: "rejected",
+                    reviewed_at: new Date().toISOString()
+                })
+                .eq("id", requestId);
+            
             alert("❌ Request rejected.");
         }
-        await loadRequests(); await loadCollegeManagementCounts(selectedCollegeId);
-    } catch(error) { alert("Error: " + error.message); }
+        
+        await loadRequests();
+        await loadCollegeManagementCounts(selectedCollegeId);
+        
+    } catch(error) {
+        alert("Error: " + error.message);
+    }
 }
 
 async function loadCollegeAdminDashboard(user, profile){
