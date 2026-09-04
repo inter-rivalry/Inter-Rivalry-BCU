@@ -21,20 +21,23 @@ button{cursor:pointer}
 .input-group input,.input-group select,.input-group textarea{width:100%;padding:14px;background:#090909;border:1px solid #303030;border-radius:10px;color:white;outline:none}
 .input-group textarea{min-height:100px;resize:vertical}
 .input-group select option{background:#111}
-.primary-btn{width:100%;padding:14px;border:none;border-radius:10px;background:white;color:black;font-weight:800}
-.secondary-btn{width:100%;padding:13px;border:1px solid #333;border-radius:10px;background:transparent;color:white;margin-top:10px}
+.primary-btn{width:100%;padding:14px;border:none;border-radius:10px;background:white;color:black;font-weight:800;transition:0.2s}
+.primary-btn:hover{background:#ddd}
+.secondary-btn{width:100%;padding:13px;border:1px solid #333;border-radius:10px;background:transparent;color:white;margin-top:10px;transition:0.2s}
+.secondary-btn:hover{background:#1a1a1a}
 .message{text-align:center;color:#aaa;font-size:14px;margin-top:16px;line-height:1.5}
 .navbar{min-height:70px;padding:0 25px;display:flex;align-items:center;justify-content:space-between;background:#0d0d0d;border-bottom:1px solid #222}
 .nav-logo{font-size:20px;font-weight:900;letter-spacing:2px}
 .nav-right{display:flex;align-items:center;gap:12px}
 .role-badge{padding:7px 10px;border:1px solid #333;border-radius:8px;font-size:12px;color:#aaa}
-.logout-btn{padding:9px 15px;border:1px solid #333;background:transparent;color:white;border-radius:8px}
+.logout-btn{padding:9px 15px;border:1px solid #333;background:transparent;color:white;border-radius:8px;transition:0.2s}
+.logout-btn:hover{background:#1a1a1a}
 .container{width:100%;max-width:1150px;margin:auto;padding:30px 20px}
 .welcome{margin-bottom:25px}
 .welcome h1{font-size:32px;margin-bottom:7px}
 .welcome p{color:#888}
 .section-title{margin-bottom:16px}
-.profile-card,.admin-stat,.college-card,.management-card,.request-card,.student-card,.admin-card,.rival-card,.challenge-card,.team-card{background:#121212;border:1px solid #292929;border-radius:16px;padding:23px}
+.profile-card,.admin-stat,.college-card,.management-card,.request-card,.student-card,.admin-card,.rival-card,.challenge-card,.team-card,.invite-card{background:#121212;border:1px solid #292929;border-radius:16px;padding:23px}
 .team-card{margin-bottom:12px}
 .team-card h3{margin-bottom:8px}
 .team-info{color:#999;font-size:14px;line-height:1.7}
@@ -64,9 +67,9 @@ button{cursor:pointer}
 .small-btn:hover{background:#1a1a1a}
 .success-btn{background:white;color:black;border-color:white}
 .success-btn:hover{background:#ddd}
-.approve-btn{background:white;color:black;border:none}
-.approve-btn:hover{background:#ddd}
-.reject-btn{border-color:#555}
+.approve-btn{background:#00c853;color:white;border:none}
+.approve-btn:hover{background:#00e676}
+.reject-btn{border-color:#555;color:#ff6b6b}
 .reject-btn:hover{background:#1a1a1a}
 .danger-btn{border-color:#555;color:#ff6b6b}
 .danger-btn:hover{background:#1a1a1a}
@@ -74,7 +77,7 @@ button{cursor:pointer}
 .challenge-btn:hover{background:#ddd}
 .team-btn{background:#222;color:white;border-color:#444}
 .team-btn:hover{background:#333}
-.back-btn{margin-bottom:20px;padding:10px 15px;border:1px solid #333;background:transparent;color:white;border-radius:9px}
+.back-btn{margin-bottom:20px;padding:10px 15px;border:1px solid #333;background:transparent;color:white;border-radius:9px;transition:0.2s}
 .back-btn:hover{background:#1a1a1a}
 .management-header{margin-bottom:25px}
 .management-header h1{font-size:30px;margin-bottom:7px}
@@ -117,8 +120,8 @@ button{cursor:pointer}
 @media(max-width:600px){.navbar{padding:0 15px}.container{padding:22px 15px}.welcome h1{font-size:26px}.auth-box{padding:24px}.role-badge{display:none}}
 .action-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:15px}
 .action-row .small-btn{flex:1;min-width:110px}
-.accept-btn{background:white;color:black;border-color:white;font-weight:800}
-.accept-btn:hover{background:#ddd}
+.accept-btn{background:#00c853;color:white;border:none;font-weight:800}
+.accept-btn:hover{background:#00e676}
 .result-btn{background:white;color:black;border-color:white;font-weight:800}
 .result-btn:hover{background:#ddd}
 .filter-row{display:grid;grid-template-columns:1fr 220px;gap:10px;margin-bottom:15px}
@@ -151,7 +154,7 @@ button{cursor:pointer}
 .invite-row{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
 .invite-row select{flex:1;min-width:150px;padding:10px;background:#0a0a0a;border:1px solid #333;border-radius:8px;color:white}
 .invite-row select:focus{outline:none;border-color:#555}
-.invite-card{background:#121212;border:1px solid #292929;border-radius:16px;padding:18px;margin-bottom:10px}
+.invite-card{margin-bottom:10px}
 .invite-card h4{margin-bottom:5px}
 .invite-card .invite-info{color:#999;font-size:14px;line-height:1.6}
 .invite-actions{display:flex;gap:10px;margin-top:12px}
@@ -480,24 +483,11 @@ let interestSkillCache = [];
 let currentInterestIds = new Set();
 let selectedChallengeMode = "solo";
 
-// ELEMENTS
-const loadingScreen = document.getElementById("loadingScreen");
-const authPage = document.getElementById("authPage");
-const studentDashboard = document.getElementById("studentDashboard");
-const profilePage = document.getElementById("profilePage");
-const challengePage = document.getElementById("challengePage");
-const myChallengesPage = document.getElementById("myChallengesPage");
-const adminDashboard = document.getElementById("adminDashboard");
-const collegeManagement = document.getElementById("collegeManagement");
-const adminsPage = document.getElementById("adminsPage");
-const studentsPage = document.getElementById("studentsPage");
-const requestsPage = document.getElementById("requestsPage");
-const authMessage = document.getElementById("authMessage");
-
 // ============ AUTH FUNCTIONS ============
-function showMessage(message){ authMessage.textContent = message; }
+function showMessage(msg){ document.getElementById("authMessage").textContent = msg; }
 function showSignup(){ document.getElementById("loginForm").classList.add("hidden"); document.getElementById("signupForm").classList.remove("hidden"); showMessage(""); }
 function showLogin(){ document.getElementById("signupForm").classList.add("hidden"); document.getElementById("loginForm").classList.remove("hidden"); showMessage(""); }
+function showAuth(){ hideAll(); document.getElementById("authPage").classList.remove("hidden"); }
 
 async function signup(){
     const name = document.getElementById("signupName").value.trim();
@@ -505,17 +495,13 @@ async function signup(){
     const password = document.getElementById("signupPassword").value;
     if(!name || !email || !password){ showMessage("Please fill in all fields."); return; }
     if(password.length < 6){ showMessage("Password must be at least 6 characters."); return; }
-    showMessage("Creating your INTER RIVALRY account...");
+    showMessage("Creating account...");
     const { data, error } = await client.auth.signUp({
-        email: email,
-        password: password,
-        options: {
-            emailRedirectTo: "https://inter-rivalry.github.io/Inter-Rivalry-BCU/",
-            data: { full_name: name }
-        }
+        email, password,
+        options: { emailRedirectTo: "https://inter-rivalry.github.io/Inter-Rivalry-BCU/", data: { full_name: name } }
     });
     if(error){ showMessage(error.message); return; }
-    if(!data.session){ showMessage("Account created! Check your email and confirm your account before logging in."); return; }
+    if(!data.session){ showMessage("Account created! Check your email to confirm."); return; }
     await loadUser();
 }
 
@@ -524,7 +510,7 @@ async function login(){
     const password = document.getElementById("loginPassword").value;
     if(!email || !password){ showMessage("Please enter your email and password."); return; }
     showMessage("Logging in...");
-    const { error } = await client.auth.signInWithPassword({ email: email, password: password });
+    const { error } = await client.auth.signInWithPassword({ email, password });
     if(error){ showMessage(error.message); return; }
     await loadUser();
 }
@@ -532,19 +518,19 @@ async function login(){
 async function forgotPassword(){
     const email = document.getElementById("loginEmail").value.trim();
     if(!email){ showMessage("Enter your email first."); return; }
-    showMessage("Sending password reset email...");
+    showMessage("Sending reset email...");
     const { error } = await client.auth.resetPasswordForEmail(email, { redirectTo: "https://inter-rivalry.github.io/Inter-Rivalry-BCU/" });
     if(error){ showMessage(error.message); return; }
-    showMessage("Password reset email sent! Check your inbox and spam folder.");
+    showMessage("Password reset email sent!");
 }
 
 async function resendConfirmationEmail(){
     const email = document.getElementById("loginEmail").value.trim();
     if(!email){ showMessage("Enter your email first."); return; }
     showMessage("Sending confirmation email...");
-    const { error } = await client.auth.resend({ type: "signup", email: email, options: { emailRedirectTo: "https://inter-rivalry.github.io/Inter-Rivalry-BCU/" } });
+    const { error } = await client.auth.resend({ type: "signup", email, options: { emailRedirectTo: "https://inter-rivalry.github.io/Inter-Rivalry-BCU/" } });
     if(error){ showMessage(error.message); return; }
-    showMessage("Confirmation email sent! Check your inbox and spam folder.");
+    showMessage("Confirmation email sent!");
 }
 
 async function logout(){
@@ -554,25 +540,10 @@ async function logout(){
     showAuth();
 }
 
-function showAuth(){ hideAll(); authPage.classList.remove("hidden"); }
-
 // ============ NAVIGATION ============
 function hideAll(){
-    loadingScreen.classList.add("hidden");
-    authPage.classList.add("hidden");
-    studentDashboard.classList.add("hidden");
-    profilePage.classList.add("hidden");
-    challengePage.classList.add("hidden");
-    myChallengesPage.classList.add("hidden");
-    adminDashboard.classList.add("hidden");
-    collegeManagement.classList.add("hidden");
-    adminsPage.classList.add("hidden");
-    studentsPage.classList.add("hidden");
-    requestsPage.classList.add("hidden");
-    document.getElementById("interestsPage").classList.add("hidden");
-    document.getElementById("resultsPage").classList.add("hidden");
-    document.getElementById("createTeamPage").classList.add("hidden");
-    document.getElementById("teamDetailsPage").classList.add("hidden");
+    document.querySelectorAll("section").forEach(s => s.classList.add("hidden"));
+    document.getElementById("loadingScreen").classList.add("hidden");
 }
 
 function backToStudentDashboard(){
@@ -586,18 +557,18 @@ function backToStudentDashboard(){
     loadStudentDashboardFromCurrentUser();
 }
 
-function backToProfile(){ showOnlyProfile(); }
+function backToProfile(){ document.getElementById("profilePage").classList.remove("hidden"); document.getElementById("challengePage").classList.add("hidden"); }
 function backToAdmin(){ selectedCollegeId = null; loadAdminDashboard(); }
-function backToManagement(){ showOnlyCollegeManagement(); }
-function showOnlyStudent(){ hideAll(); studentDashboard.classList.remove("hidden"); }
-function showOnlyProfile(){ hideAll(); profilePage.classList.remove("hidden"); }
-function showOnlyChallenge(){ hideAll(); challengePage.classList.remove("hidden"); }
-function showOnlyMyChallenges(){ hideAll(); myChallengesPage.classList.remove("hidden"); loadMyChallenges(); }
-function showOnlyAdmin(){ hideAll(); adminDashboard.classList.remove("hidden"); }
-function showOnlyCollegeManagement(){ hideAll(); collegeManagement.classList.remove("hidden"); }
-function showOnlyAdmins(){ hideAll(); adminsPage.classList.remove("hidden"); }
-function showOnlyStudents(){ hideAll(); studentsPage.classList.remove("hidden"); }
-function showOnlyRequests(){ hideAll(); requestsPage.classList.remove("hidden"); }
+function backToManagement(){ document.getElementById("collegeManagement").classList.remove("hidden"); }
+function showOnlyStudent(){ hideAll(); document.getElementById("studentDashboard").classList.remove("hidden"); }
+function showOnlyProfile(){ hideAll(); document.getElementById("profilePage").classList.remove("hidden"); }
+function showOnlyChallenge(){ hideAll(); document.getElementById("challengePage").classList.remove("hidden"); }
+function showOnlyMyChallenges(){ hideAll(); document.getElementById("myChallengesPage").classList.remove("hidden"); loadMyChallenges(); }
+function showOnlyAdmin(){ hideAll(); document.getElementById("adminDashboard").classList.remove("hidden"); }
+function showOnlyCollegeManagement(){ hideAll(); document.getElementById("collegeManagement").classList.remove("hidden"); }
+function showOnlyAdmins(){ hideAll(); document.getElementById("adminsPage").classList.remove("hidden"); }
+function showOnlyStudents(){ hideAll(); document.getElementById("studentsPage").classList.remove("hidden"); }
+function showOnlyRequests(){ hideAll(); document.getElementById("requestsPage").classList.remove("hidden"); }
 function showOnlyInterests(){ hideAll(); document.getElementById("interestsPage").classList.remove("hidden"); loadInterestsEditor(); }
 function showOnlyResults(){ hideAll(); document.getElementById("resultsPage").classList.remove("hidden"); loadResults(); }
 function showCreateTeam(){ document.getElementById("createTeamPage").classList.remove("hidden"); document.getElementById("studentDashboard").classList.add("hidden"); }
@@ -624,8 +595,7 @@ async function loadStudentDashboardFromCurrentUser(){
 async function loadStudentDashboard(user, profile){
     document.getElementById("userName").textContent = profile.full_name || "Student";
     document.getElementById("rivalryId").textContent = profile.inter_rivalry_id || "Not assigned";
-    const { data: membership, error } = await client.from("college_memberships").select("college_id,department,course,year_of_study,specialization,colleges(college_name,college_code,city,state)").eq("user_id",user.id).eq("is_active",true).maybeSingle();
-    if(error){ console.error("Membership error:", error); }
+    const { data: membership } = await client.from("college_memberships").select("college_id,department,course,year_of_study,specialization,colleges(college_name,college_code,city,state)").eq("user_id",user.id).eq("is_active",true).maybeSingle();
     const collegeStatus = document.getElementById("collegeStatus");
     if(membership && membership.colleges){
         collegeStatus.textContent = "College: " + membership.colleges.college_name + " (" + membership.colleges.college_code + ")";
@@ -648,17 +618,11 @@ async function loadStudentColleges(){
     const { data, error } = await client.from("colleges").select("id,college_name,college_code,city,state").order("college_name",{ascending:true});
     const list = document.getElementById("collegeList");
     list.innerHTML = "";
-    if(error){ console.error(error); list.innerHTML = "<div class='empty-box'>Unable to load colleges.</div>"; return; }
-    if(!data || data.length === 0){ list.innerHTML = "<div class='empty-box'>No colleges available yet.</div>"; return; }
+    if(error || !data || data.length === 0){ list.innerHTML = "<div class='empty-box'>No colleges available.</div>"; return; }
     data.forEach(college => {
         const card = document.createElement("div");
         card.className = "college-card";
-        card.innerHTML = `
-            <h3>${escapeHTML(college.college_name)}</h3>
-            <div class="college-code">${escapeHTML(college.college_code)}</div>
-            <div class="college-location">${escapeHTML(college.city || "")}${college.state ? ", " + escapeHTML(college.state) : ""}</div>
-            <button class="small-btn success-btn" onclick="showJoinForm('${college.id}')">JOIN COLLEGE</button>
-        `;
+        card.innerHTML = `<h3>${escapeHTML(college.college_name)}</h3><div class="college-code">${escapeHTML(college.college_code)}</div><div class="college-location">${escapeHTML(college.city || "")}${college.state ? ", " + escapeHTML(college.state) : ""}</div><button class="small-btn success-btn" onclick="showJoinForm('${college.id}')">JOIN COLLEGE</button>`;
         list.appendChild(card);
     });
 }
@@ -667,10 +631,10 @@ async function showJoinForm(collegeId){
     const course = prompt("Enter course:\nBCA, BBA or B.Com");
     if(!course) return;
     const normalizedCourse = course.trim().toUpperCase();
-    if(normalizedCourse !== "BCA" && normalizedCourse !== "BBA" && normalizedCourse !== "B.COM"){ alert("Please enter BCA, BBA or B.Com."); return; }
+    if(!["BCA","BBA","B.COM"].includes(normalizedCourse)){ alert("Please enter BCA, BBA or B.Com."); return; }
     const year = prompt("Enter year:\n1 = 1st Year\n2 = 2nd Year\n3 = 3rd Year");
     const yearNumber = Number(year);
-    if(yearNumber !== 1 && yearNumber !== 2 && yearNumber !== 3){ alert("Please enter 1, 2 or 3."); return; }
+    if(![1,2,3].includes(yearNumber)){ alert("Please enter 1, 2 or 3."); return; }
     let specialization = null;
     if(normalizedCourse === "BCA"){
         specialization = prompt("BCA specialization:\nAI ML\nData Science\nGeneral");
@@ -679,9 +643,9 @@ async function showJoinForm(collegeId){
     }
     const { data: { user } } = await client.auth.getUser();
     if(!user){ alert("Please login first."); return; }
-    const { error } = await client.from("college_join_requests").insert({ student_id: user.id, college_id: collegeId, course: normalizedCourse, year_of_study: yearNumber, specialization: specialization });
-    if(error){ console.error(error); alert("Could not send request: " + error.message); return; }
-    alert("Join request submitted! Waiting for college admin approval.");
+    const { error } = await client.from("college_join_requests").insert({ student_id: user.id, college_id: collegeId, course: normalizedCourse, year_of_study: yearNumber, specialization });
+    if(error){ alert("Could not send request: " + error.message); return; }
+    alert("Join request submitted! Waiting for approval.");
 }
 
 // ============ RIVALS ============
@@ -692,23 +656,16 @@ async function loadRivals(){
     const { data: { user } } = await client.auth.getUser();
     if(!user) return;
     const { data: profiles, error } = await client.from("profiles").select("id,full_name,inter_rivalry_id,role").neq("id",user.id).eq("role","student").order("full_name",{ascending:true});
-    if(error){ list.innerHTML = `<div class='empty-box'>Unable to load students.<br>${escapeHTML(error.message)}</div>`; return; }
+    if(error){ list.innerHTML = `<div class='empty-box'>${escapeHTML(error.message)}</div>`; return; }
     allRivalsCache = profiles || [];
     rivalInterestMap = new Map();
     rivalAcademicMap = new Map();
     if(allRivalsCache.length){
         const ids = allRivalsCache.map(x=>x.id);
         const { data: parts } = await client.from("participations").select("user_id,subcategory_id,subcategories(name,categories(name))").in("user_id",ids);
-        (parts||[]).forEach(x => {
-            if(!rivalInterestMap.has(x.user_id)) rivalInterestMap.set(x.user_id, []);
-            rivalInterestMap.get(x.user_id).push(x);
-        });
-        const { data: memberships, error: membershipError } = await client.from("college_memberships").select("user_id,college_id,course,year_of_study,department,specialization,is_active,colleges(college_name,college_code)").in("user_id",ids).eq("is_active",true);
-        if(membershipError){ console.warn("Academic filters could not load:", membershipError.message); } else {
-            (memberships||[]).forEach(m => {
-                if(!rivalAcademicMap.has(m.user_id)) rivalAcademicMap.set(m.user_id, m);
-            });
-        }
+        (parts||[]).forEach(x => { if(!rivalInterestMap.has(x.user_id)) rivalInterestMap.set(x.user_id, []); rivalInterestMap.get(x.user_id).push(x); });
+        const { data: memberships } = await client.from("college_memberships").select("user_id,college_id,course,year_of_study,department,specialization,is_active,colleges(college_name,college_code)").in("user_id",ids).eq("is_active",true);
+        (memberships||[]).forEach(m => { if(!rivalAcademicMap.has(m.user_id)) rivalAcademicMap.set(m.user_id, m); });
     }
     buildRivalFilters();
     renderRivals();
@@ -725,23 +682,9 @@ function buildRivalFilters(){
         if(m.department) departments.add(m.department);
         if(m.specialization) specializations.add(m.specialization);
     });
-    rivalInterestMap.forEach(items => {
-        items.forEach(x => {
-            if(x.subcategories?.categories?.name) cats.add(x.subcategories.categories.name);
-        });
-    });
+    rivalInterestMap.forEach(items => { items.forEach(x => { if(x.subcategories?.categories?.name) cats.add(x.subcategories.categories.name); }); });
     const yearLabel = (y) => { const n = Number(y); return n===1?"1st Year":n===2?"2nd Year":n===3?"3rd Year":`${n}th Year`; };
-    wrap.innerHTML = `
-        <div class="student-filter-group">
-            <input id="rivalSearch" placeholder="Search student or INTER RIVALRY ID" oninput="renderRivals()">
-            <select id="rivalCollege" onchange="renderRivals()"><option value="">All colleges</option>${[...colleges].sort().map(c => `<option value="${escapeHTML(c)}">${escapeHTML(c)}</option>`).join("")}</select>
-            <select id="rivalCourse" onchange="renderRivals()"><option value="">All courses</option>${[...courses].sort().map(c => `<option value="${escapeHTML(c)}">${escapeHTML(c)}</option>`).join("")}</select>
-            <select id="rivalYear" onchange="renderRivals()"><option value="">All years</option>${[...years].sort((a,b)=>Number(a)-Number(b)).map(y => `<option value="${escapeHTML(y)}">${escapeHTML(yearLabel(y))}</option>`).join("")}</select>
-            <select id="rivalDepartment" onchange="renderRivals()"><option value="">All departments</option>${[...departments].sort().map(d => `<option value="${escapeHTML(d)}">${escapeHTML(d)}</option>`).join("")}</select>
-            <select id="rivalSpecialization" onchange="renderRivals()"><option value="">All specializations</option>${[...specializations].sort().map(s => `<option value="${escapeHTML(s)}">${escapeHTML(s)}</option>`).join("")}</select>
-            <select id="rivalCategory" onchange="renderRivals()"><option value="">All interest categories</option>${[...cats].sort().map(c => `<option value="${escapeHTML(c)}">${escapeHTML(c)}</option>`).join("")}</select>
-        </div>
-    `;
+    wrap.innerHTML = `<div class="student-filter-group"><input id="rivalSearch" placeholder="Search..." oninput="renderRivals()"><select id="rivalCollege" onchange="renderRivals()"><option value="">All colleges</option>${[...colleges].sort().map(c => `<option value="${escapeHTML(c)}">${escapeHTML(c)}</option>`).join("")}</select><select id="rivalCourse" onchange="renderRivals()"><option value="">All courses</option>${[...courses].sort().map(c => `<option value="${escapeHTML(c)}">${escapeHTML(c)}</option>`).join("")}</select><select id="rivalYear" onchange="renderRivals()"><option value="">All years</option>${[...years].sort((a,b)=>Number(a)-Number(b)).map(y => `<option value="${escapeHTML(y)}">${escapeHTML(yearLabel(y))}</option>`).join("")}</select><select id="rivalDepartment" onchange="renderRivals()"><option value="">All departments</option>${[...departments].sort().map(d => `<option value="${escapeHTML(d)}">${escapeHTML(d)}</option>`).join("")}</select><select id="rivalSpecialization" onchange="renderRivals()"><option value="">All specializations</option>${[...specializations].sort().map(s => `<option value="${escapeHTML(s)}">${escapeHTML(s)}</option>`).join("")}</select><select id="rivalCategory" onchange="renderRivals()"><option value="">All categories</option>${[...cats].sort().map(c => `<option value="${escapeHTML(c)}">${escapeHTML(c)}</option>`).join("")}</select></div>`;
 }
 
 function renderRivals(){
@@ -759,12 +702,12 @@ function renderRivals(){
         const items = rivalInterestMap.get(p.id)||[];
         const cats = items.map(x => x.subcategories?.categories?.name||"");
         const hay = ((p.full_name||"") + " " + (p.inter_rivalry_id||"")).toLowerCase();
-        const academicCollege = academic.colleges?.college_name||"";
-        const academicCourse = academic.course||"";
-        const academicYear = academic.year_of_study ? String(academic.year_of_study) : "";
-        const academicDepartment = academic.department||"";
-        const academicSpecialization = academic.specialization||"";
-        return (!q || hay.includes(q)) && (!college || academicCollege === college) && (!course || academicCourse === course) && (!year || academicYear === year) && (!department || academicDepartment === department) && (!specialization || academicSpecialization === specialization) && (!category || cats.includes(category));
+        const ac = academic.colleges?.college_name||"";
+        const acourse = academic.course||"";
+        const ayear = academic.year_of_study ? String(academic.year_of_study) : "";
+        const adept = academic.department||"";
+        const aspec = academic.specialization||"";
+        return (!q || hay.includes(q)) && (!college || ac === college) && (!course || acourse === course) && (!year || ayear === year) && (!department || adept === department) && (!specialization || aspec === specialization) && (!category || cats.includes(category));
     });
     if(!filtered.length){ list.innerHTML = "<div class='empty-box'>No students match your filters.</div>"; return; }
     list.innerHTML = "";
@@ -781,15 +724,9 @@ function renderRivals(){
             const year = academic.year_of_study ? (Number(academic.year_of_study)===1?"1st Year":Number(academic.year_of_study)===2?"2nd Year":Number(academic.year_of_study)===3?"3rd Year":`${academic.year_of_study}th Year`) : "Year not added";
             const department = academic.department || "";
             const specialization = academic.specialization || "";
-            academicHtml = `<div class="rival-academic"><strong>College:</strong> ${escapeHTML(collegeName)}<br><strong>Course:</strong> ${escapeHTML(course)} &nbsp; • &nbsp; <strong>Year:</strong> ${escapeHTML(year)}${department ? `<br><strong>Department:</strong> ${escapeHTML(department)}` : ""}${specialization ? `<br><strong>Specialization:</strong> ${escapeHTML(specialization)}` : ""}</div>`;
-        } else {
-            academicHtml = `<div class="rival-academic"><span style="color:#666">Academic information not available</span></div>`;
+            academicHtml = `<div class="rival-academic"><strong>College:</strong> ${escapeHTML(collegeName)}<br><strong>Course:</strong> ${escapeHTML(course)} • <strong>Year:</strong> ${escapeHTML(year)}${department ? `<br><strong>Department:</strong> ${escapeHTML(department)}` : ""}${specialization ? `<br><strong>Specialization:</strong> ${escapeHTML(specialization)}` : ""}</div>`;
         }
-        card.innerHTML = `
-            <h3>👤 ${escapeHTML(profile.full_name||"Student")}</h3>
-            <div class="rival-info">INTER RIVALRY ID: ${escapeHTML(profile.inter_rivalry_id||"-")}${academicHtml}<div style="margin-top:10px">${tags.length ? tags.map(t => `<span class="category-tag">${escapeHTML(t)}</span>`).join("") : "<span style='color:#666'>No interests added</span>"}</div></div>
-            <div class="rival-actions"><button class="small-btn challenge-btn" onclick="viewProfile('${profile.id}')">VIEW PROFILE</button></div>
-        `;
+        card.innerHTML = `<h3>👤 ${escapeHTML(profile.full_name||"Student")}</h3><div class="rival-info">INTER RIVALRY ID: ${escapeHTML(profile.inter_rivalry_id||"-")}${academicHtml}<div style="margin-top:10px">${tags.length ? tags.map(t => `<span class="category-tag">${escapeHTML(t)}</span>`).join("") : "<span style='color:#666'>No interests</span>"}</div></div><div class="rival-actions"><button class="small-btn challenge-btn" onclick="viewProfile('${profile.id}')">VIEW PROFILE</button></div>`;
         list.appendChild(card);
     });
 }
@@ -802,15 +739,11 @@ async function viewProfile(userId){
     document.getElementById("viewProfileName").textContent = profile.full_name || "User";
     document.getElementById("viewProfileRivalry").textContent = profile.inter_rivalry_id || "-";
     const { data: membership } = await client.from("college_memberships").select("course,year_of_study,specialization,colleges(college_name)").eq("user_id",userId).eq("is_active",true).maybeSingle();
-    if(membership && membership.colleges){
-        document.getElementById("viewProfileCollege").textContent = membership.colleges.college_name;
-    } else {
-        document.getElementById("viewProfileCollege").textContent = "College information unavailable";
-    }
+    document.getElementById("viewProfileCollege").textContent = (membership && membership.colleges) ? membership.colleges.college_name : "College info unavailable";
     const skillsBox = document.getElementById("viewProfileSkills");
     skillsBox.innerHTML = "<div class='empty-box'>Loading skills...</div>";
-    const { data: skills, error: skillsError } = await client.from("participations").select("subcategory_id,subcategories(id,name,categories(name))").eq("user_id",userId);
-    if(skillsError){ console.error(skillsError); skillsBox.innerHTML = "<div class='empty-box'>Skills could not be loaded.</div>"; } else if(!skills || skills.length === 0){ skillsBox.innerHTML = "<div class='empty-box'>No skills available yet.</div>"; } else {
+    const { data: skills } = await client.from("participations").select("subcategory_id,subcategories(id,name,categories(name))").eq("user_id",userId);
+    if(!skills || skills.length === 0){ skillsBox.innerHTML = "<div class='empty-box'>No skills yet.</div>"; } else {
         skillsBox.innerHTML = "";
         skills.forEach(row => {
             const skill = row.subcategories;
@@ -850,8 +783,7 @@ async function loadChallengeSkills(){
     const select = document.getElementById("challengeSkill");
     select.innerHTML = "<option value=''>Loading skills...</option>";
     const { data, error } = await client.from("subcategories").select("id,name,categories(name)").order("name");
-    if(error){ console.error(error); select.innerHTML = "<option value=''>Unable to load skills</option>"; return; }
-    if(!data || data.length === 0){ select.innerHTML = "<option value=''>No skills available</option>"; return; }
+    if(error || !data || data.length === 0){ select.innerHTML = "<option value=''>No skills available</option>"; return; }
     select.innerHTML = "<option value=''>Select a skill</option>";
     data.forEach(skill => {
         const option = document.createElement("option");
@@ -864,25 +796,21 @@ async function loadChallengeSkills(){
 // ============ CHALLENGE MODE ============
 function setChallengeMode(mode){
     selectedChallengeMode = mode === "team" ? "team" : "solo";
-    const soloBtn = document.getElementById("soloModeBtn");
-    const teamBtn = document.getElementById("teamModeBtn");
-    const fields = document.getElementById("teamChallengeFields");
-    if(soloBtn) soloBtn.classList.toggle("active", selectedChallengeMode === "solo");
-    if(teamBtn) teamBtn.classList.toggle("active", selectedChallengeMode === "team");
-    if(fields) fields.style.display = selectedChallengeMode === "team" ? "grid" : "none";
+    document.getElementById("soloModeBtn").classList.toggle("active", selectedChallengeMode === "solo");
+    document.getElementById("teamModeBtn").classList.toggle("active", selectedChallengeMode === "team");
+    document.getElementById("teamChallengeFields").style.display = selectedChallengeMode === "team" ? "grid" : "none";
     if(selectedChallengeMode === "team") loadMyChallengeTeams();
 }
 
 async function loadMyChallengeTeams(){
     const select = document.getElementById("challengeMyTeam");
     if(!select) return;
-    select.innerHTML = "<option value=''>Loading your teams...</option>";
+    select.innerHTML = "<option value=''>Loading...</option>";
     const { data: { user } } = await client.auth.getUser();
-    if(!user){ select.innerHTML = "<option value=''>Please login first</option>"; return; }
+    if(!user){ select.innerHTML = "<option value=''>Please login</option>"; return; }
     const { data: members, error } = await client.from("team_members").select("team_id, teams(id,name,college_id)").eq("user_id",user.id);
-    if(error){ console.error(error); select.innerHTML = "<option value=''>Unable to load teams</option>"; return; }
+    if(error || !members || members.length === 0){ select.innerHTML = "<option value=''>No teams found</option>"; return; }
     const teams = (members||[]).map(x => x.teams).filter(Boolean);
-    if(!teams.length){ select.innerHTML = "<option value=''>You are not in any team</option>"; const op = document.getElementById("challengeOpponentTeam"); if(op) op.innerHTML = "<option value=''>No opponent teams available</option>"; return; }
     select.innerHTML = "<option value=''>Select your team</option>";
     teams.forEach(team => { const o = document.createElement("option"); o.value = team.id; o.textContent = team.name; select.appendChild(o); });
 }
@@ -890,15 +818,13 @@ async function loadMyChallengeTeams(){
 async function loadOpponentTeams(){
     const myTeamId = document.getElementById("challengeMyTeam")?.value;
     const select = document.getElementById("challengeOpponentTeam");
-    if(!select) return;
-    if(!myTeamId){ select.innerHTML = "<option value=''>Select your team first</option>"; return; }
-    select.innerHTML = "<option value=''>Loading opponent teams...</option>";
-    const { data: myTeam, error: myError } = await client.from("teams").select("id,college_id").eq("id",myTeamId).single();
-    if(myError||!myTeam){ select.innerHTML = "<option value=''>Unable to load your team</option>"; return; }
-    const { data: teams, error } = await client.from("teams").select("id,name,college_id").neq("id",myTeamId).order("name",{ascending:true});
-    if(error){ console.error(error); select.innerHTML = "<option value=''>Unable to load teams</option>"; return; }
+    if(!select || !myTeamId){ select.innerHTML = "<option value=''>Select your team first</option>"; return; }
+    select.innerHTML = "<option value=''>Loading...</option>";
+    const { data: myTeam } = await client.from("teams").select("college_id").eq("id",myTeamId).single();
+    if(!myTeam){ select.innerHTML = "<option value=''>Error loading team</option>"; return; }
+    const { data: teams } = await client.from("teams").select("id,name,college_id").neq("id",myTeamId).order("name",{ascending:true});
     const opponents = (teams||[]).filter(t => t.college_id !== myTeam.college_id);
-    if(!opponents.length){ select.innerHTML = "<option value=''>No opponent teams available</option>"; return; }
+    if(!opponents.length){ select.innerHTML = "<option value=''>No opponent teams</option>"; return; }
     select.innerHTML = "<option value=''>Select opponent team</option>";
     opponents.forEach(team => { const o = document.createElement("option"); o.value = team.id; o.textContent = team.name; select.appendChild(o); });
 }
@@ -915,20 +841,19 @@ async function sendChallenge(){
     const startValue = document.getElementById("challengeStart")?.value;
     const endValue = document.getElementById("challengeEnd")?.value;
     const message = document.getElementById("challengeMessage");
-    if(!subcategoryId) return message.textContent = "Please select a skill.";
-    if(!title) return message.textContent = "Enter a challenge title.";
-    if(!startValue || !endValue) return message.textContent = "Please select start and end times.";
+    if(!subcategoryId) return message.textContent = "Select a skill.";
+    if(!title) return message.textContent = "Enter a title.";
+    if(!startValue || !endValue) return message.textContent = "Select start and end times.";
     const startDate = new Date(startValue), endDate = new Date(endValue);
-    if(endDate <= startDate) return message.textContent = "End time must be after start time.";
+    if(endDate <= startDate) return message.textContent = "End time must be after start.";
     let myTeamId = null, opponentTeamId = null;
     if(selectedChallengeMode === "team"){
         myTeamId = document.getElementById("challengeMyTeam")?.value || null;
         opponentTeamId = document.getElementById("challengeOpponentTeam")?.value || null;
-        if(!myTeamId) return message.textContent = "Select your team.";
-        if(!opponentTeamId) return message.textContent = "Select the opponent team.";
+        if(!myTeamId || !opponentTeamId) return message.textContent = "Select both teams.";
     }
     const { data: existing } = await client.from("challenges").select("id").eq("challenger_id",user.id).eq("opponent_id",selectedProfileId).eq("status","pending").limit(1);
-    if(existing?.length) return message.textContent = "You already have a pending challenge with this rival.";
+    if(existing?.length) return message.textContent = "You already have a pending challenge.";
     message.textContent = "Sending challenge...";
     const { data: challenge, error } = await client.from("challenges").insert({
         challenger_id: user.id, opponent_id: selectedProfileId, subcategory_id: subcategoryId,
@@ -936,24 +861,21 @@ async function sendChallenge(){
         starts_at: startDate.toISOString(), ends_at: endDate.toISOString(),
         status: "pending", mode: selectedChallengeMode
     }).select("id").single();
-    if(error){ message.textContent = "Could not send challenge: " + error.message; return; }
+    if(error){ message.textContent = "Error: " + error.message; return; }
     if(selectedChallengeMode === "team"){
         const { error: teamError } = await client.from("challenge_teams").insert([
             { challenge_id: challenge.id, team_id: myTeamId, side: "challenger" },
             { challenge_id: challenge.id, team_id: opponentTeamId, side: "opponent" }
         ]);
         if(teamError){
-            console.error(teamError);
-            await client.from("challenges").delete().eq("id",challenge.id).eq("challenger_id",user.id);
-            message.textContent = "Could not assign teams: " + teamError.message;
+            await client.from("challenges").delete().eq("id",challenge.id);
+            message.textContent = "Team error: " + teamError.message;
             return;
         }
     }
-    message.textContent = selectedChallengeMode === "team" ? "Team challenge sent successfully! 👥⚔️" : "Challenge sent successfully! ⚔️";
+    message.textContent = selectedChallengeMode === "team" ? "Team challenge sent! 👥⚔️" : "Challenge sent! ⚔️";
     document.getElementById("challengeTitle").value = "";
     document.getElementById("challengeDescription").value = "";
-    if(document.getElementById("challengeMyTeam")) document.getElementById("challengeMyTeam").value = "";
-    if(document.getElementById("challengeOpponentTeam")) document.getElementById("challengeOpponentTeam").innerHTML = "<option value=''>Select opponent team</option>";
     setChallengeMode("solo");
 }
 
@@ -964,15 +886,13 @@ async function loadMyChallenges(){
     const { data: { user } } = await client.auth.getUser();
     if(!user) return;
     const { data, error } = await client.from("challenges").select(`id,challenger_id,opponent_id,title,description,starts_at,ends_at,status,created_at,subcategory_id,rules,subcategories(name,categories(name))`).or(`challenger_id.eq.${user.id},opponent_id.eq.${user.id}`).order("created_at",{ascending:false});
-    if(error){ list.innerHTML = `<div class='empty-box'>Unable to load challenges.<br>${escapeHTML(error.message)}</div>`; return; }
-    if(!data?.length){ list.innerHTML = "<div class='empty-box'>No challenges yet.</div>"; return; }
+    if(error || !data?.length){ list.innerHTML = "<div class='empty-box'>No challenges yet.</div>"; return; }
     list.innerHTML = "";
     for(const c of data){
         const sender = c.challenger_id === user.id;
         const otherId = sender ? c.opponent_id : c.challenger_id;
         const { data: p } = await client.from("profiles").select("full_name,inter_rivalry_id").eq("id",otherId).maybeSingle();
         const skill = c.subcategories ? ((c.subcategories.categories?.name ? c.subcategories.categories.name + " • " : "") + c.subcategories.name) : "Skill";
-        const result = c.rules || {};
         const card = document.createElement("div"); card.className = "challenge-card";
         let actions = "";
         if(c.status === "pending" && !sender){
@@ -982,12 +902,10 @@ async function loadMyChallenges(){
         } else if(c.status === "accepted"){
             actions = `<div class="action-row"><button class="small-btn result-btn" onclick="recordChallengeResult('${c.id}')">🏆 REPORT RESULT</button>${sender ? `<button class="small-btn danger-btn" onclick="deleteChallenge('${c.id}')">🗑️ DELETE</button>` : ""}</div>`;
         } else if(c.status === "completed"){
-            let winner = result.result === "draw" ? "Draw" : result.winner_id === user.id ? "You won" : (result.winner_name || "Opponent won");
-            actions = `<div class="challenge-info" style="margin-top:12px"><strong>Result:</strong> ${escapeHTML(winner)}${result.my_score !== undefined ? `<br><strong>Score:</strong> ${escapeHTML(result.my_score)} - ${escapeHTML(result.opponent_score)}` : ""}</div>`;
-        } else if(c.status === "declined" && sender){
-            actions = `<div class="action-row"><button class="small-btn danger-btn" onclick="deleteChallenge('${c.id}')">🗑️ DELETE</button></div>`;
+            let winner = c.rules?.result === "draw" ? "Draw" : c.rules?.winner_id === user.id ? "You won" : (c.rules?.winner_name || "Opponent won");
+            actions = `<div class="challenge-info" style="margin-top:12px"><strong>Result:</strong> ${escapeHTML(winner)}${c.rules?.my_score !== undefined ? `<br><strong>Score:</strong> ${escapeHTML(c.rules.my_score)} - ${escapeHTML(c.rules.opponent_score)}` : ""}</div>`;
         }
-        card.innerHTML = `<h3>⚔️ ${escapeHTML(c.title)}</h3><div class="challenge-info"><strong>${sender ? "Opponent" : "Challenger"}:</strong> ${escapeHTML(p?.full_name || "User")}<br><strong>INTER RIVALRY ID:</strong> ${escapeHTML(p?.inter_rivalry_id || "-")}<br><strong>Skill:</strong> ${escapeHTML(skill)}<br><strong>Status:</strong> <span class="status-pill status-${escapeHTML(c.status || "")}">${escapeHTML(c.status || "-")}</span><br><strong>Starts:</strong> ${escapeHTML(formatDate(c.starts_at))}<br><strong>Ends:</strong> ${escapeHTML(formatDate(c.ends_at))}${c.description ? `<br><strong>Description:</strong> ${escapeHTML(c.description)}` : ""}</div>${actions}`;
+        card.innerHTML = `<h3>⚔️ ${escapeHTML(c.title)}</h3><div class="challenge-info"><strong>${sender ? "Opponent" : "Challenger"}:</strong> ${escapeHTML(p?.full_name || "User")}<br><strong>ID:</strong> ${escapeHTML(p?.inter_rivalry_id || "-")}<br><strong>Skill:</strong> ${escapeHTML(skill)}<br><strong>Status:</strong> <span class="status-pill status-${escapeHTML(c.status || "")}">${escapeHTML(c.status || "-")}</span><br><strong>Starts:</strong> ${formatDate(c.starts_at)}<br><strong>Ends:</strong> ${formatDate(c.ends_at)}${c.description ? `<br><strong>Description:</strong> ${escapeHTML(c.description)}` : ""}</div>${actions}`;
         list.appendChild(card);
     }
 }
@@ -996,39 +914,36 @@ async function updateChallengeStatus(challengeId, status){
     const label = status === "accepted" ? "accept" : "reject";
     if(!confirm(`Are you sure you want to ${label} this challenge?`)) return;
     const { data: { user } } = await client.auth.getUser(); if(!user) return;
-    const { data: c, error: readError } = await client.from("challenges").select("id,opponent_id,status").eq("id",challengeId).single();
-    if(readError || !c) return alert("Challenge not found.");
-    if(c.opponent_id !== user.id) return alert("Only the challenged student can accept or reject this challenge.");
-    if(c.status !== "pending") return alert("This challenge is no longer pending.");
-    const { error } = await client.from("challenges").update({ status }).eq("id",challengeId).eq("opponent_id",user.id);
-    if(error) return alert("Could not update challenge: " + error.message);
+    const { data: c } = await client.from("challenges").select("opponent_id,status").eq("id",challengeId).single();
+    if(!c || c.opponent_id !== user.id || c.status !== "pending") return alert("Cannot update this challenge.");
+    const { error } = await client.from("challenges").update({ status }).eq("id",challengeId);
+    if(error) return alert("Error: " + error.message);
     await loadMyChallenges();
 }
 
 async function deleteChallenge(challengeId){
-    if(!confirm("Delete this challenge? This cannot be undone.")) return;
+    if(!confirm("Delete this challenge?")) return;
     const { data: { user } } = await client.auth.getUser(); if(!user) return;
     const { error } = await client.from("challenges").delete().eq("id",challengeId).eq("challenger_id",user.id);
-    if(error) return alert("Could not delete challenge: " + error.message);
+    if(error) return alert("Error: " + error.message);
     await loadMyChallenges();
 }
 
 async function recordChallengeResult(challengeId){
     const { data: { user } } = await client.auth.getUser(); if(!user) return;
-    const { data: c, error } = await client.from("challenges").select("id,challenger_id,opponent_id,status,rules").eq("id",challengeId).single();
-    if(error || !c) return alert("Challenge not found.");
-    if(c.status !== "accepted") return alert("Only accepted challenges can receive a result.");
-    if(c.challenger_id !== user.id && c.opponent_id !== user.id) return alert("You are not part of this challenge.");
+    const { data: c } = await client.from("challenges").select("id,challenger_id,opponent_id,status,rules").eq("id",challengeId).single();
+    if(!c || c.status !== "accepted") return alert("Only accepted challenges can have results.");
+    if(c.challenger_id !== user.id && c.opponent_id !== user.id) return alert("You are not in this challenge.");
     const otherId = c.challenger_id === user.id ? c.opponent_id : c.challenger_id;
     const { data: other } = await client.from("profiles").select("full_name").eq("id",otherId).single();
     const choice = prompt(`Enter result:\n1 = I won\n2 = ${other?.full_name || "Opponent"} won\n3 = Draw`);
     if(!["1","2","3"].includes(choice)) return;
-    const myScore = prompt("Enter your score (optional):");
-    const opponentScore = prompt("Enter opponent score (optional):");
+    const myScore = prompt("Your score (optional):");
+    const opponentScore = prompt("Opponent score (optional):");
     const winnerId = choice === "1" ? user.id : choice === "2" ? otherId : null;
-    const rules = { ...(c.rules||{}), result: choice === "3" ? "draw" : "win", winner_id: winnerId, my_score: myScore === "" ? null : myScore, opponent_score: opponentScore === "" ? null : opponentScore, recorded_by: user.id, recorded_at: new Date().toISOString(), winner_name: choice === "2" ? (other?.full_name || "Opponent") : null };
-    const { error: updateError } = await client.from("challenges").update({ status: "completed", rules }).eq("id",challengeId).or(`challenger_id.eq.${user.id},opponent_id.eq.${user.id}`);
-    if(updateError) return alert("Could not save result: " + updateError.message);
+    const rules = { ...(c.rules||{}), result: choice === "3" ? "draw" : "win", winner_id: winnerId, my_score: myScore || null, opponent_score: opponentScore || null, recorded_by: user.id, recorded_at: new Date().toISOString(), winner_name: choice === "2" ? (other?.full_name || "Opponent") : null };
+    const { error } = await client.from("challenges").update({ status: "completed", rules }).eq("id",challengeId);
+    if(error) return alert("Error: " + error.message);
     alert("Result recorded! 🏆");
     await loadMyChallenges();
 }
@@ -1038,31 +953,33 @@ async function loadInterestsEditor(){
     const box = document.getElementById("interestEditor");
     box.innerHTML = "<div class='empty-box'>Loading interests...</div>";
     const { data: { user } } = await client.auth.getUser(); if(!user) return;
-    const [{ data: skills, error: skillError }, { data: parts }] = await Promise.all([
+    const [{ data: skills }, { data: parts }] = await Promise.all([
         client.from("subcategories").select("id,name,categories(name)").order("name"),
         client.from("participations").select("subcategory_id").eq("user_id",user.id)
     ]);
-    if(skillError){ box.innerHTML = `<div class="empty-box">Unable to load skills.<br>${escapeHTML(skillError.message)}</div>`; return; }
-    interestSkillCache = skills || []; currentInterestIds = new Set((parts||[]).map(x => x.subcategory_id));
+    if(!skills || skills.length === 0){ box.innerHTML = "<div class='empty-box'>No skills available.</div>"; return; }
+    interestSkillCache = skills; currentInterestIds = new Set((parts||[]).map(x => x.subcategory_id));
     const groups = new Map();
-    interestSkillCache.forEach(s => { const cat = s.categories?.name || "Other"; if(!groups.has(cat)) groups.set(cat, []); groups.get(cat).push(s); });
+    skills.forEach(s => { const cat = s.categories?.name || "Other"; if(!groups.has(cat)) groups.set(cat, []); groups.get(cat).push(s); });
     box.innerHTML = [...groups.entries()].sort((a,b) => a[0].localeCompare(b[0])).map(([cat, items]) =>
         `<div class="interest-category"><h3>${escapeHTML(cat)}</h3><div class="interest-list">${items.map(s => `<label class="interest-item"><input type="checkbox" class="interest-check" value="${escapeHTML(s.id)}" ${currentInterestIds.has(s.id) ? "checked" : ""}>${escapeHTML(s.name)}</label>`).join("")}</div></div>`
-    ).join("") || "<div class='empty-box'>No skills have been created yet.</div>";
+    ).join("");
 }
 
 async function saveInterests(){
     const message = document.getElementById("interestMessage");
     const { data: { user } } = await client.auth.getUser(); if(!user) return;
     const selected = [...document.querySelectorAll(".interest-check:checked")].map(x => x.value);
-    message.textContent = "Saving interests...";
+    message.textContent = "Saving...";
     const keep = new Set(selected);
     const toDelete = [...currentInterestIds].filter(id => !keep.has(id));
-    if(toDelete.length){ const { error } = await client.from("participations").delete().eq("user_id",user.id).in("subcategory_id",toDelete); if(error){ message.textContent = "Could not remove interests: " + error.message; return; } }
+    if(toDelete.length){ await client.from("participations").delete().eq("user_id",user.id).in("subcategory_id",toDelete); }
     const toInsert = selected.filter(id => !currentInterestIds.has(id)).map(id => ({ user_id: user.id, subcategory_id: id }));
-    if(toInsert.length){ const { error } = await client.from("participations").insert(toInsert); if(error){ message.textContent = "Could not save interests: " + error.message; return; } }
-    currentInterestIds = new Set(selected); message.textContent = "Interests saved successfully! 🎯";
-    await loadMyInterestSummary(); await loadRivals();
+    if(toInsert.length){ await client.from("participations").insert(toInsert); }
+    currentInterestIds = new Set(selected);
+    message.textContent = "✅ Interests saved! 🎯";
+    await loadMyInterestSummary();
+    await loadRivals();
 }
 
 async function loadMyInterestSummary(){
@@ -1071,14 +988,17 @@ async function loadMyInterestSummary(){
     const { data: { user } } = await client.auth.getUser(); if(!user) return;
     const { data } = await client.from("participations").select("subcategories(name,categories(name))").eq("user_id",user.id);
     const rows = data || [];
-    box.innerHTML = rows.length ? rows.map(x => `<span class="category-tag">${escapeHTML(x.subcategories?.categories?.name || "Skill")} • ${escapeHTML(x.subcategories?.name || "")}</span>`).join("") : "<span style='color:#777'>No interests selected yet.</span>";
+    box.innerHTML = rows.length ? rows.map(x => `<span class="category-tag">${escapeHTML(x.subcategories?.categories?.name || "Skill")} • ${escapeHTML(x.subcategories?.name || "")}</span>`).join("") : "<span style='color:#777'>No interests selected.</span>";
 }
 
 async function loadMyQuickStats(){
     const box = document.getElementById("myQuickStats"); if(!box) return;
     const { data: { user } } = await client.auth.getUser(); if(!user) return;
     const { data } = await client.from("challenges").select("status,rules,challenger_id,opponent_id").or(`challenger_id.eq.${user.id},opponent_id.eq.${user.id}`);
-    const rows = data || [], wins = rows.filter(c => c.status === "completed" && c.rules?.winner_id === user.id).length, completed = rows.filter(c => c.status === "completed").length, pending = rows.filter(c => c.status === "pending").length;
+    const rows = data || [];
+    const wins = rows.filter(c => c.status === "completed" && c.rules?.winner_id === user.id).length;
+    const completed = rows.filter(c => c.status === "completed").length;
+    const pending = rows.filter(c => c.status === "pending").length;
     box.innerHTML = `<div class="stat-grid"><div class="rival-stat"><div class="num">${wins}</div><div class="lbl">Wins</div></div><div class="rival-stat"><div class="num">${completed}</div><div class="lbl">Completed</div></div><div class="rival-stat"><div class="num">${pending}</div><div class="lbl">Pending</div></div></div>`;
 }
 
@@ -1087,10 +1007,12 @@ async function loadResults(){
     list.innerHTML = "<div class='empty-box'>Loading results...</div>";
     const { data: { user } } = await client.auth.getUser(); if(!user) return;
     const { data, error } = await client.from("challenges").select("id,challenger_id,opponent_id,title,starts_at,ends_at,rules,subcategory_id,subcategories(name,categories(name))").eq("status","completed").or(`challenger_id.eq.${user.id},opponent_id.eq.${user.id}`).order("ends_at",{ascending:false});
-    if(error){ list.innerHTML = `<div class="empty-box">Unable to load results.<br>${escapeHTML(error.message)}</div>`; return; }
-    const rows = data || [], wins = rows.filter(c => c.rules?.winner_id === user.id).length, draws = rows.filter(c => c.rules?.result === "draw").length, losses = rows.length - wins - draws;
+    if(error || !data?.length){ list.innerHTML = "<div class='empty-box'>No completed challenges.</div>"; return; }
+    const rows = data;
+    const wins = rows.filter(c => c.rules?.winner_id === user.id).length;
+    const draws = rows.filter(c => c.rules?.result === "draw").length;
+    const losses = rows.length - wins - draws;
     stats.innerHTML = `<div class="rival-stat"><div class="num">${wins}</div><div class="lbl">Wins</div></div><div class="rival-stat"><div class="num">${losses}</div><div class="lbl">Losses</div></div><div class="rival-stat"><div class="num">${draws}</div><div class="lbl">Draws</div></div><div class="rival-stat"><div class="num">${rows.length}</div><div class="lbl">Total</div></div>`;
-    if(!rows.length){ list.innerHTML = "<div class='empty-box'>No completed challenges yet.</div>"; return; }
     list.innerHTML = "";
     for(const c of rows){
         const otherId = c.challenger_id === user.id ? c.opponent_id : c.challenger_id;
@@ -1098,7 +1020,7 @@ async function loadResults(){
         const winner = c.rules?.result === "draw" ? "DRAW" : c.rules?.winner_id === user.id ? "WIN" : "LOSS";
         const skill = c.subcategories ? ((c.subcategories.categories?.name ? c.subcategories.categories.name + " • " : "") + c.subcategories.name) : "Skill";
         const card = document.createElement("div"); card.className = "challenge-card";
-        card.innerHTML = `<h3>🏆 ${escapeHTML(c.title)}</h3><div class="challenge-info"><strong>Opponent:</strong> ${escapeHTML(p?.full_name || "User")}<br><strong>INTER RIVALRY ID:</strong> ${escapeHTML(p?.inter_rivalry_id || "-")}<br><strong>Skill:</strong> ${escapeHTML(skill)}<br><strong>Result:</strong> ${escapeHTML(winner)}<br><strong>Score:</strong> ${escapeHTML(c.rules?.my_score ?? "-")} - ${escapeHTML(c.rules?.opponent_score ?? "-")}<br><strong>Completed:</strong> ${escapeHTML(formatDate(c.ends_at))}</div>`;
+        card.innerHTML = `<h3>🏆 ${escapeHTML(c.title)}</h3><div class="challenge-info"><strong>Opponent:</strong> ${escapeHTML(p?.full_name || "User")}<br><strong>ID:</strong> ${escapeHTML(p?.inter_rivalry_id || "-")}<br><strong>Skill:</strong> ${escapeHTML(skill)}<br><strong>Result:</strong> ${escapeHTML(winner)}<br><strong>Score:</strong> ${escapeHTML(c.rules?.my_score ?? "-")} - ${escapeHTML(c.rules?.opponent_score ?? "-")}<br><strong>Completed:</strong> ${formatDate(c.ends_at)}</div>`;
         list.appendChild(card);
     }
 }
@@ -1111,8 +1033,7 @@ async function loadMyTeams(){
     const { data: { user } } = await client.auth.getUser();
     if(!user){ list.innerHTML = "<div class='empty-box'>Please login first.</div>"; return; }
     const { data: memberships, error } = await client.from("team_members").select(`team_id,role,teams(id,name,college_id,captain_id,created_at,profiles!teams_captain_id_fkey(full_name,inter_rivalry_id))`).eq("user_id",user.id);
-    if(error){ list.innerHTML = `<div class='empty-box'>Unable to load teams.<br>${escapeHTML(error.message)}</div>`; return; }
-    if(!memberships || memberships.length === 0){ list.innerHTML = "<div class='empty-box'>You haven't joined any team yet.<br>Create one or wait for an invite!</div>"; return; }
+    if(error || !memberships || memberships.length === 0){ list.innerHTML = "<div class='empty-box'>You haven't joined any team yet.<br>Create one or wait for an invite!</div>"; return; }
     list.innerHTML = "";
     for(const m of memberships){
         const team = m.teams;
@@ -1121,11 +1042,7 @@ async function loadMyTeams(){
         const { count } = await client.from("team_members").select("id",{count:"exact",head:true}).eq("team_id",team.id);
         const card = document.createElement("div");
         card.className = "team-card";
-        card.innerHTML = `
-            <h3>👥 ${escapeHTML(team.name)} ${isCaptain ? '👑' : ''}</h3>
-            <div class="team-info"><strong>Captain:</strong> ${escapeHTML(team.profiles?.full_name || "Unknown")}<br><strong>Members:</strong> ${count || 0}<br><strong>Your Role:</strong> ${escapeHTML(m.role || "member")}</div>
-            <div class="action-row"><button class="small-btn team-btn" onclick="viewTeamDetails('${team.id}')">📋 MANAGE</button>${!isCaptain ? `<button class="small-btn danger-btn" onclick="leaveTeam('${team.id}')">🚪 LEAVE</button>` : ''}</div>
-        `;
+        card.innerHTML = `<h3>👥 ${escapeHTML(team.name)} ${isCaptain ? '👑' : ''}</h3><div class="team-info"><strong>Captain:</strong> ${escapeHTML(team.profiles?.full_name || "Unknown")}<br><strong>Members:</strong> ${count || 0}<br><strong>Your Role:</strong> ${escapeHTML(m.role || "member")}</div><div class="action-row"><button class="small-btn team-btn" onclick="viewTeamDetails('${team.id}')">📋 MANAGE</button>${!isCaptain ? `<button class="small-btn danger-btn" onclick="leaveTeam('${team.id}')">🚪 LEAVE</button>` : ''}</div>`;
         list.appendChild(card);
     }
 }
@@ -1142,14 +1059,14 @@ async function viewTeamDetails(teamId){
     const { data: invites } = await client.from("team_invites").select(`id,invitee_id,status,created_at,profiles!team_invites_invitee_id_fkey(full_name,inter_rivalry_id)`).eq("team_id",teamId).eq("status","pending");
     const memberIds = (members||[]).map(m => m.user_id);
     const { data: allStudents } = await client.from("profiles").select("id,full_name,inter_rivalry_id").eq("role","student").not("id","in",`(${memberIds.length ? memberIds.join(',') : ''})`);
-    let html = `<div class="profile-card"><h2>👥 ${escapeHTML(team.name)}</h2><div class="team-info"><strong>Captain:</strong> ${escapeHTML(team.profiles?.full_name || "Unknown")}<br><strong>INTER RIVALRY ID:</strong> ${escapeHTML(team.profiles?.inter_rivalry_id || "-")}<br><strong>Created:</strong> ${formatDate(team.created_at)}<br><strong>Members:</strong> ${members?.length || 0}</div></div>`;
+    let html = `<div class="profile-card"><h2>👥 ${escapeHTML(team.name)}</h2><div class="team-info"><strong>Captain:</strong> ${escapeHTML(team.profiles?.full_name || "Unknown")}<br><strong>ID:</strong> ${escapeHTML(team.profiles?.inter_rivalry_id || "-")}<br><strong>Created:</strong> ${formatDate(team.created_at)}<br><strong>Members:</strong> ${members?.length || 0}</div></div>`;
     if(isCaptain && allStudents && allStudents.length > 0){
         html += `<div class="profile-card"><h3>📩 Invite Players</h3><div class="invite-row"><select id="invitePlayerSelect"><option value="">Select a player...</option>${allStudents.map(s => `<option value="${s.id}">${escapeHTML(s.full_name)} (${escapeHTML(s.inter_rivalry_id || "-")})</option>`).join("")}</select><button class="small-btn success-btn" onclick="sendTeamInvite('${teamId}')">SEND INVITE</button></div><div id="teamInviteMessage" class="message"></div></div>`;
     }
     if(invites && invites.length > 0){
-        html += `<h3 style="margin-top:20px">📨 Pending Invites</h3>${invites.map(inv => `<div class="invite-card"><h4>👤 ${escapeHTML(inv.profiles?.full_name || "Unknown")}</h4><div class="invite-info">INTER RIVALRY ID: ${escapeHTML(inv.profiles?.inter_rivalry_id || "-")}<br>Status: <span class="status-pill status-pending">Pending</span></div>${isCaptain ? `<div class="invite-actions"><button class="small-btn danger-btn" onclick="cancelTeamInvite('${inv.id}')">❌ CANCEL</button></div>` : ''}</div>`).join("")}`;
+        html += `<h3 style="margin-top:20px">📨 Pending Invites</h3>${invites.map(inv => `<div class="invite-card"><h4>👤 ${escapeHTML(inv.profiles?.full_name || "Unknown")}</h4><div class="invite-info">ID: ${escapeHTML(inv.profiles?.inter_rivalry_id || "-")}<br>Status: <span class="status-pill status-pending">Pending</span></div>${isCaptain ? `<div class="invite-actions"><button class="small-btn danger-btn" onclick="cancelTeamInvite('${inv.id}')">❌ CANCEL</button></div>` : ''}</div>`).join("")}`;
     }
-    html += `<h3 style="margin-top:20px">👥 Members</h3>${(members||[]).map(m => `<div class="invite-card"><h4>${escapeHTML(m.profiles?.full_name || "Unknown")} ${m.role === 'captain' ? '👑' : ''}</h4><div class="invite-info">INTER RIVALRY ID: ${escapeHTML(m.profiles?.inter_rivalry_id || "-")}<br>Role: ${escapeHTML(m.role || "member")}</div>${isCaptain && m.role !== 'captain' ? `<div class="invite-actions"><button class="small-btn danger-btn" onclick="removeTeamMember('${teamId}','${m.user_id}')">🗑️ REMOVE</button></div>` : ''}</div>`).join("") || "<div class='empty-box'>No members yet.</div>"}`;
+    html += `<h3 style="margin-top:20px">👥 Members</h3>${(members||[]).map(m => `<div class="invite-card"><h4>${escapeHTML(m.profiles?.full_name || "Unknown")} ${m.role === 'captain' ? '👑' : ''}</h4><div class="invite-info">ID: ${escapeHTML(m.profiles?.inter_rivalry_id || "-")}<br>Role: ${escapeHTML(m.role || "member")}</div>${isCaptain && m.role !== 'captain' ? `<div class="invite-actions"><button class="small-btn danger-btn" onclick="removeTeamMember('${teamId}','${m.user_id}')">🗑️ REMOVE</button></div>` : ''}</div>`).join("") || "<div class='empty-box'>No members yet.</div>"}`;
     if(isCaptain){ html += `<div style="margin-top:20px"><button class="small-btn danger-btn" onclick="deleteTeam('${teamId}')">🗑️ DELETE TEAM</button></div>`; }
     document.getElementById("teamDetailsContent").innerHTML = html;
     document.getElementById("teamDetailsContent").dataset.teamId = teamId;
@@ -1162,12 +1079,13 @@ async function createTeam(){
     const { data: { user } } = await client.auth.getUser();
     if(!user){ msg.textContent = "Please login first."; return; }
     const { data: existing } = await client.from("team_members").select("team_id").eq("user_id",user.id).limit(1);
-    if(existing && existing.length > 0){ msg.textContent = "You're already in a team! Leave your current team first."; return; }
+    if(existing && existing.length > 0){ msg.textContent = "You're already in a team! Leave first."; return; }
+    const { data: membership } = await client.from("college_memberships").select("college_id").eq("user_id",user.id).eq("is_active",true).maybeSingle();
     msg.textContent = "Creating team...";
-    const { data: team, error } = await client.from("teams").insert({ name: name, captain_id: user.id, college_id: null }).select("id").single();
-    if(error){ msg.textContent = "Could not create team: " + error.message; return; }
+    const { data: team, error } = await client.from("teams").insert({ name, captain_id: user.id, college_id: membership?.college_id || null }).select("id").single();
+    if(error){ msg.textContent = "Error: " + error.message; return; }
     await client.from("team_members").insert({ team_id: team.id, user_id: user.id, role: "captain" });
-    msg.textContent = "✅ Team created successfully! 🎉";
+    msg.textContent = "✅ Team created! 🎉";
     document.getElementById("createTeamName").value = "";
     setTimeout(() => { backToStudentDashboard(); loadMyTeams(); }, 1500);
 }
@@ -1176,33 +1094,34 @@ async function sendTeamInvite(teamId){
     const select = document.getElementById("invitePlayerSelect");
     const inviteeId = select?.value;
     const msg = document.getElementById("teamInviteMessage");
-    if(!inviteeId){ msg.textContent = "Select a player to invite."; return; }
+    if(!inviteeId){ msg.textContent = "Select a player."; return; }
     const { data: { user } } = await client.auth.getUser();
-    if(!user){ msg.textContent = "Please login first."; return; }
+    if(!user){ msg.textContent = "Please login."; return; }
     const { data: existing } = await client.from("team_invites").select("id").eq("team_id",teamId).eq("invitee_id",inviteeId).eq("status","pending").limit(1);
-    if(existing && existing.length > 0){ msg.textContent = "This player already has a pending invite."; return; }
+    if(existing?.length){ msg.textContent = "Invite already sent."; return; }
     msg.textContent = "Sending invite...";
     const { error } = await client.from("team_invites").insert({ team_id: teamId, sender_id: user.id, invitee_id: inviteeId, status: "pending" });
-    if(error){ msg.textContent = "Could not send invite: " + error.message; return; }
-    msg.textContent = "✅ Invite sent successfully!";
+    if(error){ msg.textContent = "Error: " + error.message; return; }
+    msg.textContent = "✅ Invite sent!";
     select.value = "";
     setTimeout(() => viewTeamDetails(teamId), 1000);
 }
 
 async function cancelTeamInvite(inviteId){
     if(!confirm("Cancel this invite?")) return;
-    const { error } = await client.from("team_invites").delete().eq("id",inviteId);
-    if(error) alert("Could not cancel: " + error.message);
-    else { const teamId = document.getElementById("teamDetailsContent")?.dataset?.teamId; if(teamId) viewTeamDetails(teamId); else loadMyTeams(); }
+    await client.from("team_invites").delete().eq("id",inviteId);
+    const teamId = document.getElementById("teamDetailsContent")?.dataset?.teamId;
+    if(teamId) viewTeamDetails(teamId);
+    else loadMyTeams();
 }
 
 async function acceptTeamInvite(inviteId){
     const { data: { user } } = await client.auth.getUser();
     if(!user) return;
     const { data: existing } = await client.from("team_members").select("team_id").eq("user_id",user.id).limit(1);
-    if(existing && existing.length > 0){ alert("You're already in a team! Leave your current team first."); return; }
-    const { data: invite, error: getError } = await client.from("team_invites").select("team_id").eq("id",inviteId).single();
-    if(getError || !invite){ alert("Invite not found."); return; }
+    if(existing?.length){ alert("You're already in a team!"); return; }
+    const { data: invite } = await client.from("team_invites").select("team_id").eq("id",inviteId).single();
+    if(!invite){ alert("Invite not found."); return; }
     await client.from("team_invites").update({ status: "accepted" }).eq("id",inviteId);
     await client.from("team_members").insert({ team_id: invite.team_id, user_id: user.id, role: "member" });
     alert("✅ You joined the team!");
@@ -1220,25 +1139,20 @@ async function loadTeamInvites(){
     if(!list) return;
     list.innerHTML = "<div class='empty-box'>Loading invites...</div>";
     const { data: { user } } = await client.auth.getUser();
-    if(!user){ list.innerHTML = "<div class='empty-box'>Please login first.</div>"; return; }
+    if(!user){ list.innerHTML = "<div class='empty-box'>Please login.</div>"; return; }
     const { data: invites, error } = await client.from("team_invites").select(`id,team_id,status,created_at,sender_id,profiles!team_invites_sender_id_fkey(full_name,inter_rivalry_id),teams(id,name,captain_id)`).eq("invitee_id",user.id).eq("status","pending").order("created_at",{ascending:false});
-    if(error){ list.innerHTML = `<div class='empty-box'>Unable to load invites.<br>${escapeHTML(error.message)}</div>`; return; }
-    if(!invites || invites.length === 0){ list.innerHTML = "<div class='empty-box'>No pending team invites.</div>"; return; }
+    if(error || !invites || invites.length === 0){ list.innerHTML = "<div class='empty-box'>No pending team invites.</div>"; return; }
     list.innerHTML = "";
     for(const inv of invites){
         const card = document.createElement("div");
         card.className = "invite-card";
-        card.innerHTML = `
-            <h4>👥 ${escapeHTML(inv.teams?.name || "Team")}</h4>
-            <div class="invite-info"><strong>From:</strong> ${escapeHTML(inv.profiles?.full_name || "Unknown")}<br><strong>INTER RIVALRY ID:</strong> ${escapeHTML(inv.profiles?.inter_rivalry_id || "-")}<br><strong>Sent:</strong> ${formatDate(inv.created_at)}</div>
-            <div class="invite-actions"><button class="small-btn accept-btn" onclick="acceptTeamInvite('${inv.id}')">✅ ACCEPT</button><button class="small-btn reject-btn" onclick="declineTeamInvite('${inv.id}')">❌ DECLINE</button></div>
-        `;
+        card.innerHTML = `<h4>👥 ${escapeHTML(inv.teams?.name || "Team")}</h4><div class="invite-info"><strong>From:</strong> ${escapeHTML(inv.profiles?.full_name || "Unknown")}<br><strong>ID:</strong> ${escapeHTML(inv.profiles?.inter_rivalry_id || "-")}<br><strong>Sent:</strong> ${formatDate(inv.created_at)}</div><div class="invite-actions"><button class="small-btn accept-btn" onclick="acceptTeamInvite('${inv.id}')">✅ ACCEPT</button><button class="small-btn reject-btn" onclick="declineTeamInvite('${inv.id}')">❌ DECLINE</button></div>`;
         list.appendChild(card);
     }
 }
 
 async function leaveTeam(teamId){
-    if(!confirm("Are you sure you want to leave this team?")) return;
+    if(!confirm("Leave this team?")) return;
     const { data: { user } } = await client.auth.getUser();
     if(!user) return;
     await client.from("team_members").delete().eq("team_id",teamId).eq("user_id",user.id);
@@ -1246,21 +1160,26 @@ async function leaveTeam(teamId){
 }
 
 async function removeTeamMember(teamId, userId){
-    if(!confirm("Remove this member from the team?")) return;
+    if(!confirm("Remove this member?")) return;
     await client.from("team_members").delete().eq("team_id",teamId).eq("user_id",userId);
     viewTeamDetails(teamId);
     loadMyTeams();
 }
 
 async function deleteTeam(teamId){
-    if(!confirm("⚠️ Delete this team permanently? This cannot be undone!")) return;
+    if(!confirm("⚠️ Delete this team permanently?")) return;
     const { error } = await client.from("teams").delete().eq("id",teamId);
-    if(error) alert("Could not delete team: " + error.message);
+    if(error) alert("Error: " + error.message);
     else { alert("Team deleted."); backToStudentDashboard(); loadMyTeams(); }
 }
 
 // ============ ADMIN FUNCTIONS ============
-async function loadAdminDashboard(){ showOnlyAdmin(); await loadAdminStats(); await loadAdminColleges(); }
+async function loadAdminDashboard(){
+    showOnlyAdmin();
+    await loadAdminStats();
+    await loadAdminColleges();
+}
+
 async function loadAdminStats(){
     const { count: colleges } = await client.from("colleges").select("id",{count:"exact",head:true});
     document.getElementById("collegeCount").textContent = colleges || 0;
@@ -1269,12 +1188,12 @@ async function loadAdminStats(){
     const { count: admins } = await client.from("college_admins").select("id",{count:"exact",head:true});
     document.getElementById("adminCount").textContent = admins || 0;
 }
+
 async function loadAdminColleges(){
     const { data, error } = await client.from("colleges").select("id,college_name,college_code,city,state").order("college_name",{ascending:true});
     const list = document.getElementById("adminCollegeList");
     list.innerHTML = "";
-    if(error){ console.error(error); list.innerHTML = "<div class='empty-box'>Unable to load colleges.</div>"; return; }
-    if(!data || data.length === 0){ list.innerHTML = "<div class='empty-box'>No colleges have been added yet.</div>"; return; }
+    if(error || !data || data.length === 0){ list.innerHTML = "<div class='empty-box'>No colleges added yet.</div>"; return; }
     data.forEach(college => {
         const card = document.createElement("div");
         card.className = "college-card";
@@ -1282,24 +1201,30 @@ async function loadAdminColleges(){
         list.appendChild(card);
     });
 }
+
 async function addCollege(){
     const name = document.getElementById("collegeName").value.trim();
     const code = document.getElementById("collegeCode").value.trim().toUpperCase();
     const city = document.getElementById("collegeCity").value.trim();
     const state = document.getElementById("collegeState").value.trim();
     const message = document.getElementById("adminMessage");
-    if(!name || !code){ message.textContent = "College name and code are required."; return; }
+    if(!name || !code){ message.textContent = "Name and code required."; return; }
     message.textContent = "Adding college...";
     const { error } = await client.from("colleges").insert({ college_name: name, college_code: code, city: city || null, state: state || null, country: "India" });
-    if(error){ console.error(error); message.textContent = "Error: " + error.message; return; }
-    message.textContent = "College added successfully! 🏆";
-    document.getElementById("collegeName").value = ""; document.getElementById("collegeCode").value = ""; document.getElementById("collegeCity").value = ""; document.getElementById("collegeState").value = "";
-    await loadAdminStats(); await loadAdminColleges();
+    if(error){ message.textContent = "Error: " + error.message; return; }
+    message.textContent = "✅ College added!";
+    document.getElementById("collegeName").value = "";
+    document.getElementById("collegeCode").value = "";
+    document.getElementById("collegeCity").value = "";
+    document.getElementById("collegeState").value = "";
+    await loadAdminStats();
+    await loadAdminColleges();
 }
+
 async function viewCollege(collegeId){
     selectedCollegeId = collegeId;
     const { data: college, error } = await client.from("colleges").select("id,college_name,college_code,city,state").eq("id",collegeId).single();
-    if(error){ console.error(error); alert("Unable to load college."); return; }
+    if(error){ alert("Unable to load college."); return; }
     document.getElementById("manageCollegeName").textContent = college.college_name;
     document.getElementById("manageCollegeCode").textContent = college.college_code || "-";
     document.getElementById("manageCollegeCity").textContent = college.city || "-";
@@ -1312,7 +1237,9 @@ async function viewCollege(collegeId){
     await loadCollegeManagementCounts(collegeId);
     showOnlyCollegeManagement();
 }
+
 async function loadCollegeManagementCounts(collegeId){
+    if(!collegeId) return;
     const { count: admins } = await client.from("college_admins").select("id",{count:"exact",head:true}).eq("college_id",collegeId);
     document.getElementById("manageAdminCount").textContent = admins || 0;
     const { count: students } = await client.from("college_memberships").select("id",{count:"exact",head:true}).eq("college_id",collegeId).eq("is_active",true);
@@ -1320,6 +1247,7 @@ async function loadCollegeManagementCounts(collegeId){
     const { count: requests } = await client.from("college_join_requests").select("id",{count:"exact",head:true}).eq("college_id",collegeId).eq("status","pending");
     document.getElementById("manageRequestCount").textContent = requests || 0;
 }
+
 async function saveCollegeChanges(){
     if(!selectedCollegeId) return;
     const name = document.getElementById("editCollegeName").value.trim();
@@ -1327,16 +1255,17 @@ async function saveCollegeChanges(){
     const city = document.getElementById("editCollegeCity").value.trim();
     const state = document.getElementById("editCollegeState").value.trim();
     const message = document.getElementById("editMessage");
-    if(!name || !code){ message.textContent = "College name and code are required."; return; }
-    message.textContent = "Saving changes...";
+    if(!name || !code){ message.textContent = "Name and code required."; return; }
+    message.textContent = "Saving...";
     const { error } = await client.from("colleges").update({ college_name: name, college_code: code, city: city || null, state: state || null }).eq("id",selectedCollegeId);
     if(error){ message.textContent = "Error: " + error.message; return; }
-    message.textContent = "College updated successfully! 🏆";
+    message.textContent = "✅ College updated!";
     document.getElementById("manageCollegeName").textContent = name;
     document.getElementById("manageCollegeCode").textContent = code;
     document.getElementById("manageCollegeCity").textContent = city || "-";
     document.getElementById("manageCollegeState").textContent = state || "-";
 }
+
 async function openAdmins(){
     if(!selectedCollegeId) return;
     const { data: college } = await client.from("colleges").select("college_name").eq("id",selectedCollegeId).single();
@@ -1344,109 +1273,182 @@ async function openAdmins(){
     await loadAdmins();
     showOnlyAdmins();
 }
+
 async function loadAdmins(){
     const { data, error } = await client.from("college_admins").select(`id,user_id,created_at,profiles!college_admins_user_id_fkey(full_name,inter_rivalry_id)`).eq("college_id",selectedCollegeId).order("created_at",{ascending:false});
     const list = document.getElementById("adminsList");
     list.innerHTML = "";
-    if(error){ console.error(error); list.innerHTML = `<div class='empty-box'>Unable to load admins.<br>${escapeHTML(error.message)}</div>`; return; }
-    if(!data || data.length === 0){ list.innerHTML = "<div class='empty-box'>No college admins assigned yet.</div>"; return; }
+    if(error || !data || data.length === 0){ list.innerHTML = "<div class='empty-box'>No admins assigned.</div>"; return; }
     data.forEach(admin => {
+        const profile = admin.profiles;
         const card = document.createElement("div");
         card.className = "admin-card";
-        const profile = admin.profiles;
-        const name = profile ? profile.full_name : "Unknown User";
-        const rivalryId = profile ? profile.inter_rivalry_id : "Unknown";
-        card.innerHTML = `<h3>👤 ${escapeHTML(name)}</h3><div class="admin-info">INTER RIVALRY ID: ${escapeHTML(rivalryId)}<br>User ID: ${escapeHTML(admin.user_id)}</div><br><button class="small-btn danger-btn" onclick="removeCollegeAdmin('${admin.id}')">REMOVE ADMIN</button>`;
+        card.innerHTML = `<h3>👤 ${escapeHTML(profile?.full_name || "Unknown")}</h3><div class="admin-info">ID: ${escapeHTML(profile?.inter_rivalry_id || "Unknown")}<br>User ID: ${escapeHTML(admin.user_id)}</div><br><button class="small-btn danger-btn" onclick="removeCollegeAdmin('${admin.id}')">REMOVE ADMIN</button>`;
         list.appendChild(card);
     });
 }
+
 async function addCollegeAdmin(){
     const userId = document.getElementById("adminUserId").value.trim();
     const message = document.getElementById("adminManageMessage");
-    if(!userId){ message.textContent = "Enter the user's UUID."; return; }
+    if(!userId){ message.textContent = "Enter user ID."; return; }
     message.textContent = "Checking user...";
-    const { data: profile, error: profileError } = await client.from("profiles").select("id,full_name,role").eq("id",userId).single();
-    if(profileError || !profile){ message.textContent = "User not found in profiles."; return; }
-    const { error: roleError } = await client.from("profiles").update({ role: "college_admin", updated_at: new Date().toISOString() }).eq("id",userId);
-    if(roleError){ message.textContent = "Could not update role: " + roleError.message; return; }
+    const { data: profile } = await client.from("profiles").select("id,full_name,role").eq("id",userId).single();
+    if(!profile){ message.textContent = "User not found."; return; }
+    await client.from("profiles").update({ role: "college_admin" }).eq("id",userId);
     const { error } = await client.from("college_admins").insert({ college_id: selectedCollegeId, user_id: userId });
-    if(error){ console.error(error); message.textContent = "Could not add admin: " + error.message; return; }
-    message.textContent = "College admin added successfully! 🏆";
+    if(error){ message.textContent = "Error: " + error.message; return; }
+    message.textContent = "✅ Admin added!";
     document.getElementById("adminUserId").value = "";
     await loadAdmins();
     await loadCollegeManagementCounts(selectedCollegeId);
 }
+
 async function removeCollegeAdmin(adminId){
-    if(!confirm("Remove this college admin?")) return;
+    if(!confirm("Remove this admin?")) return;
     const { data: admin } = await client.from("college_admins").select("user_id").eq("id",adminId).single();
-    if(!admin){ alert("Admin not found."); return; }
-    const { error } = await client.from("college_admins").delete().eq("id",adminId);
-    if(error){ alert("Could not remove admin: " + error.message); return; }
+    if(!admin) return;
+    await client.from("college_admins").delete().eq("id",adminId);
     const { count } = await client.from("college_admins").select("id",{count:"exact",head:true}).eq("user_id",admin.user_id);
-    if(!count || count === 0){ await client.from("profiles").update({ role: "student", updated_at: new Date().toISOString() }).eq("id",admin.user_id); }
+    if(!count || count === 0){ await client.from("profiles").update({ role: "student" }).eq("id",admin.user_id); }
     await loadAdmins();
     await loadCollegeManagementCounts(selectedCollegeId);
 }
+
 async function openStudents(){
     const { data: college } = await client.from("colleges").select("college_name").eq("id",selectedCollegeId).single();
     document.getElementById("studentsCollegeName").textContent = college ? college.college_name : "College";
     await loadStudents();
     showOnlyStudents();
 }
+
 async function loadStudents(){
     const list = document.getElementById("studentsList");
     list.innerHTML = "<div class='empty-box'>Loading students...</div>";
     const { data, error } = await client.from("college_memberships").select("id,user_id,student_number,department,course,year_of_study,specialization,joined_at").eq("college_id",selectedCollegeId).eq("is_active",true).order("joined_at",{ascending:false});
-    if(error){ console.error(error); list.innerHTML = `<div class='empty-box'>Unable to load students.<br>${escapeHTML(error.message)}</div>`; return; }
-    if(!data || data.length === 0){ list.innerHTML = "<div class='empty-box'>No students have joined this college yet.</div>"; return; }
+    if(error || !data || data.length === 0){ list.innerHTML = "<div class='empty-box'>No students in this college.</div>"; return; }
     list.innerHTML = "";
     for(const student of data){
-        const result = await client.from("profiles").select("id,full_name,inter_rivalry_id").eq("id",student.user_id).maybeSingle();
-        const profile = result.data;
-        const name = profile ? profile.full_name : "Unknown Student";
-        const rivalryId = profile ? profile.inter_rivalry_id : "Unknown";
+        const { data: profile } = await client.from("profiles").select("full_name,inter_rivalry_id").eq("id",student.user_id).maybeSingle();
         const card = document.createElement("div");
         card.className = "student-card";
-        card.innerHTML = `<h3>🎓 ${escapeHTML(name)}</h3><div class="student-info">INTER RIVALRY ID: ${escapeHTML(rivalryId)}<br>Course: ${escapeHTML(student.course || "-")}<br>Year: ${escapeHTML(student.year_of_study || "-")}<br>Department: ${escapeHTML(student.department || "-")}<br>Specialization: ${escapeHTML(student.specialization || "-")}<br>Student Number: ${escapeHTML(student.student_number || "Not assigned")}</div><div class="student-actions"><button class="small-btn" onclick="viewProfile('${student.user_id}')">VIEW PROFILE</button></div>`;
+        card.innerHTML = `<h3>🎓 ${escapeHTML(profile?.full_name || "Unknown")}</h3><div class="student-info">ID: ${escapeHTML(profile?.inter_rivalry_id || "Unknown")}<br>Course: ${escapeHTML(student.course || "-")}<br>Year: ${escapeHTML(student.year_of_study || "-")}<br>Department: ${escapeHTML(student.department || "-")}<br>Specialization: ${escapeHTML(student.specialization || "-")}</div><div class="student-actions"><button class="small-btn" onclick="viewProfile('${student.user_id}')">VIEW PROFILE</button></div>`;
         list.appendChild(card);
     }
 }
+
 async function openRequests(){
+    if(!selectedCollegeId){ alert("No college selected."); return; }
     const { data: college } = await client.from("colleges").select("college_name").eq("id",selectedCollegeId).single();
     document.getElementById("requestsCollegeName").textContent = college ? college.college_name : "College";
     await loadRequests();
     showOnlyRequests();
 }
+
 async function loadRequests(){
     const list = document.getElementById("requestsList");
+    if(!list) return;
     list.innerHTML = "<div class='empty-box'>Loading requests...</div>";
-    const { data, error } = await client.from("college_join_requests").select("id,student_id,department,course,year_of_study,specialization,status,created_at").eq("college_id",selectedCollegeId).eq("status","pending").order("created_at",{ascending:true});
-    if(error){ console.error(error); list.innerHTML = `<div class='empty-box'>Unable to load requests.<br>${escapeHTML(error.message)}</div>`; return; }
-    if(!data || data.length === 0){ list.innerHTML = "<div class='empty-box'>🎉 No pending join requests.</div>"; return; }
-    list.innerHTML = "";
-    for(const request of data){
-        const result = await client.from("profiles").select("id,full_name,inter_rivalry_id").eq("id",request.student_id).maybeSingle();
-        const profile = result.data;
-        const name = profile ? profile.full_name : "Unknown Student";
-        const rivalryId = profile ? profile.inter_rivalry_id : "Unknown";
-        const card = document.createElement("div");
-        card.className = "request-card";
-        card.innerHTML = `<h3>📩 ${escapeHTML(name)}</h3><div class="request-info">INTER RIVALRY ID: ${escapeHTML(rivalyId)}<br>Course: ${escapeHTML(request.course || "-")}<br>Year: ${escapeHTML(request.year_of_study || "-")}<br>Department: ${escapeHTML(request.department || "-")}<br>Specialization: ${escapeHTML(request.specialization || "-")}</div><div class="request-actions"><button class="small-btn approve-btn" onclick="reviewRequest('${request.id}',true)">✅ APPROVE</button><button class="small-btn reject-btn" onclick="reviewRequest('${request.id}',false)">❌ REJECT</button></div>`;
-        list.appendChild(card);
+    if(!selectedCollegeId){ list.innerHTML = "<div class='empty-box'>No college selected.</div>"; return; }
+    try {
+        const { data, error } = await client
+            .from("college_join_requests")
+            .select(`
+                id,
+                student_id,
+                course,
+                year_of_study,
+                department,
+                specialization,
+                status,
+                created_at,
+                profiles:student_id (
+                    full_name,
+                    inter_rivalry_id,
+                    email
+                )
+            `)
+            .eq("college_id", selectedCollegeId)
+            .eq("status", "pending")
+            .order("created_at", { ascending: true });
+        
+        if(error){ list.innerHTML = `<div class='empty-box'>Error: ${escapeHTML(error.message)}</div>`; return; }
+        const validRequests = (data || []).filter(r => r.profiles !== null);
+        if(!validRequests || validRequests.length === 0){ list.innerHTML = "<div class='empty-box'>🎉 No pending join requests.</div>"; return; }
+        list.innerHTML = "";
+        for(const request of validRequests){
+            const profile = request.profiles;
+            const card = document.createElement("div");
+            card.className = "request-card";
+            card.innerHTML = `
+                <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:10px;">
+                    <div>
+                        <h3>📩 ${escapeHTML(profile?.full_name || "Unknown")}</h3>
+                        <div class="request-info">
+                            <strong>ID:</strong> ${escapeHTML(profile?.inter_rivalry_id || "Not assigned")}
+                            <br><strong>Email:</strong> ${escapeHTML(profile?.email || "No email")}
+                            <br><strong>Course:</strong> ${escapeHTML(request.course || "-")}
+                            <br><strong>Year:</strong> ${escapeHTML(request.year_of_study || "-")}
+                            <br><strong>Department:</strong> ${escapeHTML(request.department || "-")}
+                            <br><strong>Specialization:</strong> ${escapeHTML(request.specialization || "-")}
+                            <br><small style="color:#666;display:inline-block;margin-top:5px;">Requested: ${formatDate(request.created_at)}</small>
+                        </div>
+                    </div>
+                    <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                        <button class="small-btn approve-btn" onclick="reviewRequest('${request.id}', true)">✅ APPROVE</button>
+                        <button class="small-btn reject-btn" onclick="reviewRequest('${request.id}', false)">❌ REJECT</button>
+                    </div>
+                </div>
+            `;
+            list.appendChild(card);
+        }
+    } catch(error) {
+        list.innerHTML = `<div class='empty-box'>Error: ${escapeHTML(error.message)}</div>`;
     }
 }
+
 async function reviewRequest(requestId, approve){
-    const action = approve ? "approve" : "reject";
-    if(!confirm("Are you sure you want to " + action + " this request?")) return;
-    const { error } = await client.rpc("review_college_join_request", { p_request_id: requestId, p_approve: approve });
-    if(error){ console.error(error); alert("Could not " + action + " request:\n" + error.message); return; }
-    alert(approve ? "Student approved successfully! 🎓" : "Request rejected.");
-    await loadRequests();
-    await loadCollegeManagementCounts(selectedCollegeId);
+    const action = approve ? "APPROVE" : "REJECT";
+    if(!confirm(`Are you sure you want to ${action} this request?`)) return;
+    try {
+        const { data: request, error: fetchError } = await client
+            .from("college_join_requests")
+            .select(`id,student_id,college_id,course,year_of_study,specialization,department,profiles:student_id(full_name,inter_rivalry_id)`)
+            .eq("id", requestId)
+            .single();
+        
+        if(fetchError || !request || !request.profiles){ alert("Request not found."); return; }
+        
+        if(approve){
+            await client.from("college_join_requests").update({ status: "approved", reviewed_at: new Date().toISOString() }).eq("id", requestId);
+            const { data: existing } = await client.from("college_memberships").select("id").eq("user_id", request.student_id).eq("college_id", request.college_id).eq("is_active", true).maybeSingle();
+            if(!existing){
+                await client.from("college_memberships").insert({
+                    user_id: request.student_id,
+                    college_id: request.college_id,
+                    course: request.course,
+                    year_of_study: request.year_of_study,
+                    specialization: request.specialization,
+                    department: request.department,
+                    is_active: true,
+                    joined_at: new Date().toISOString()
+                });
+            }
+            alert(`✅ ${request.profiles.full_name} approved!`);
+        } else {
+            await client.from("college_join_requests").update({ status: "rejected", reviewed_at: new Date().toISOString() }).eq("id", requestId);
+            alert(`❌ Request rejected.`);
+        }
+        await loadRequests();
+        await loadCollegeManagementCounts(selectedCollegeId);
+    } catch(error) {
+        alert("Error: " + error.message);
+    }
 }
+
 async function loadCollegeAdminDashboard(user, profile){
     const { data: admin, error } = await client.from("college_admins").select("college_id,colleges(college_name,college_code,city,state)").eq("user_id",user.id).maybeSingle();
-    if(error || !admin){ alert("Your college admin account has not been assigned to a college yet."); showAuth(); return; }
+    if(error || !admin){ alert("No college assigned."); showAuth(); return; }
     showOnlyAdmin();
     document.querySelector("#adminDashboard .admin-header h1").textContent = "🏫 " + (admin.colleges ? admin.colleges.college_name : "College Admin");
     document.querySelector("#adminDashboard .admin-header p").textContent = "College Admin Panel";
@@ -1454,11 +1456,11 @@ async function loadCollegeAdminDashboard(user, profile){
 
 // ============ UTILITY FUNCTIONS ============
 function escapeHTML(value){ if(value === null || value === undefined) return ""; return String(value).replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;").replaceAll("'","&#039;"); }
-function formatDate(value){ if(!value) return "-"; const date = new Date(value); if(Number.isNaN(date.getTime())) return "-"; return date.toLocaleString(); }
+function formatDate(value){ if(!value) return "-"; const date = new Date(value); if(isNaN(date.getTime())) return "-"; return date.toLocaleString(); }
 
 // ============ AUTH STATE ============
 client.auth.onAuthStateChange(async (event, session) => {
-    if(session){ setTimeout(() => { loadUser(); }, 0); }
+    if(session){ setTimeout(() => loadUser(), 0); }
     else { showAuth(); }
 });
 
