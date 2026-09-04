@@ -1075,7 +1075,7 @@ function displayRivalsByCategory(category){
                 const tags = student.interests || [];
                 html += `<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:#0a0a0a;border-radius:8px;border-left:3px solid ${courseColor};">
                     <div><span style="font-weight:600;">👤 ${escapeHTML(name)}</span>
-                    <br><span style="font-size:11px;color:#666;">ID: ${escapeHTML(rivalyId)}</span>
+                    <br><span style="font-size:11px;color:#666;">ID: ${escapeHTML(rivalryId)}</span>
                     ${spec ? `<br><span style="font-size:11px;color:#888;">🎯 ${escapeHTML(spec)}</span>` : ''}
                     ${tags.length ? `<br><span style="font-size:10px;color:#555;">${tags.map(t => `#${escapeHTML(t)}`).join(' ')}</span>` : ''}</div>
                     <button class="btn-3d-xs-white-glow" style="width:auto;padding:4px 12px;font-size:10px;" onclick="viewProfile('${student.id}')">VIEW</button>
@@ -1181,7 +1181,7 @@ async function loadStudentDashboard(user, profile){
         currentUserProfile = profile;
         
         // FIXED: Using newRivalryId instead of rivalyId
-        showMessage(`🎉 Welcome! Your INTER RIVALRY ID: ${newRivalyId}`);
+        showMessage(`🎉 Welcome! Your INTER RIVALRY ID: ${newRivalryId}`);
     }
     
     document.getElementById("rivalryId").textContent = profile.inter_rivalry_id || "Not assigned";
@@ -2557,7 +2557,7 @@ function displayStudentsByCategory(category){
                 const spec = student.specialization || '';
                 html += `<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:#0a0a0a;border-radius:8px;border-left:3px solid ${courseColor};">
                     <div><span style="font-weight:600;">👤 ${escapeHTML(name)}</span>
-                    <br><span style="font-size:11px;color:#666;">ID: ${escapeHTML(rivalyId)}</span>
+                    <br><span style="font-size:11px;color:#666;">ID: ${escapeHTML(rivalryId)}</span>
                     ${spec ? `<br><span style="font-size:11px;color:#888;">🎯 ${escapeHTML(spec)}</span>` : ''}</div>
                     <button class="btn-3d-xs-white-glow" style="width:auto;padding:4px 12px;font-size:10px;" onclick="viewProfile('${student.user_id}')">VIEW</button>
                 </div>`;
