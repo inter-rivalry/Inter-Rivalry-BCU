@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>INTER RIVALRY</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:Arial,Helvetica,sans-serif;background:#080808;color:white;min-height:100vh}
+button,input,select,textarea{font:inherit}
+button{cursor:pointer}
+.hidden{display:none!important}
+.auth-page{min-height:100vh;display:flex;justify-content:center;align-items:center;padding:20px}
+.auth-box{width:100%;max-width:450px;background:#121212;border:1px solid #292929;border-radius:20px;padding:32px;box-shadow:0 20px 70px rgba(0,0,0,.5)}
+.logo{text-align:center;font-size:30px;font-weight:900;letter-spacing:4px}
+.tagline{text-align:center;color:#8c8c8c;margin-top:8px;margin-bottom:30px}
+.auth-box h2{margin-bottom:20px}
+.input-group{margin-bottom:16px}
+.input-group label{display:block;color:#aaa;font-size:14px;margin-bottom:7px}
+.input-group input,.input-group select,.input-group textarea{width:100%;padding:14px;background:#090909;border:1px solid #303030;border-radius:10px;color:white;outline:none}
+.input-group textarea{min-height:100px;resize:vertical}
+.input-group select option{background:#111}
+.primary-btn{width:100%;padding:14px;border:none;border-radius:10px;background:white;color:black;font-weight:800}
+.secondary-btn{width:100%;padding:13px;border:1px solid #333;border-radius:10px;background:transparent;color:white;margin-top:10px}
+.message{text-align:center;color:#aaa;font-size:14px;margin-top:16px;line-height:1.5}
+.navbar{min-height:70px;padding:0 25px;display:flex;align-items:center;justify-content:space-between;background:#0d0d0d;border-bottom:1px solid #222}
+.nav-logo{font-size:20px;font-weight:900;letter-spacing:2px}
+.nav-right{display:flex;align-items:center;gap:12px}
+.role-badge{padding:7px 10px;border:1px solid #333;border-radius:8px;font-size:12px;color:#aaa}
+.logout-btn{padding:9px 15px;border:1px solid #333;background:transparent;color:white;border-radius:8px}
+.container{width:100%;max-width:1150px;margin:auto;padding:30px 20px}
+.welcome{margin-bottom:25px}
+.welcome h1{font-size:32px;margin-bottom:7px}
+.welcome p{color:#888}
+.section-title{margin-bottom:16px}
+.profile-card,.admin-stat,.college-card,.management-card,.request-card,.student-card,.admin-card,.rival-card,.challenge-card,.team-card{background:#121212;border:1px solid #292929;border-radius:16px;padding:23px}
+.team-card{margin-bottom:12px}
+.team-card h3{margin-bottom:8px}
+.team-info{color:#999;font-size:14px;line-height:1.7}
+.profile-card{margin-bottom:28px}
+.profile-card h2{margin-bottom:10px}
+.profile-id{color:#999}
+.profile-id span{color:white;font-weight:800}
+.college-status{margin-top:10px;color:#888;font-size:14px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px}
+.category-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:16px}
+.management-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;margin-bottom:25px}
+.category-card{background:#121212;border:1px solid #292929;border-radius:16px;padding:22px;transition:.2s ease}
+.category-card:hover{transform:translateY(-3px);border-color:#555}
+.category-icon{font-size:32px;margin-bottom:12px}
+.category-card h3{margin-bottom:7px}
+.category-card p{color:#888;font-size:14px;line-height:1.5}
+.admin-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:25px;flex-wrap:wrap;gap:15px}
+.admin-header h1{font-size:30px}
+.admin-header p{color:#888;margin-top:5px}
+.admin-stat .number{font-size:32px;font-weight:900;margin-bottom:5px}
+.admin-stat .label{color:#888}
+.add-college-box{margin-top:25px;margin-bottom:25px}
+.college-card h3{margin-bottom:8px}
+.college-code{color:#888;font-size:14px;margin-bottom:10px}
+.college-location{color:#777;font-size:13px;margin-bottom:15px}
+.small-btn{padding:9px 13px;border:1px solid #333;background:transparent;color:white;border-radius:8px;font-size:13px;transition:.2s}
+.small-btn:hover{background:#1a1a1a}
+.success-btn{background:white;color:black;border-color:white}
+.success-btn:hover{background:#ddd}
+.approve-btn{background:white;color:black;border:none}
+.approve-btn:hover{background:#ddd}
+.reject-btn{border-color:#555}
+.reject-btn:hover{background:#1a1a1a}
+.danger-btn{border-color:#555;color:#ff6b6b}
+.danger-btn:hover{background:#1a1a1a}
+.challenge-btn{background:white;color:black;border-color:white;font-weight:800}
+.challenge-btn:hover{background:#ddd}
+.team-btn{background:#222;color:white;border-color:#444}
+.team-btn:hover{background:#333}
+.back-btn{margin-bottom:20px;padding:10px 15px;border:1px solid #333;background:transparent;color:white;border-radius:9px}
+.back-btn:hover{background:#1a1a1a}
+.management-header{margin-bottom:25px}
+.management-header h1{font-size:30px;margin-bottom:7px}
+.management-header p{color:#888}
+.management-info{margin-bottom:25px}
+.management-info h2{margin-bottom:10px}
+.management-info p{color:#888;margin-top:7px}
+.management-card{text-align:center}
+.management-card .icon{font-size:32px;margin-bottom:10px}
+.management-card .count{font-size:30px;font-weight:900;margin-bottom:5px}
+.management-card .label{color:#888;margin-bottom:15px}
+.request-card{margin-bottom:12px}
+.request-card h3{margin-bottom:8px}
+.request-info{color:#999;font-size:14px;line-height:1.7}
+.request-actions{display:flex;gap:10px;margin-top:15px;flex-wrap:wrap}
+.student-card{margin-bottom:12px}
+.student-card h3{margin-bottom:8px}
+.student-info{color:#999;font-size:14px;line-height:1.7}
+.student-actions{margin-top:15px}
+.rival-card{margin-bottom:12px}
+.rival-card h3{margin-bottom:7px}
+.rival-info{color:#999;line-height:1.7;font-size:14px}
+.rival-actions{margin-top:15px}
+.profile-big{text-align:center;padding:30px}
+.profile-avatar{width:80px;height:80px;border-radius:50%;background:#222;border:1px solid #444;display:flex;align-items:center;justify-content:center;margin:0 auto 15px;font-size:32px}
+.profile-big h1{margin-bottom:8px}
+.profile-big p{color:#888}
+.skill-box{margin-top:25px}
+.skill-item{background:#0e0e0e;border:1px solid #282828;border-radius:10px;padding:14px;margin-bottom:10px}
+.challenge-header{margin-bottom:20px}
+.challenge-header h1{font-size:30px;margin-bottom:7px}
+.challenge-header p{color:#888}
+.challenge-target{background:#0e0e0e;border:1px solid #292929;padding:15px;border-radius:12px;margin-bottom:20px}
+.challenge-card{margin-bottom:12px}
+.challenge-card h3{margin-bottom:8px}
+.challenge-info{color:#999;font-size:14px;line-height:1.7}
+.empty-box{padding:30px;text-align:center;color:#777;background:#101010;border:1px solid #252525;border-radius:14px}
+.empty-rank{margin-top:28px;padding:20px;background:#101010;border:1px solid #252525;border-radius:14px;color:#888;text-align:center}
+.loading{min-height:100vh;display:flex;align-items:center;justify-content:center;color:#999}
+@media(max-width:600px){.navbar{padding:0 15px}.container{padding:22px 15px}.welcome h1{font-size:26px}.auth-box{padding:24px}.role-badge{display:none}}
+.action-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:15px}
+.action-row .small-btn{flex:1;min-width:110px}
+.accept-btn{background:white;color:black;border-color:white;font-weight:800}
+.accept-btn:hover{background:#ddd}
+.result-btn{background:white;color:black;border-color:white;font-weight:800}
+.result-btn:hover{background:#ddd}
+.filter-row{display:grid;grid-template-columns:1fr 220px;gap:10px;margin-bottom:15px}
+.interest-category{margin-bottom:22px}
+.interest-category h3{margin-bottom:10px}
+.interest-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px}
+.interest-item{background:#0e0e0e;border:1px solid #282828;border-radius:10px;padding:12px;display:flex;align-items:center;gap:9px;color:#ddd}
+.interest-item input{accent-color:white}
+.stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:22px}
+.rival-stat{background:#121212;border:1px solid #292929;border-radius:14px;padding:18px;text-align:center}
+.student-filter-group{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;margin-bottom:12px}
+.student-filter-group input,.student-filter-group select{width:100%;padding:12px 14px;border:1px solid #303030;border-radius:10px;background:#101010;color:#fff;outline:none}
+.rival-academic{margin-top:10px;color:#aaa;line-height:1.7;font-size:13px}
+.rival-academic strong{color:#fff}
+.rival-stat .num{font-size:28px;font-weight:900}
+.rival-stat .lbl{color:#888;font-size:13px;margin-top:4px}
+.status-pill{display:inline-block;padding:5px 9px;border:1px solid #333;border-radius:999px;font-size:12px;text-transform:uppercase;margin-top:7px}
+.status-pending{color:#ddd}.status-accepted{background:white;color:#000;border-color:white}.status-rejected{color:#999}.status-completed{background:#1b1b1b;color:white}
+.category-tag{display:inline-block;margin:4px 4px 0 0;padding:4px 8px;border:1px solid #333;border-radius:999px;color:#aaa;font-size:12px}
+@media(max-width:600px){.filter-row{grid-template-columns:1fr}.action-row .small-btn{flex:auto}}
+.challenge-mode-box{margin:14px 0}
+.challenge-mode-buttons{display:flex;gap:10px;margin-top:8px}
+.mode-btn{flex:1;padding:12px 16px;border:1px solid #333;border-radius:10px;background:#111;color:#aaa;cursor:pointer;font-weight:700}
+.mode-btn.active{color:#fff;border-color:#fff;background:#222}
+.team-challenge-fields{display:grid;gap:8px;margin:12px 0}
+.team-challenge-fields select{width:100%;padding:12px;border:1px solid #333;border-radius:10px;background:#111;color:#fff}
+.team-card .member-list{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.team-card .member-tag{background:#1a1a1a;border:1px solid #333;border-radius:999px;padding:4px 12px;font-size:12px;color:#aaa}
+.team-card .captain-tag{border-color:#666;color:#fff;background:#222}
+.invite-row{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
+.invite-row select{flex:1;min-width:150px;padding:10px;background:#0a0a0a;border:1px solid #333;border-radius:8px;color:white}
+.invite-row select:focus{outline:none;border-color:#555}
+.invite-card{background:#121212;border:1px solid #292929;border-radius:16px;padding:18px;margin-bottom:10px}
+.invite-card h4{margin-bottom:5px}
+.invite-card .invite-info{color:#999;font-size:14px;line-height:1.6}
+.invite-actions{display:flex;gap:10px;margin-top:12px}
+</style>
+</head>
+<body>
+
+<!-- LOADING -->
+<div id="loadingScreen" class="loading">Loading INTER RIVALRY...</div>
+
+<!-- AUTH PAGE -->
+<section id="authPage" class="auth-page hidden">
+<div class="auth-box">
+<div class="logo">INTER RIVALRY</div>
+<div class="tagline">Choose your battlefield.</div>
+<div id="loginForm">
+<h2>Login</h2>
+<div class="input-group"><label>Email</label><input id="loginEmail" type="email" placeholder="Enter your email" autocomplete="email"></div>
+<div class="input-group"><label>Password</label><input id="loginPassword" type="password" placeholder="Enter your password" autocomplete="current-password"></div>
+<button class="primary-btn" onclick="login()">LOGIN</button>
+<button class="secondary-btn" onclick="forgotPassword()">FORGOT PASSWORD?</button>
+<button class="secondary-btn" onclick="resendConfirmationEmail()">RESEND CONFIRMATION EMAIL</button>
+<button class="secondary-btn" onclick="showSignup()">CREATE ACCOUNT</button>
+</div>
+<div id="signupForm" class="hidden">
+<h2>Create Account</h2>
+<div class="input-group"><label>Full Name</label><input id="signupName" type="text" placeholder="Enter your full name"></div>
+<div class="input-group"><label>Email</label><input id="signupEmail" type="email" placeholder="Enter your email"></div>
+<div class="input-group"><label>Password</label><input id="signupPassword" type="password" placeholder="Create a password"></div>
+<button class="primary-btn" onclick="signup()">CREATE ACCOUNT</button>
+<button class="secondary-btn" onclick="showLogin()">BACK TO LOGIN</button>
+</div>
+<div id="authMessage" class="message"></div>
+</div>
+</section>
+
+<!-- STUDENT DASHBOARD -->
+<section id="studentDashboard" class="hidden">
+<nav class="navbar">
+<div class="nav-logo">INTER RIVALRY</div>
+<div class="nav-right"><div class="role-badge">STUDENT</div><button class="logout-btn" onclick="logout()">Logout</button></div>
+</nav>
+<main class="container">
+<div class="welcome"><h1>Welcome, <span id="userName">Student</span></h1><p>Your rivalry journey starts here.</p></div>
+<div class="profile-card">
+<h2>Your Profile</h2>
+<div class="profile-id">INTER RIVALRY ID: <span id="rivalryId">Loading...</span></div>
+<div class="college-status" id="collegeStatus">College: Not joined yet</div>
+</div>
+<div id="myQuickStats"></div>
+<div class="profile-card" style="margin-top:18px"><h2>🎯 Your Interests</h2><div id="myInterestSummary" style="margin-top:10px"></div><button class="small-btn" style="margin-top:15px" onclick="showOnlyInterests()">EDIT INTERESTS</button></div>
+
+<!-- TEAMS SECTION -->
+<div style="margin-top:30px;margin-bottom:30px;">
+<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:16px;">
+<h2 class="section-title" style="margin-bottom:0;">👥 My Teams</h2>
+<button class="small-btn success-btn" onclick="showCreateTeam()">+ CREATE TEAM</button>
+</div>
+<div id="myTeamsList"><div class="empty-box">Loading your teams...</div></div>
+</div>
+
+<!-- TEAM INVITES -->
+<div style="margin-top:30px;margin-bottom:30px;">
+<h2 class="section-title">📩 Team Invites</h2>
+<div id="teamInvitesList"><div class="empty-box">Loading invites...</div></div>
+</div>
+
+<!-- COLLEGE -->
+<div id="studentCollegeSection">
+<h2 class="section-title">Choose Your College</h2>
+<div id="collegeList" class="grid"></div>
+</div>
+
+<!-- BATTLEFIELD -->
+<h2 class="section-title">Choose Your Battlefield</h2>
+<div class="category-grid">
+<div class="category-card"><div class="category-icon">🏏</div><h3>Sports</h3><p>Cricket • Football • Volleyball</p></div>
+<div class="category-card"><div class="category-icon">🎓</div><h3>Education</h3><p>BCA • B.Com • BBA</p></div>
+<div class="category-card"><div class="category-icon">🎭</div><h3>Culture</h3><p>Dance • Singing • Roast • Rap</p></div>
+<div class="category-card"><div class="category-icon">🎮</div><h3>Gaming</h3><p>BGMI • Free Fire • EA Sports</p></div>
+<div class="category-card"><div class="category-icon">💻</div><h3>Technology</h3><p>Coding • Web Development</p></div>
+</div>
+
+<!-- RIVALS -->
+<div style="margin-top:35px">
+<h2 class="section-title">⚔️ Find Rivals</h2>
+<div id="rivalFilters" class="filter-row"></div>
+<div id="rivalsList"></div>
+</div>
+
+<!-- MY CHALLENGES -->
+<div style="margin-top:25px">
+<button class="primary-btn" onclick="showOnlyMyChallenges()">⚔️ MY CHALLENGES</button>
+</div>
+<div class="grid" style="margin-top:12px">
+<button class="small-btn" onclick="showOnlyInterests()">🎯 MY INTERESTS</button>
+<button class="small-btn" onclick="showOnlyResults()">🏆 RESULTS & WINS</button>
+</div>
+<div class="empty-rank">No skill ranks yet.<br>Participate in a skill to begin your ranking journey.</div>
+</main>
+</section>
+
+<!-- CREATE TEAM PAGE -->
+<section id="createTeamPage" class="hidden">
+<nav class="navbar"><div class="nav-logo">INTER RIVALRY</div><div class="nav-right"><div class="role-badge">CREATE TEAM</div><button class="logout-btn" onclick="logout()">Logout</button></div></nav>
+<main class="container">
+<button class="back-btn" onclick="backToStudentDashboard()">← BACK</button>
+<div class="challenge-header"><h1>👥 Create a Team</h1><p>Build your squad and invite players!</p></div>
+<div class="profile-card">
+<div class="input-group"><label>Team Name</label><input id="createTeamName" type="text" placeholder="Example: BCU Warriors"></div>
+<div id="createTeamMessage" class="message"></div>
+<button class="primary-btn" onclick="createTeam()">🚀 CREATE TEAM</button>
+</div>
+</main>
+</section>
+
+<!-- TEAM DETAILS PAGE -->
+<section id="teamDetailsPage" class="hidden">
+<nav class="navbar"><div class="nav-logo">INTER RIVALRY</div><div class="nav-right"><div class="role-badge">TEAM</div><button class="logout-btn" onclick="logout()">Logout</button></div></nav>
+<main class="container">
+<button class="back-btn" onclick="backToStudentDashboard()">← BACK</button>
+<div id="teamDetailsContent"><div class="empty-box">Loading team details...</div></div>
+</main>
+</section>
+
+<!-- PROFILE PAGE -->
+<section id="profilePage" class="hidden">
+<nav class="navbar"><div class="nav-logo">INTER RIVALRY</div><div class="nav-right"><div class="role-badge">RIVAL PROFILE</div><button class="logout-btn" onclick="logout()">Logout</button></div></nav>
+<main class="container">
+<button class="back-btn" onclick="backToStudentDashboard()">← BACK</button>
+<div class="profile-card profile-big">
+<div class="profile-avatar">👤</div>
+<h1 id="viewProfileName">User</h1>
+<p id="viewProfileRivalry">IR-XXXX-XXXX</p>
+<div id="viewProfileCollege" style="margin-top:10px;color:#777">College</div>
+<div style="margin-top:20px"><button class="small-btn challenge-btn" onclick="openChallengePage()">⚔️ CHALLENGE</button></div>
+</div>
+<div class="profile-card skill-box">
+<h2>🎯 Skills</h2>
+<div id="viewProfileSkills" style="margin-top:15px"></div>
+<div id="viewProfileInterests" style="margin-top:20px"></div>
+<div id="viewProfileStats" style="margin-top:20px"></div>
+</div>
+</main>
+</section>
+
+<!-- CHALLENGE PAGE -->
+<section id="challengePage" class="hidden">
+<nav class="navbar"><div class="nav-logo">INTER RIVALRY</div><div class="nav-right"><div class="role-badge">CHALLENGE</div><button class="logout-btn" onclick="logout()">Logout</button></div></nav>
+<main class="container">
+<button class="back-btn" onclick="backToProfile()">← BACK</button>
+<div class="challenge-header"><h1>⚔️ Challenge Rival</h1><p>Choose the battlefield and send your challenge.</p></div>
+<div class="challenge-target"><strong>Opponent:</strong> <span id="challengeOpponentName">User</span><br><span id="challengeOpponentId" style="color:#777">IR-XXXX-XXXX</span></div>
+<div class="profile-card">
+<h2>Choose Skill</h2><br>
+<div class="input-group">
+<label>Skill</label>
+<div class="challenge-mode-box">
+<label><strong>Challenge Mode</strong></label>
+<div class="challenge-mode-buttons">
+<button type="button" id="soloModeBtn" class="mode-btn active" onclick="setChallengeMode('solo')">🧍 SOLO</button>
+<button type="button" id="teamModeBtn" class="mode-btn" onclick="setChallengeMode('team')">👥 TEAM</button>
+</div>
+</div>
+<div id="teamChallengeFields" class="team-challenge-fields" style="display:none;">
+<label for="challengeMyTeam">Your Team</label>
+<select id="challengeMyTeam" onchange="loadOpponentTeams()"><option value="">Select your team</option></select>
+<label for="challengeOpponentTeam">Opponent Team</label>
+<select id="challengeOpponentTeam"><option value="">Select opponent team</option></select>
+</div>
+<select id="challengeSkill"><option value="">Loading skills...</option></select>
+</div>
+<div class="input-group"><label>Challenge Title</label><input id="challengeTitle" type="text" placeholder="Example: BCA Coding Battle"></div>
+<div class="input-group"><label>Description</label><textarea id="challengeDescription" placeholder="Describe your challenge..."></textarea></div>
+<div class="input-group"><label>Start Time</label><input id="challengeStart" type="datetime-local"></div>
+<div class="input-group"><label>End Time</label><input id="challengeEnd" type="datetime-local"></div>
+<button class="primary-btn" onclick="sendChallenge()">⚔️ SEND CHALLENGE</button>
+<div id="challengeMessage" class="message"></div>
+</div>
+</main>
+</section>
+
+<!-- MY CHALLENGES PAGE -->
+<section id="myChallengesPage" class="hidden">
+<nav class="navbar"><div class="nav-logo">INTER RIVALRY</div><div class="nav-right"><div class="role-badge">CHALLENGES</div><button class="logout-btn" onclick="logout()">Logout</button></div></nav>
+<main class="container">
+<button class="back-btn" onclick="backToStudentDashboard()">← BACK</button>
+<h1>⚔️ My Challenges</h1>
+<p style="color:#888;margin-top:7px;margin-bottom:25px">Challenges sent and received by you.</p>
+<div id="myChallengesList"></div>
+</main>
+</section>
+
+<!-- INTERESTS PAGE -->
+<section id="interestsPage" class="hidden">
+<nav class="navbar"><div class="nav-logo">INTER RIVALRY</div><div class="nav-right"><div class="role-badge">INTERESTS</div><button class="logout-btn" onclick="logout()">Logout</button></div></nav>
+<main class="container">
+<button class="back-btn" onclick="backToStudentDashboard()">← BACK</button>
+<div class="challenge-header"><h1>🎯 My Interests</h1><p>Choose the skills and categories you want to compete in.</p></div>
+<div class="profile-card">
+<div id="interestEditor"><div class="empty-box">Loading interests...</div></div>
+<button class="primary-btn" style="margin-top:18px" onclick="saveInterests()">SAVE INTERESTS</button>
+<div id="interestMessage" class="message"></div>
+</div>
+</main>
+</section>
+
+<!-- RESULTS PAGE -->
+<section id="resultsPage" class="hidden">
+<nav class="navbar"><div class="nav-logo">INTER RIVALRY</div><div class="nav-right"><div class="role-badge">RESULTS</div><button class="logout-btn" onclick="logout()">Logout</button></div></nav>
+<main class="container">
+<button class="back-btn" onclick="backToStudentDashboard()">← BACK</button>
+<h1>🏆 Results & Wins</h1>
+<p style="color:#888;margin-top:7px;margin-bottom:22px">Your completed rivalry record.</p>
+<div id="resultStats" class="stat-grid"></div>
+<div id="resultsList"></div>
+</main>
+</section>
+
+<!-- ADMIN DASHBOARD -->
+<section id="adminDashboard" class="hidden">
+<nav class="navbar"><div class="nav-logo">INTER RIVALRY</div><div class="nav-right"><div class="role-badge">SUPER ADMIN</div><button class="logout-btn" onclick="logout()">Logout</button></div></nav>
+<main class="container">
+<div class="admin-header"><div><h1>👑 Super Admin</h1><p>INTER RIVALRY platform management</p></div></div>
+<div class="grid">
+<div class="admin-stat"><div id="collegeCount" class="number">0</div><div class="label">Colleges</div></div>
+<div class="admin-stat"><div id="requestCount" class="number">0</div><div class="label">Pending Requests</div></div>
+<div class="admin-stat"><div id="adminCount" class="number">0</div><div class="label">College Admins</div></div>
+</div>
+<div class="profile-card add-college-box">
+<h2>🏫 Add College</h2><br>
+<div class="input-group"><label>College Name</label><input id="collegeName" type="text" placeholder="Example: Bengaluru City University"></div>
+<div class="input-group"><label>College Code</label><input id="collegeCode" type="text" placeholder="Example: BCU"></div>
+<div class="input-group"><label>City</label><input id="collegeCity" type="text" placeholder="Example: Bengaluru"></div>
+<div class="input-group"><label>State</label><input id="collegeState" type="text" placeholder="Example: Karnataka"></div>
+<button class="primary-btn" onclick="addCollege()">+ ADD COLLEGE</button>
+<div id="adminMessage" class="message"></div>
+</div>
+<h2 class="section-title">🏫 Colleges</h2>
+<div id="adminCollegeList" class="grid"></div>
+</main>
+</section>
+
+<!-- COLLEGE MANAGEMENT -->
+<section id="collegeManagement" class="hidden">
+<nav class="navbar"><div class="nav-logo">INTER RIVALRY</div><div class="nav-right"><div class="role-badge">SUPER ADMIN</div><button class="logout-btn" onclick="logout()">Logout</button></div></nav>
+<main class="container">
+<button class="back-btn" onclick="backToAdmin()">← BACK TO DASHBOARD</button>
+<div class="management-header"><h1>🏫 <span id="manageCollegeName">College</span></h1><p id="manageCollegeLocation">Loading...</p></div>
+<div class="profile-card management-info">
+<h2>College Information</h2>
+<p>College Code: <strong id="manageCollegeCode">-</strong></p>
+<p>City: <span id="manageCollegeCity">-</span></p>
+<p>State: <span id="manageCollegeState">-</span></p>
+</div>
+<div class="management-grid">
+<div class="management-card"><div class="icon">👥</div><div id="manageAdminCount" class="count">0</div><div class="label">College Admins</div><button class="small-btn" onclick="openAdmins()">MANAGE ADMINS</button></div>
+<div class="management-card"><div class="icon">🎓</div><div id="manageStudentCount" class="count">0</div><div class="label">Students</div><button class="small-btn" onclick="openStudents()">VIEW STUDENTS</button></div>
+<div class="management-card"><div class="icon">📩</div><div id="manageRequestCount" class="count">0</div><div class="label">Join Requests</div><button class="small-btn" onclick="openRequests()">VIEW REQUESTS</button></div>
+</div>
+<div class="profile-card">
+<h2>⚙️ Edit College</h2><br>
+<div class="input-group"><label>College Name</label><input id="editCollegeName" type="text"></div>
+<div class="input-group"><label>College Code</label><input id="editCollegeCode" type="text"></div>
+<div class="input-group"><label>City</label><input id="editCollegeCity" type="text"></div>
+<div class="input-group"><label>State</label><input id="editCollegeState" type="text"></div>
+<button class="primary-btn" onclick="saveCollegeChanges()">SAVE CHANGES</button>
+<div id="editMessage" class="message"></div>
+</div>
+</main>
+</section>
+
+<!-- ADMINS PAGE -->
+<section id="adminsPage" class="hidden">
+<nav class="navbar"><div class="nav-logo">INTER RIVALRY</div><div class="nav-right"><div class="role-badge">SUPER ADMIN</div><button class="logout-btn" onclick="logout()">Logout</button></div></nav>
+<main class="container">
+<button class="back-btn" onclick="backToManagement()">← BACK</button>
+<h1>👥 College Admins</h1>
+<p id="adminsCollegeName" style="color:#888;margin-top:8px;margin-bottom:25px">College</p>
+<div class="profile-card">
+<h2>➕ Add College Admin</h2><br>
+<div class="input-group"><label>User ID</label><input id="adminUserId" type="text" placeholder="Paste user's UUID"></div>
+<button class="primary-btn" onclick="addCollegeAdmin()">ADD ADMIN</button>
+<div id="adminManageMessage" class="message"></div>
+</div>
+<h2 class="section-title">Current Admins</h2>
+<div id="adminsList"></div>
+</main>
+</section>
+
+<!-- STUDENTS PAGE -->
+<section id="studentsPage" class="hidden">
+<nav class="navbar"><div class="nav-logo">INTER RIVALRY</div><div class="nav-right"><div class="role-badge">SUPER ADMIN</div><button class="logout-btn" onclick="logout()">Logout</button></div></nav>
+<main class="container">
+<button class="back-btn" onclick="backToManagement()">← BACK</button>
+<h1>🎓 Students</h1>
+<p id="studentsCollegeName" style="color:#888;margin-top:8px;margin-bottom:25px">College</p>
+<div id="studentsList"></div>
+</main>
+</section>
+
+<!-- REQUESTS PAGE -->
+<section id="requestsPage" class="hidden">
+<nav class="navbar"><div class="nav-logo">INTER RIVALRY</div><div class="nav-right"><div class="role-badge">SUPER ADMIN</div><button class="logout-btn" onclick="logout()">Logout</button></div></nav>
+<main class="container">
+<button class="back-btn"
