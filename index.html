@@ -133,6 +133,14 @@ button{cursor:pointer}
 .invite-card .invite-info{color:#999;font-size:14px;line-height:1.6}
 .invite-actions{display:flex;gap:10px;margin-top:12px}
 
+/* ============ FILTER BUTTONS ============ */
+.filter-btn {
+    transition: all 0.08s ease;
+}
+.filter-btn:active {
+    transform: translateY(4px) !important;
+}
+
 /* ============ 3D PUSH BUTTONS - ALL STYLES ============ */
 .btn-3d,.btn-3d-primary,.btn-3d-success,.btn-3d-danger,.btn-3d-gold,.btn-3d-white,.btn-3d-pink,.btn-3d-dark,.btn-3d-sm,.btn-3d-sm-success,.btn-3d-sm-danger,.btn-3d-sm-primary,.btn-3d-sm-gold,.btn-3d-sm-white,.btn-3d-xs,.btn-3d-xs-success,.btn-3d-xs-danger,.btn-3d-xs-gold{position:relative;border:none;border-radius:12px;font-weight:800;text-transform:uppercase;letter-spacing:1px;cursor:pointer;transition:all 0.08s ease;transform:translateY(0);display:inline-flex;align-items:center;justify-content:center;gap:8px;text-decoration:none;text-align:center;user-select:none;font-family:inherit;width:100%}
 .btn-3d:active,.btn-3d-primary:active,.btn-3d-success:active,.btn-3d-danger:active,.btn-3d-gold:active,.btn-3d-white:active,.btn-3d-pink:active,.btn-3d-dark:active{transform:translateY(6px)}
@@ -192,6 +200,16 @@ button{cursor:pointer}
 .btn-3d-xs-gold:active{transform:translateY(3px);box-shadow:0 1px 0 #b7791f,0 2px 8px rgba(0,0,0,0.2)}
 .btn-3d-xs-gold:hover{transform:translateY(-1px);box-shadow:0 5px 0 #b7791f,0 6px 12px rgba(0,0,0,0.3)}
 .btn-3d:disabled,.btn-3d-primary:disabled,.btn-3d-success:disabled,.btn-3d-danger:disabled,.btn-3d-gold:disabled,.btn-3d-white:disabled,.btn-3d-sm:disabled,.btn-3d-sm-success:disabled,.btn-3d-sm-danger:disabled{opacity:0.5;cursor:not-allowed;transform:translateY(4px)!important;box-shadow:0 2px 0 #333!important}
+
+/* ============ RANK BADGE ANIMATION ============ */
+.rank-badge {
+    animation: rankPulse 2s infinite;
+}
+@keyframes rankPulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+}
 </style>
 </head>
 <body>
@@ -199,7 +217,7 @@ button{cursor:pointer}
 <!-- LOADING -->
 <div id="loadingScreen" class="loading">Loading INTER RIVALRY...</div>
 
-<!-- AUTH PAGE -->
+<!-- ==================== AUTH PAGE ==================== -->
 <section id="authPage" class="auth-page hidden">
 <div class="auth-box">
 <div class="logo">INTER RIVALRY</div>
@@ -225,7 +243,7 @@ button{cursor:pointer}
 </div>
 </section>
 
-<!-- STUDENT DASHBOARD -->
+<!-- ==================== STUDENT DASHBOARD ==================== -->
 <section id="studentDashboard" class="hidden">
 <nav class="navbar">
 <div class="nav-logo">INTER RIVALRY</div>
@@ -279,10 +297,12 @@ button{cursor:pointer}
 <div id="rivalsList"></div>
 </div>
 
-<!-- MY CHALLENGES -->
-<div style="margin-top:25px">
-<button class="btn-3d-gold" onclick="showOnlyMyChallenges()">⚔️ MY CHALLENGES</button>
+<!-- MY CHALLENGES & LEADERBOARD -->
+<div style="margin-top:25px;display:flex;gap:10px;flex-wrap:wrap;">
+    <button class="btn-3d-gold" onclick="showOnlyMyChallenges()" style="flex:1;min-width:150px;">⚔️ MY CHALLENGES</button>
+    <button class="btn-3d" onclick="showLeaderboard()" style="flex:1;min-width:150px;background:linear-gradient(180deg,#fdcb6e,#f39c12);box-shadow:0 8px 0 #b7791f;color:#2d3436;">🏆 LEADERBOARD</button>
 </div>
+
 <div class="grid" style="margin-top:12px">
 <button class="btn-3d-sm" onclick="showOnlyInterests()">🎯 MY INTERESTS</button>
 <button class="btn-3d-sm-gold" onclick="showOnlyResults()">🏆 RESULTS & WINS</button>
@@ -291,7 +311,7 @@ button{cursor:pointer}
 </main>
 </section>
 
-<!-- CREATE TEAM PAGE -->
+<!-- ==================== CREATE TEAM PAGE ==================== -->
 <section id="createTeamPage" class="hidden">
 <nav class="navbar"><div class="nav-logo">INTER RIVALRY</div><div class="nav-right"><div class="role-badge">CREATE TEAM</div><button class="btn-3d-sm-danger" style="width:auto;padding:8px 16px;font-size:12px;" onclick="logout()">🚪 LOGOUT</button></div></nav>
 <main class="container">
@@ -305,7 +325,7 @@ button{cursor:pointer}
 </main>
 </section>
 
-<!-- TEAM DETAILS PAGE -->
+<!-- ==================== TEAM DETAILS PAGE ==================== -->
 <section id="teamDetailsPage" class="hidden">
 <nav class="navbar"><div class="nav-logo">INTER RIVALRY</div><div class="nav-right"><div class="role-badge">TEAM</div><button class="btn-3d-sm-danger" style="width:auto;padding:8px 16px;font-size:12px;" onclick="logout()">🚪 LOGOUT</button></div></nav>
 <main class="container">
@@ -314,7 +334,7 @@ button{cursor:pointer}
 </main>
 </section>
 
-<!-- PROFILE PAGE -->
+<!-- ==================== PROFILE PAGE ==================== -->
 <section id="profilePage" class="hidden">
 <nav class="navbar"><div class="nav-logo">INTER RIVALRY</div><div class="nav-right"><div class="role-badge">RIVAL PROFILE</div><button class="btn-3d-sm-danger" style="width:auto;padding:8px 16px;font-size:12px;" onclick="logout()">🚪 LOGOUT</button></div></nav>
 <main class="container">
@@ -335,7 +355,7 @@ button{cursor:pointer}
 </main>
 </section>
 
-<!-- CHALLENGE PAGE -->
+<!-- ==================== CHALLENGE PAGE ==================== -->
 <section id="challengePage" class="hidden">
 <nav class="navbar"><div class="nav-logo">INTER RIVALRY</div><div class="nav-right"><div class="role-badge">CHALLENGE</div><button class="btn-3d-sm-danger" style="width:auto;padding:8px 16px;font-size:12px;" onclick="logout()">🚪 LOGOUT</button></div></nav>
 <main class="container">
@@ -371,7 +391,7 @@ button{cursor:pointer}
 </main>
 </section>
 
-<!-- MY CHALLENGES PAGE -->
+<!-- ==================== MY CHALLENGES PAGE ==================== -->
 <section id="myChallengesPage" class="hidden">
 <nav class="navbar"><div class="nav-logo">INTER RIVALRY</div><div class="nav-right"><div class="role-badge">CHALLENGES</div><button class="btn-3d-sm-danger" style="width:auto;padding:8px 16px;font-size:12px;" onclick="logout()">🚪 LOGOUT</button></div></nav>
 <main class="container">
@@ -382,7 +402,7 @@ button{cursor:pointer}
 </main>
 </section>
 
-<!-- INTERESTS PAGE -->
+<!-- ==================== INTERESTS PAGE ==================== -->
 <section id="interestsPage" class="hidden">
 <nav class="navbar"><div class="nav-logo">INTER RIVALRY</div><div class="nav-right"><div class="role-badge">INTERESTS</div><button class="btn-3d-sm-danger" style="width:auto;padding:8px 16px;font-size:12px;" onclick="logout()">🚪 LOGOUT</button></div></nav>
 <main class="container">
@@ -396,7 +416,7 @@ button{cursor:pointer}
 </main>
 </section>
 
-<!-- RESULTS PAGE -->
+<!-- ==================== RESULTS PAGE ==================== -->
 <section id="resultsPage" class="hidden">
 <nav class="navbar"><div class="nav-logo">INTER RIVALRY</div><div class="nav-right"><div class="role-badge">RESULTS</div><button class="btn-3d-sm-danger" style="width:auto;padding:8px 16px;font-size:12px;" onclick="logout()">🚪 LOGOUT</button></div></nav>
 <main class="container">
@@ -408,7 +428,53 @@ button{cursor:pointer}
 </main>
 </section>
 
-<!-- ADMIN DASHBOARD -->
+<!-- ==================== LEADERBOARD & RANKINGS PAGE ==================== -->
+<section id="leaderboardPage" class="hidden">
+<nav class="navbar">
+<div class="nav-logo">INTER RIVALRY</div>
+<div class="nav-right">
+<div class="role-badge">🏆 RANKINGS</div>
+<button class="btn-3d-sm-danger" style="width:auto;padding:8px 16px;font-size:12px;" onclick="logout()">🚪 LOGOUT</button>
+</div>
+</nav>
+<main class="container">
+<button class="btn-3d-dark" style="width:auto;padding:10px 20px;font-size:14px;margin-bottom:20px;" onclick="backToStudentDashboard()">⬅️ BACK</button>
+
+<div class="challenge-header">
+<h1>🏆 Rankings</h1>
+<p>Your rank determines your status on the battlefield</p>
+</div>
+
+<!-- Rank Legend -->
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(80px,1fr));gap:10px;margin-bottom:25px;background:#121212;border:1px solid #292929;border-radius:16px;padding:20px;">
+    <div style="text-align:center;"><span style="font-size:30px;font-weight:900;color:#ffd700;">S</span><br><span style="font-size:11px;color:#888;">LEGEND</span></div>
+    <div style="text-align:center;"><span style="font-size:30px;font-weight:900;color:#00b894;">A</span><br><span style="font-size:11px;color:#888;">ELITE</span></div>
+    <div style="text-align:center;"><span style="font-size:30px;font-weight:900;color:#00d2ff;">B</span><br><span style="font-size:11px;color:#888;">PRO</span></div>
+    <div style="text-align:center;"><span style="font-size:30px;font-weight:900;color:#fdcb6e;">C</span><br><span style="font-size:11px;color:#888;">CONTENDER</span></div>
+    <div style="text-align:center;"><span style="font-size:30px;font-weight:900;color:#e17055;">D</span><br><span style="font-size:11px;color:#888;">RISING</span></div>
+    <div style="text-align:center;"><span style="font-size:30px;font-weight:900;color:#636e72;">E</span><br><span style="font-size:11px;color:#888;">ROOKIE</span></div>
+</div>
+
+<!-- My Rank Card -->
+<div id="myRankCard" style="margin-bottom:25px;"></div>
+
+<!-- Filter Tabs -->
+<div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:25px;">
+    <button class="btn-3d-sm filter-btn" onclick="loadLeaderboard('overall')" id="lbOverall" style="background:linear-gradient(180deg,#fdcb6e,#f39c12);box-shadow:0 5px 0 #b7791f;color:#2d3436;">🏆 OVERALL</button>
+    <button class="btn-3d-sm-primary filter-btn" onclick="loadLeaderboard('bca')" id="lbBCA">💻 BCA</button>
+    <button class="btn-3d-sm-success filter-btn" onclick="loadLeaderboard('bba')" id="lbBBA">📊 BBA</button>
+    <button class="btn-3d-sm-gold filter-btn" onclick="loadLeaderboard('bcom')" id="lbBCOM">💰 B.Com</button>
+</div>
+
+<!-- Leaderboard List -->
+<div id="leaderboardList">
+    <div class="empty-box">Loading rankings...</div>
+</div>
+
+</main>
+</section>
+
+<!-- ==================== ADMIN DASHBOARD ==================== -->
 <section id="adminDashboard" class="hidden">
 <nav class="navbar"><div class="nav-logo">INTER RIVALRY</div><div class="nav-right"><div class="role-badge">SUPER ADMIN</div><button class="btn-3d-sm-danger" style="width:auto;padding:8px 16px;font-size:12px;" onclick="logout()">🚪 LOGOUT</button></div></nav>
 <main class="container">
@@ -432,7 +498,7 @@ button{cursor:pointer}
 </main>
 </section>
 
-<!-- COLLEGE MANAGEMENT -->
+<!-- ==================== COLLEGE MANAGEMENT ==================== -->
 <section id="collegeManagement" class="hidden">
 <nav class="navbar"><div class="nav-logo">INTER RIVALRY</div><div class="nav-right"><div class="role-badge">SUPER ADMIN</div><button class="btn-3d-sm-danger" style="width:auto;padding:8px 16px;font-size:12px;" onclick="logout()">🚪 LOGOUT</button></div></nav>
 <main class="container">
@@ -461,7 +527,7 @@ button{cursor:pointer}
 </main>
 </section>
 
-<!-- ADMINS PAGE -->
+<!-- ==================== ADMINS PAGE ==================== -->
 <section id="adminsPage" class="hidden">
 <nav class="navbar"><div class="nav-logo">INTER RIVALRY</div><div class="nav-right"><div class="role-badge">SUPER ADMIN</div><button class="btn-3d-sm-danger" style="width:auto;padding:8px 16px;font-size:12px;" onclick="logout()">🚪 LOGOUT</button></div></nav>
 <main class="container">
@@ -479,18 +545,31 @@ button{cursor:pointer}
 </main>
 </section>
 
-<!-- STUDENTS PAGE -->
+<!-- ==================== STUDENTS PAGE (CATEGORY FILTER) ==================== -->
 <section id="studentsPage" class="hidden">
 <nav class="navbar"><div class="nav-logo">INTER RIVALRY</div><div class="nav-right"><div class="role-badge">SUPER ADMIN</div><button class="btn-3d-sm-danger" style="width:auto;padding:8px 16px;font-size:12px;" onclick="logout()">🚪 LOGOUT</button></div></nav>
 <main class="container">
 <button class="btn-3d-dark" style="width:auto;padding:10px 20px;font-size:14px;margin-bottom:20px;" onclick="backToManagement()">⬅️ BACK</button>
 <h1>🎓 Students</h1>
 <p id="studentsCollegeName" style="color:#888;margin-top:8px;margin-bottom:25px">College</p>
-<div id="studentsList"></div>
+
+<!-- Category Filter Buttons -->
+<div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px;">
+    <button class="btn-3d-sm filter-btn" onclick="filterStudents('all')" id="filterAll" style="background:linear-gradient(180deg,#00d2ff,#0088cc);box-shadow:0 5px 0 #006699;">📋 ALL</button>
+    <button class="btn-3d-sm-primary filter-btn" onclick="filterStudents('BCA')" id="filterBCA">🎓 BCA</button>
+    <button class="btn-3d-sm-success filter-btn" onclick="filterStudents('BBA')" id="filterBBA">📊 BBA</button>
+    <button class="btn-3d-sm-gold filter-btn" onclick="filterStudents('B.COM')" id="filterBCOM">💰 B.Com</button>
+</div>
+
+<!-- Students Display Area -->
+<div id="studentsDisplay">
+    <div class="empty-box">Select a category above to view students</div>
+</div>
+
 </main>
 </section>
 
-<!-- REQUESTS PAGE -->
+<!-- ==================== REQUESTS PAGE ==================== -->
 <section id="requestsPage" class="hidden">
 <nav class="navbar"><div class="nav-logo">INTER RIVALRY</div><div class="nav-right"><div class="role-badge">SUPER ADMIN</div><button class="btn-3d-sm-danger" style="width:auto;padding:8px 16px;font-size:12px;" onclick="logout()">🚪 LOGOUT</button></div></nav>
 <main class="container">
@@ -502,12 +581,12 @@ button{cursor:pointer}
 </section>
 
 <script>
-// SUPABASE CONFIG
+// ==================== SUPABASE CONFIG ====================
 const SUPABASE_URL = "https://qfkxvflyzucvkeyucbzn.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_Se88Rw_onDUYfnMHxogs2g_q6WGY_3T";
 const client = supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
 
-// GLOBALS
+// ==================== GLOBALS ====================
 let selectedCollegeId = null;
 let selectedProfileId = null;
 let allRivalsCache = [];
@@ -516,8 +595,12 @@ let rivalAcademicMap = new Map();
 let interestSkillCache = [];
 let currentInterestIds = new Set();
 let selectedChallengeMode = "solo";
+let leaderboardData = [];
+let currentLeaderboardFilter = 'overall';
+let currentUserRank = null;
+let allStudentsData = [];
 
-// ============ AUTH FUNCTIONS ============
+// ==================== AUTH FUNCTIONS ====================
 function showMessage(msg){ document.getElementById("authMessage").textContent = msg; }
 function showSignup(){ document.getElementById("loginForm").classList.add("hidden"); document.getElementById("signupForm").classList.remove("hidden"); showMessage(""); }
 function showLogin(){ document.getElementById("signupForm").classList.add("hidden"); document.getElementById("loginForm").classList.remove("hidden"); showMessage(""); }
@@ -574,10 +657,11 @@ async function logout(){
     showAuth();
 }
 
-// ============ NAVIGATION ============
+// ==================== NAVIGATION ====================
 function hideAll(){
     document.querySelectorAll("section").forEach(s => s.classList.add("hidden"));
     document.getElementById("loadingScreen").classList.add("hidden");
+    document.getElementById("leaderboardPage").classList.add("hidden");
 }
 
 function backToStudentDashboard(){
@@ -606,8 +690,9 @@ function showOnlyRequests(){ hideAll(); document.getElementById("requestsPage").
 function showOnlyInterests(){ hideAll(); document.getElementById("interestsPage").classList.remove("hidden"); loadInterestsEditor(); }
 function showOnlyResults(){ hideAll(); document.getElementById("resultsPage").classList.remove("hidden"); loadResults(); }
 function showCreateTeam(){ document.getElementById("createTeamPage").classList.remove("hidden"); document.getElementById("studentDashboard").classList.add("hidden"); }
+function showLeaderboard(){ hideAll(); document.getElementById("leaderboardPage").classList.remove("hidden"); loadLeaderboard('overall'); }
 
-// ============ LOAD USER ============
+// ==================== LOAD USER ====================
 async function loadUser(){
     const { data: { user } } = await client.auth.getUser();
     if(!user){ showAuth(); return; }
@@ -625,7 +710,7 @@ async function loadStudentDashboardFromCurrentUser(){
     if(profile){ await loadStudentDashboard(user, profile); }
 }
 
-// ============ STUDENT DASHBOARD ============
+// ==================== STUDENT DASHBOARD ====================
 async function loadStudentDashboard(user, profile){
     document.getElementById("userName").textContent = profile.full_name || "Student";
     document.getElementById("rivalryId").textContent = profile.inter_rivalry_id || "Not assigned";
@@ -647,7 +732,7 @@ async function loadStudentDashboard(user, profile){
     showOnlyStudent();
 }
 
-// ============ STUDENT COLLEGES ============
+// ==================== STUDENT COLLEGES ====================
 async function loadStudentColleges(){
     const { data, error } = await client.from("colleges").select("id,college_name,college_code,city,state").order("college_name",{ascending:true});
     const list = document.getElementById("collegeList");
@@ -661,44 +746,30 @@ async function loadStudentColleges(){
     });
 }
 
-// ============ SHOW JOIN FORM WITH BUTTONS ============
+// ==================== JOIN COLLEGE WITH BUTTONS ====================
 async function showJoinForm(collegeId){
     const overlay = document.createElement('div');
-    overlay.style.cssText = `
-        position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-        background: rgba(0,0,0,0.85); display: flex; justify-content: center; align-items: center;
-        z-index: 9999; padding: 20px; backdrop-filter: blur(10px);
-    `;
+    overlay.style.cssText = `position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.85);display:flex;justify-content:center;align-items:center;z-index:9999;padding:20px;backdrop-filter:blur(10px);`;
     const modal = document.createElement('div');
-    modal.style.cssText = `
-        background: #1a1a1a; border: 1px solid #333; border-radius: 20px;
-        padding: 40px; max-width: 500px; width: 100%; max-height: 90vh; overflow-y: auto;
-    `;
-    let selectedCourse = null;
-    let selectedYear = null;
-    let selectedSpecialization = null;
-    
+    modal.style.cssText = `background:#1a1a1a;border:1px solid #333;border-radius:20px;padding:40px;max-width:500px;width:100%;max-height:90vh;overflow-y:auto;`;
+    let selectedCourse = null; let selectedYear = null; let selectedSpecialization = null;
     modal.innerHTML = `
         <h2 style="color:white;margin-bottom:10px;text-align:center;">🎓 Join College</h2>
         <p style="color:#888;text-align:center;margin-bottom:25px;">Select your details below</p>
-        <div style="margin-bottom:20px;">
-            <label style="color:#aaa;display:block;margin-bottom:10px;font-weight:700;">📚 Select Course</label>
-            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;">
-                <button class="course-btn btn-3d-sm" data-value="BCA" style="background:linear-gradient(180deg,#6c5ce7,#4834d4);box-shadow:0 5px 0 #2d1b69;">BCA</button>
-                <button class="course-btn btn-3d-sm-success" data-value="BBA">BBA</button>
-                <button class="course-btn btn-3d-sm-gold" data-value="B.COM">B.Com</button>
-            </div>
-            <div id="selectedCourseDisplay" style="color:#888;margin-top:8px;text-align:center;font-weight:700;">⬆️ Select a course above</div>
+        <div style="margin-bottom:20px;"><label style="color:#aaa;display:block;margin-bottom:10px;font-weight:700;">📚 Select Course</label>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;">
+            <button class="course-btn btn-3d-sm" data-value="BCA" style="background:linear-gradient(180deg,#6c5ce7,#4834d4);box-shadow:0 5px 0 #2d1b69;">BCA</button>
+            <button class="course-btn btn-3d-sm-success" data-value="BBA">BBA</button>
+            <button class="course-btn btn-3d-sm-gold" data-value="B.COM">B.Com</button>
         </div>
-        <div style="margin-bottom:20px;">
-            <label style="color:#aaa;display:block;margin-bottom:10px;font-weight:700;">📅 Select Year</label>
-            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;">
-                <button class="year-btn btn-3d-sm" data-value="1">1st Year</button>
-                <button class="year-btn btn-3d-sm" data-value="2">2nd Year</button>
-                <button class="year-btn btn-3d-sm" data-value="3">3rd Year</button>
-            </div>
-            <div id="selectedYearDisplay" style="color:#888;margin-top:8px;text-align:center;font-weight:700;">⬆️ Select a year above</div>
+        <div id="selectedCourseDisplay" style="color:#888;margin-top:8px;text-align:center;font-weight:700;">⬆️ Select a course above</div></div>
+        <div style="margin-bottom:20px;"><label style="color:#aaa;display:block;margin-bottom:10px;font-weight:700;">📅 Select Year</label>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;">
+            <button class="year-btn btn-3d-sm" data-value="1">1st Year</button>
+            <button class="year-btn btn-3d-sm" data-value="2">2nd Year</button>
+            <button class="year-btn btn-3d-sm" data-value="3">3rd Year</button>
         </div>
+        <div id="selectedYearDisplay" style="color:#888;margin-top:8px;text-align:center;font-weight:700;">⬆️ Select a year above</div></div>
         <div id="specializationSection" style="margin-bottom:25px;display:none;">
             <label style="color:#aaa;display:block;margin-bottom:10px;font-weight:700;">🎯 Select Specialization</label>
             <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;">
@@ -713,31 +784,23 @@ async function showJoinForm(collegeId){
             <button id="cancelJoinBtn" class="btn-3d-danger">❌ CANCEL</button>
         </div>
     `;
-    overlay.appendChild(modal);
-    document.body.appendChild(overlay);
-    
+    overlay.appendChild(modal); document.body.appendChild(overlay);
     modal.querySelectorAll('.course-btn').forEach(btn => {
         btn.addEventListener('click', function() {
-            modal.querySelectorAll('.course-btn').forEach(b => { b.style.opacity = '0.5'; b.style.transform = 'scale(0.95)'; });
-            this.style.opacity = '1'; this.style.transform = 'scale(1)';
+            modal.querySelectorAll('.course-btn').forEach(b => { b.style.opacity='0.5'; b.style.transform='scale(0.95)'; });
+            this.style.opacity='1'; this.style.transform='scale(1)';
             selectedCourse = this.dataset.value;
             document.getElementById('selectedCourseDisplay').textContent = '✅ ' + selectedCourse;
             document.getElementById('selectedCourseDisplay').style.color = '#00b894';
-            if(selectedCourse === 'BCA') {
-                document.getElementById('specializationSection').style.display = 'block';
-            } else {
-                document.getElementById('specializationSection').style.display = 'none';
-                selectedSpecialization = null;
-                document.getElementById('selectedSpecDisplay').textContent = 'Not needed';
-                document.getElementById('selectedSpecDisplay').style.color = '#888';
-            }
+            if(selectedCourse === 'BCA') { document.getElementById('specializationSection').style.display = 'block'; } 
+            else { document.getElementById('specializationSection').style.display = 'none'; selectedSpecialization = null; document.getElementById('selectedSpecDisplay').textContent = 'Not needed'; document.getElementById('selectedSpecDisplay').style.color = '#888'; }
             checkAllSelected();
         });
     });
     modal.querySelectorAll('.year-btn').forEach(btn => {
         btn.addEventListener('click', function() {
-            modal.querySelectorAll('.year-btn').forEach(b => { b.style.opacity = '0.5'; b.style.transform = 'scale(0.95)'; });
-            this.style.opacity = '1'; this.style.transform = 'scale(1)';
+            modal.querySelectorAll('.year-btn').forEach(b => { b.style.opacity='0.5'; b.style.transform='scale(0.95)'; });
+            this.style.opacity='1'; this.style.transform='scale(1)';
             selectedYear = this.dataset.value;
             const yearText = selectedYear === '1' ? '1st Year' : selectedYear === '2' ? '2nd Year' : '3rd Year';
             document.getElementById('selectedYearDisplay').textContent = '✅ ' + yearText;
@@ -747,8 +810,8 @@ async function showJoinForm(collegeId){
     });
     modal.querySelectorAll('.spec-btn').forEach(btn => {
         btn.addEventListener('click', function() {
-            modal.querySelectorAll('.spec-btn').forEach(b => { b.style.opacity = '0.5'; b.style.transform = 'scale(0.95)'; });
-            this.style.opacity = '1'; this.style.transform = 'scale(1)';
+            modal.querySelectorAll('.spec-btn').forEach(b => { b.style.opacity='0.5'; b.style.transform='scale(0.95)'; });
+            this.style.opacity='1'; this.style.transform='scale(1)';
             selectedSpecialization = this.dataset.value;
             document.getElementById('selectedSpecDisplay').textContent = '✅ ' + selectedSpecialization;
             document.getElementById('selectedSpecDisplay').style.color = '#00b894';
@@ -768,9 +831,7 @@ async function showJoinForm(collegeId){
     }
     document.getElementById('cancelJoinBtn').addEventListener('click', function() { document.body.removeChild(overlay); });
     document.getElementById('confirmJoinBtn').addEventListener('click', async function() {
-        if(!selectedCourse || !selectedYear || (selectedCourse === 'BCA' && !selectedSpecialization)) {
-            alert('Please select all fields'); return;
-        }
+        if(!selectedCourse || !selectedYear || (selectedCourse === 'BCA' && !selectedSpecialization)) { alert('Please select all fields'); return; }
         this.textContent = '⏳ PROCESSING...'; this.disabled = true;
         const { data: { user } } = await client.auth.getUser();
         if(!user){ alert('Please login first.'); document.body.removeChild(overlay); return; }
@@ -787,7 +848,7 @@ async function showJoinForm(collegeId){
     overlay.addEventListener('click', function(e) { if(e.target === overlay) document.body.removeChild(overlay); });
 }
 
-// ============ RIVALS ============
+// ==================== RIVALS ====================
 async function loadRivals(){
     const list = document.getElementById("rivalsList");
     if(!list) return;
@@ -868,7 +929,7 @@ function renderRivals(){
     });
 }
 
-// ============ VIEW PROFILE ============
+// ==================== VIEW PROFILE ====================
 async function viewProfile(userId){
     selectedProfileId = userId;
     const { data: profile, error } = await client.from("profiles").select("id,full_name,inter_rivalry_id,role").eq("id",userId).single();
@@ -902,7 +963,7 @@ async function viewProfile(userId){
     showOnlyProfile();
 }
 
-// ============ OPEN CHALLENGE ============
+// ==================== OPEN CHALLENGE ====================
 async function openChallengePage(){
     if(!selectedProfileId){ alert("No opponent selected."); return; }
     const { data: { user } } = await client.auth.getUser();
@@ -930,7 +991,7 @@ async function loadChallengeSkills(){
     });
 }
 
-// ============ CHALLENGE MODE ============
+// ==================== CHALLENGE MODE ====================
 function setChallengeMode(mode){
     selectedChallengeMode = mode === "team" ? "team" : "solo";
     document.getElementById("soloModeBtn").classList.toggle("active", selectedChallengeMode === "solo");
@@ -966,7 +1027,7 @@ async function loadOpponentTeams(){
     opponents.forEach(team => { const o = document.createElement("option"); o.value = team.id; o.textContent = team.name; select.appendChild(o); });
 }
 
-// ============ SEND CHALLENGE ============
+// ==================== SEND CHALLENGE ====================
 async function sendChallenge(){
     const { data: { user } } = await client.auth.getUser();
     if(!user) return alert("Please login first.");
@@ -1012,7 +1073,7 @@ async function sendChallenge(){
     setChallengeMode("solo");
 }
 
-// ============ MY CHALLENGES ============
+// ==================== MY CHALLENGES ====================
 async function loadMyChallenges(){
     const list = document.getElementById("myChallengesList");
     list.innerHTML = "<div class='empty-box'>Loading challenges...</div>";
@@ -1062,7 +1123,7 @@ async function deleteChallenge(challengeId){
     await loadMyChallenges();
 }
 
-// ============ RECORD CHALLENGE RESULT WITH BUTTONS ============
+// ==================== RECORD RESULT WITH BUTTONS ====================
 async function recordChallengeResult(challengeId) {
     const { data: { user } } = await client.auth.getUser();
     if (!user) return;
@@ -1154,7 +1215,7 @@ async function recordChallengeResult(challengeId) {
     overlay.addEventListener('click', function(e) { if(e.target === overlay) document.body.removeChild(overlay); });
 }
 
-// ============ INTERESTS ============
+// ==================== INTERESTS ====================
 async function loadInterestsEditor(){
     const box = document.getElementById("interestEditor");
     box.innerHTML = "<div class='empty-box'>Loading interests...</div>";
@@ -1230,7 +1291,282 @@ async function loadResults(){
     }
 }
 
-// ============ TEAM MANAGEMENT ============
+// ==================== LEADERBOARD & RANKING FUNCTIONS ====================
+function getRank(winRate, points) {
+    if (winRate >= 90 && points >= 10) return { rank: 'S', label: 'LEGEND', color: '#ffd700', emoji: '👑' };
+    if (winRate >= 75 && points >= 7) return { rank: 'A', label: 'ELITE', color: '#00b894', emoji: '⭐' };
+    if (winRate >= 60 && points >= 5) return { rank: 'B', label: 'PRO', color: '#00d2ff', emoji: '💪' };
+    if (winRate >= 45 && points >= 3) return { rank: 'C', label: 'CONTENDER', color: '#fdcb6e', emoji: '📈' };
+    if (winRate >= 30 && points >= 1) return { rank: 'D', label: 'RISING', color: '#e17055', emoji: '🏃' };
+    return { rank: 'E', label: 'ROOKIE', color: '#636e72', emoji: '🌱' };
+}
+
+async function loadLeaderboard(filter){
+    currentLeaderboardFilter = filter;
+    
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+        btn.style.opacity = '0.5';
+        btn.style.transform = 'scale(0.95)';
+    });
+    const btnId = filter === 'overall' ? 'lbOverall' : 
+                  filter === 'bca' ? 'lbBCA' : 
+                  filter === 'bba' ? 'lbBBA' : 'lbBCOM';
+    const activeBtn = document.getElementById(btnId);
+    if(activeBtn) { activeBtn.style.opacity = '1'; activeBtn.style.transform = 'scale(1)'; }
+    
+    const list = document.getElementById("leaderboardList");
+    const myRankCard = document.getElementById("myRankCard");
+    list.innerHTML = "<div class='empty-box'>Loading rankings...</div>";
+    
+    const { data: { user } } = await client.auth.getUser();
+    if(!user) return;
+    
+    const { data: profiles } = await client.from("profiles").select("id, full_name, inter_rivalry_id, role").eq("role", "student");
+    if(!profiles || profiles.length === 0){ list.innerHTML = "<div class='empty-box'>No students found.</div>"; return; }
+    
+    const userIds = profiles.map(p => p.id);
+    
+    const { data: challenges } = await client.from("challenges")
+        .select("challenger_id, opponent_id, status, rules, subcategory_id, subcategories(name, categories(name))")
+        .in("challenger_id", userIds)
+        .eq("status", "completed");
+    
+    const userStats = {};
+    profiles.forEach(p => {
+        userStats[p.id] = { ...p, wins: 0, losses: 0, draws: 0, total: 0, winRate: 0, points: 0, skillWins: {}, course: null, year: null, college: null, specialization: null, rank: 'E', rankLabel: 'ROOKIE', rankColor: '#636e72', rankEmoji: '🌱' };
+    });
+    
+    const { data: memberships } = await client.from("college_memberships")
+        .select("user_id, course, year_of_study, specialization, colleges(college_name)")
+        .in("user_id", userIds)
+        .eq("is_active", true);
+    
+    memberships?.forEach(m => {
+        if(userStats[m.user_id]){
+            userStats[m.user_id].course = m.course;
+            userStats[m.user_id].year = m.year_of_study;
+            userStats[m.user_id].college = m.colleges?.college_name || 'Unknown';
+            userStats[m.user_id].specialization = m.specialization;
+        }
+    });
+    
+    challenges?.forEach(c => {
+        const challenger = userStats[c.challenger_id];
+        const opponent = userStats[c.opponent_id];
+        const rules = c.rules || {};
+        if(rules.winner_id){
+            if(rules.winner_id === c.challenger_id && challenger) {
+                challenger.wins++; challenger.total++; challenger.points += 3;
+                const skillName = c.subcategories?.name || 'Unknown';
+                if(!challenger.skillWins[skillName]) challenger.skillWins[skillName] = 0;
+                challenger.skillWins[skillName]++;
+                if(opponent) { opponent.losses++; opponent.total++; }
+            } else if(rules.winner_id === c.opponent_id && opponent) {
+                opponent.wins++; opponent.total++; opponent.points += 3;
+                const skillName = c.subcategories?.name || 'Unknown';
+                if(!opponent.skillWins[skillName]) opponent.skillWins[skillName] = 0;
+                opponent.skillWins[skillName]++;
+                if(challenger) { challenger.losses++; challenger.total++; }
+            }
+        } else if(rules.result === 'draw'){
+            if(challenger) { challenger.draws++; challenger.total++; challenger.points += 1; }
+            if(opponent) { opponent.draws++; opponent.total++; opponent.points += 1; }
+        }
+    });
+    
+    Object.values(userStats).forEach(u => {
+        u.winRate = u.total > 0 ? Math.round((u.wins / u.total) * 100) : 0;
+        const rankInfo = getRank(u.winRate, u.points);
+        u.rank = rankInfo.rank; u.rankLabel = rankInfo.label; u.rankColor = rankInfo.color; u.rankEmoji = rankInfo.emoji;
+    });
+    
+    let filtered = Object.values(userStats);
+    if(filter === 'bca'){ filtered = filtered.filter(u => u.course === 'BCA'); }
+    else if(filter === 'bba'){ filtered = filtered.filter(u => u.course === 'BBA'); }
+    else if(filter === 'bcom'){ filtered = filtered.filter(u => u.course === 'B.COM'); }
+    
+    const rankOrder = { 'S': 0, 'A': 1, 'B': 2, 'C': 3, 'D': 4, 'E': 5 };
+    filtered.sort((a, b) => { const diff = rankOrder[a.rank] - rankOrder[b.rank]; if(diff !== 0) return diff; return b.points - a.points; });
+    
+    const topPlayers = filtered.slice(0, 50);
+    leaderboardData = topPlayers;
+    
+    const currentUser = userStats[user.id];
+    if(currentUser) {
+        currentUserRank = currentUser;
+        const rankInfo = getRank(currentUser.winRate, currentUser.points);
+        myRankCard.innerHTML = `
+            <div style="background:linear-gradient(135deg, #1a1a2e, #16213e);border:2px solid ${rankInfo.color};border-radius:16px;padding:25px;text-align:center;">
+                <div style="font-size:14px;color:#888;margin-bottom:5px;">YOUR RANK</div>
+                <div style="font-size:60px;font-weight:900;color:${rankInfo.color};line-height:1;">${rankInfo.rank}</div>
+                <div style="font-size:20px;font-weight:700;color:${rankInfo.color};margin-top:5px;">${rankInfo.emoji} ${rankInfo.label}</div>
+                <div style="display:flex;justify-content:center;gap:30px;margin-top:15px;flex-wrap:wrap;">
+                    <div><span style="color:#888;">Points</span><br><span style="font-size:20px;font-weight:700;color:#00d2ff;">${currentUser.points}</span></div>
+                    <div><span style="color:#888;">Wins</span><br><span style="font-size:20px;font-weight:700;color:#00b894;">${currentUser.wins}</span></div>
+                    <div><span style="color:#888;">Losses</span><br><span style="font-size:20px;font-weight:700;color:#e17055;">${currentUser.losses}</span></div>
+                    <div><span style="color:#888;">Win Rate</span><br><span style="font-size:20px;font-weight:700;color:${rankInfo.color};">${currentUser.winRate}%</span></div>
+                </div>
+                ${currentUser.course ? `<div style="margin-top:10px;color:#888;font-size:14px;">${escapeHTML(currentUser.course)} ${currentUser.year ? '• ' + (currentUser.year === 1 ? '1st Year' : currentUser.year === 2 ? '2nd Year' : '3rd Year') : ''} ${currentUser.specialization ? '• ' + escapeHTML(currentUser.specialization) : ''}</div>` : ''}
+            </div>
+        `;
+    }
+    
+    if(!topPlayers.length){ list.innerHTML = "<div class='empty-box'>No players found in this category.</div>"; return; }
+    
+    let html = '';
+    const rankColors = { 'S': '#ffd700', 'A': '#00b894', 'B': '#00d2ff', 'C': '#fdcb6e', 'D': '#e17055', 'E': '#636e72' };
+    
+    topPlayers.forEach((player, index) => {
+        const isCurrentUser = player.id === user.id;
+        const rankColor = rankColors[player.rank] || '#636e72';
+        html += `
+            <div style="background:${isCurrentUser ? '#1a1a2e' : '#121212'};border:2px solid ${isCurrentUser ? rankColor : '#292929'};border-radius:12px;padding:16px;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:15px;transition:0.2s;">
+                <div style="display:flex;align-items:center;gap:15px;">
+                    <div style="font-size:36px;font-weight:900;color:${rankColor};min-width:55px;text-align:center;line-height:1;">
+                        ${player.rank}
+                        <div style="font-size:10px;color:#888;font-weight:400;line-height:1;">#${index + 1}</div>
+                    </div>
+                    <div>
+                        <div style="font-weight:700;font-size:18px;">${isCurrentUser ? '⭐ ' : ''}${escapeHTML(player.full_name || 'Unknown')}${isCurrentUser ? '<span style="font-size:12px;color:#00d2ff;margin-left:8px;">(YOU)</span>' : ''}</div>
+                        <div style="font-size:12px;color:#888;">ID: ${escapeHTML(player.inter_rivalry_id || '-')}</div>
+                        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:4px;">
+                            ${player.course ? `<span style="background:#1a1a1a;padding:2px 10px;border-radius:999px;font-size:11px;color:#888;">${escapeHTML(player.course)}</span>` : ''}
+                            ${player.year ? `<span style="background:#1a1a1a;padding:2px 10px;border-radius:999px;font-size:11px;color:#888;">${player.year === 1 ? '1st Year' : player.year === 2 ? '2nd Year' : '3rd Year'}</span>` : ''}
+                            ${player.specialization ? `<span style="background:#1a1a1a;padding:2px 10px;border-radius:999px;font-size:11px;color:#888;">🎯 ${escapeHTML(player.specialization)}</span>` : ''}
+                            <span style="background:#1a1a1a;padding:2px 10px;border-radius:999px;font-size:11px;color:${rankColor};font-weight:700;">${player.rankEmoji} ${player.rankLabel}</span>
+                        </div>
+                    </div>
+                </div>
+                <div style="display:flex;align-items:center;gap:15px;flex-wrap:wrap;">
+                    <div style="text-align:center;"><div style="font-size:20px;font-weight:900;color:#00d2ff;">${player.points}</div><div style="font-size:10px;color:#888;">Points</div></div>
+                    <div style="text-align:center;"><div style="font-size:16px;font-weight:700;color:#00b894;">${player.wins}</div><div style="font-size:10px;color:#888;">W</div></div>
+                    <div style="text-align:center;"><div style="font-size:16px;font-weight:700;color:#e17055;">${player.losses}</div><div style="font-size:10px;color:#888;">L</div></div>
+                    <div style="text-align:center;"><div style="font-size:16px;font-weight:700;color:#fdcb6e;">${player.draws}</div><div style="font-size:10px;color:#888;">D</div></div>
+                    <div style="text-align:center;min-width:55px;"><div style="font-size:18px;font-weight:900;color:${rankColor};">${player.winRate}%</div><div style="font-size:10px;color:#888;">Win Rate</div></div>
+                    <button class="btn-3d-xs" style="width:auto;padding:4px 12px;font-size:10px;" onclick="viewProfile('${player.id}')">👤 VIEW</button>
+                </div>
+            </div>
+        `;
+    });
+    list.innerHTML = html;
+}
+
+// ==================== STUDENTS CATEGORY FILTER ====================
+async function loadStudents(){
+    const display = document.getElementById("studentsDisplay");
+    if(!display) return;
+    display.innerHTML = "<div class='empty-box'>Loading students...</div>";
+    
+    const { data, error } = await client.from("college_memberships")
+        .select(`id,user_id,student_number,department,course,year_of_study,specialization,joined_at,profiles!college_memberships_user_id_fkey(full_name,inter_rivalry_id)`)
+        .eq("college_id", selectedCollegeId)
+        .eq("is_active", true)
+        .order("year_of_study", { ascending: true });
+    
+    if(error || !data || data.length === 0){
+        display.innerHTML = "<div class='empty-box'>No students in this college.</div>";
+        return;
+    }
+    
+    allStudentsData = data;
+    displayStudentsByCategory('all');
+}
+
+function displayStudentsByCategory(category){
+    const display = document.getElementById("studentsDisplay");
+    const data = allStudentsData || [];
+    
+    if(!data.length){ display.innerHTML = "<div class='empty-box'>No students found.</div>"; return; }
+    
+    let filtered = data;
+    if(category !== 'all'){ filtered = data.filter(s => s.course === category); }
+    
+    if(!filtered.length){ display.innerHTML = `<div class='empty-box'>No students found in ${category} category.</div>`; return; }
+    
+    const grouped = {};
+    filtered.forEach(student => {
+        const course = student.course || 'Unknown';
+        const year = student.year_of_study || 0;
+        const yearLabel = year === 1 ? '1st Year' : year === 2 ? '2nd Year' : year === 3 ? '3rd Year' : `${year}th Year`;
+        if(!grouped[course]) grouped[course] = {};
+        if(!grouped[course][yearLabel]) grouped[course][yearLabel] = [];
+        grouped[course][yearLabel].push(student);
+    });
+    
+    let html = '';
+    const courseOrder = ['BCA', 'BBA', 'B.COM'];
+    const sortedCourses = Object.keys(grouped).sort((a, b) => {
+        const indexA = courseOrder.indexOf(a);
+        const indexB = courseOrder.indexOf(b);
+        if(indexA === -1 && indexB === -1) return a.localeCompare(b);
+        if(indexA === -1) return 1;
+        if(indexB === -1) return -1;
+        return indexA - indexB;
+    });
+    
+    sortedCourses.forEach(course => {
+        const years = grouped[course];
+        const yearKeys = Object.keys(years).sort((a, b) => { const numA = parseInt(a); const numB = parseInt(b); return numA - numB; });
+        let courseColor = '#6c5ce7';
+        if(course === 'BCA') courseColor = '#6c5ce7';
+        else if(course === 'BBA') courseColor = '#00b894';
+        else if(course === 'B.COM') courseColor = '#fdcb6e';
+        
+        html += `<div style="background:#121212;border:1px solid #292929;border-radius:16px;padding:20px;margin-bottom:16px;">
+            <h2 style="color:${courseColor};margin-bottom:15px;display:flex;align-items:center;gap:10px;">
+                <span style="font-size:28px;">${course === 'BCA' ? '💻' : course === 'BBA' ? '📊' : '💰'}</span>
+                ${escapeHTML(course)}
+                <span style="font-size:14px;color:#888;font-weight:400;">(${filtered.filter(s => s.course === course).length} students)</span>
+            </h2>
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:15px;">`;
+        
+        yearKeys.forEach(year => {
+            const students = years[year];
+            html += `<div style="background:#0e0e0e;border:1px solid #282828;border-radius:12px;padding:16px;">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+                    <h3 style="color:#00d2ff;font-size:16px;">📅 ${escapeHTML(year)}</h3>
+                    <span style="background:#1a1a1a;padding:4px 12px;border-radius:999px;font-size:12px;color:#888;">${students.length} students</span>
+                </div>
+                <div style="display:flex;flex-direction:column;gap:6px;">`;
+            
+            students.forEach(student => {
+                const profile = student.profiles;
+                const name = profile?.full_name || 'Unknown';
+                const rivalryId = profile?.inter_rivalry_id || 'Not assigned';
+                const spec = student.specialization || '';
+                html += `<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:#0a0a0a;border-radius:8px;border-left:3px solid ${courseColor};">
+                    <div><span style="font-weight:600;">👤 ${escapeHTML(name)}</span>
+                    <br><span style="font-size:11px;color:#666;">ID: ${escapeHTML(rivalyId)}</span>
+                    ${spec ? `<br><span style="font-size:11px;color:#888;">🎯 ${escapeHTML(spec)}</span>` : ''}</div>
+                    <button class="btn-3d-xs" style="width:auto;padding:4px 12px;font-size:10px;" onclick="viewProfile('${student.user_id}')">VIEW</button>
+                </div>`;
+            });
+            html += `</div></div>`;
+        });
+        html += `</div></div>`;
+    });
+    display.innerHTML = html;
+    
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+        btn.style.opacity = '0.5';
+        btn.style.transform = 'scale(0.95)';
+    });
+    const activeBtn = document.getElementById(`filter${category === 'all' ? 'All' : category}`);
+    if(activeBtn) { activeBtn.style.opacity = '1'; activeBtn.style.transform = 'scale(1)'; }
+}
+
+function filterStudents(category){
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+        btn.style.opacity = '0.5';
+        btn.style.transform = 'scale(0.95)';
+    });
+    const btnId = category === 'all' ? 'filterAll' : `filter${category}`;
+    const activeBtn = document.getElementById(btnId);
+    if(activeBtn) { activeBtn.style.opacity = '1'; activeBtn.style.transform = 'scale(1)'; }
+    displayStudentsByCategory(category);
+}
+
+// ==================== TEAM MANAGEMENT ====================
 async function loadMyTeams(){
     const list = document.getElementById("myTeamsList");
     if(!list) return;
@@ -1285,10 +1621,8 @@ async function createTeam(){
     modal.innerHTML = `
         <h2 style="color:white;text-align:center;margin-bottom:10px;">👥 Create Team</h2>
         <p style="color:#888;text-align:center;margin-bottom:25px;">Enter your team name below</p>
-        <div style="margin-bottom:20px;">
-            <label style="color:#aaa;display:block;margin-bottom:10px;font-weight:700;">🏷️ Team Name</label>
-            <input id="teamNameInput" type="text" placeholder="Type team name..." style="width:100%;padding:14px;background:#0a0a0a;border:1px solid #333;border-radius:10px;color:white;font-size:16px;text-align:center;">
-        </div>
+        <div style="margin-bottom:20px;"><label style="color:#aaa;display:block;margin-bottom:10px;font-weight:700;">🏷️ Team Name</label>
+        <input id="teamNameInput" type="text" placeholder="Type team name..." style="width:100%;padding:14px;background:#0a0a0a;border:1px solid #333;border-radius:10px;color:white;font-size:16px;text-align:center;"></div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
             <button id="confirmTeamBtn" class="btn-3d-success">✅ CREATE</button>
             <button id="cancelTeamBtn" class="btn-3d-danger">❌ CANCEL</button>
@@ -1400,7 +1734,7 @@ async function deleteTeam(teamId){
     else { alert("Team deleted."); backToStudentDashboard(); loadMyTeams(); }
 }
 
-// ============ ADMIN FUNCTIONS ============
+// ==================== ADMIN FUNCTIONS ====================
 async function loadAdminDashboard(){
     showOnlyAdmin();
     await loadAdminStats();
@@ -1545,21 +1879,6 @@ async function openStudents(){
     showOnlyStudents();
 }
 
-async function loadStudents(){
-    const list = document.getElementById("studentsList");
-    list.innerHTML = "<div class='empty-box'>Loading students...</div>";
-    const { data, error } = await client.from("college_memberships").select("id,user_id,student_number,department,course,year_of_study,specialization,joined_at").eq("college_id",selectedCollegeId).eq("is_active",true).order("joined_at",{ascending:false});
-    if(error || !data || data.length === 0){ list.innerHTML = "<div class='empty-box'>No students in this college.</div>"; return; }
-    list.innerHTML = "";
-    for(const student of data){
-        const { data: profile } = await client.from("profiles").select("full_name,inter_rivalry_id").eq("id",student.user_id).maybeSingle();
-        const card = document.createElement("div");
-        card.className = "student-card";
-        card.innerHTML = `<h3>🎓 ${escapeHTML(profile?.full_name || "Unknown")}</h3><div class="student-info">ID: ${escapeHTML(profile?.inter_rivalry_id || "Unknown")}<br>Course: ${escapeHTML(student.course || "-")}<br>Year: ${escapeHTML(student.year_of_study || "-")}<br>Department: ${escapeHTML(student.department || "-")}<br>Specialization: ${escapeHTML(student.specialization || "-")}</div><div class="student-actions"><button class="btn-3d-sm" onclick="viewProfile('${student.user_id}')">👤 VIEW PROFILE</button></div>`;
-        list.appendChild(card);
-    }
-}
-
 async function openRequests(){
     if(!selectedCollegeId){ alert("No college selected."); return; }
     const { data: college } = await client.from("colleges").select("college_name").eq("id",selectedCollegeId).single();
@@ -1568,7 +1887,6 @@ async function openRequests(){
     showOnlyRequests();
 }
 
-// ============ ORIGINAL WORKING loadRequests ============
 async function loadRequests(){
     const list = document.getElementById("requestsList");
     if(!list) return;
@@ -1643,17 +1961,17 @@ async function loadCollegeAdminDashboard(user, profile){
     document.querySelector("#adminDashboard .admin-header p").textContent = "College Admin Panel";
 }
 
-// ============ UTILITY FUNCTIONS ============
+// ==================== UTILITY FUNCTIONS ====================
 function escapeHTML(value){ if(value === null || value === undefined) return ""; return String(value).replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;").replaceAll("'","&#039;"); }
 function formatDate(value){ if(!value) return "-"; const date = new Date(value); if(isNaN(date.getTime())) return "-"; return date.toLocaleString(); }
 
-// ============ AUTH STATE ============
+// ==================== AUTH STATE ====================
 client.auth.onAuthStateChange(async (event, session) => {
     if(session){ setTimeout(() => loadUser(), 0); }
     else { showAuth(); }
 });
 
-// ============ INITIALIZE ============
+// ==================== INITIALIZE ====================
 async function initialize(){
     const { data: { session } } = await client.auth.getSession();
     if(session){ await loadUser(); }
