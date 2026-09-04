@@ -1345,11 +1345,13 @@ async function openRequests(){
     showOnlyRequests();
 }
 
+// ============ ORIGINAL WORKING loadRequests ============
 async function loadRequests(){
     const list = document.getElementById("requestsList");
     if(!list) return;
     list.innerHTML = "<div class='empty-box'>Loading requests...</div>";
     if(!selectedCollegeId){ list.innerHTML = "<div class='empty-box'>No college selected.</div>"; return; }
+    
     try {
         const { data, error } = await client
             .from("college_join_requests")
@@ -1362,20 +1364,28 @@ async function loadRequests(){
                 specialization,
                 status,
                 created_at,
-                profiles:student_id (
+                profiles!college_join_requests_student_id_fkey (
                     full_name,
-                    inter_rivalry_id,
-                    email
+                    inter_rivalry_id
                 )
             `)
             .eq("college_id", selectedCollegeId)
             .eq("status", "pending")
             .order("created_at", { ascending: true });
         
-        if(error){ list.innerHTML = `<div class='empty-box'>Error: ${escapeHTML(error.message)}</div>`; return; }
+        if(error){ 
+            list.innerHTML = `<div class='empty-box'>Error: ${escapeHTML(error.message)}</div>`; 
+            return; 
+        }
+        
         const validRequests = (data || []).filter(r => r.profiles !== null);
-        if(!validRequests || validRequests.length === 0){ list.innerHTML = "<div class='empty-box'>🎉 No pending join requests.</div>"; return; }
+        if(!validRequests || validRequests.length === 0){ 
+            list.innerHTML = "<div class='empty-box'>🎉 No pending join requests.</div>"; 
+            return; 
+        }
+        
         list.innerHTML = "";
+        
         for(const request of validRequests){
             const profile = request.profiles;
             const card = document.createElement("div");
@@ -1385,8 +1395,7 @@ async function loadRequests(){
                     <div>
                         <h3>📩 ${escapeHTML(profile?.full_name || "Unknown")}</h3>
                         <div class="request-info">
-                            <strong>ID:</strong> ${escapeHTML(profile?.inter_rivalry_id || "Not assigned")}
-                            <br><strong>Email:</strong> ${escapeHTML(profile?.email || "No email")}
+                            <strong>INTER RIVALRY ID:</strong> ${escapeHTML(profile?.inter_rivalry_id || "Not assigned")}
                             <br><strong>Course:</strong> ${escapeHTML(request.course || "-")}
                             <br><strong>Year:</strong> ${escapeHTML(request.year_of_study || "-")}
                             <br><strong>Department:</strong> ${escapeHTML(request.department || "-")}
@@ -1410,39 +1419,71 @@ async function loadRequests(){
 async function reviewRequest(requestId, approve){
     const action = approve ? "APPROVE" : "REJECT";
     if(!confirm(`Are you sure you want to ${action} this request?`)) return;
+    
     try {
         const { data: request, error: fetchError } = await client
             .from("college_join_requests")
-            .select(`id,student_id,college_id,course,year_of_study,specialization,department,profiles:student_id(full_name,inter_rivalry_id)`)
+            .select(`id, student_id, college_id, course, year_of_study, specialization, department`)
             .eq("id", requestId)
             .single();
         
-        if(fetchError || !request || !request.profiles){ alert("Request not found."); return; }
+        if(fetchError || !request){
+            alert("Request not found.");
+            return;
+        }
         
         if(approve){
-            await client.from("college_join_requests").update({ status: "approved", reviewed_at: new Date().toISOString() }).eq("id", requestId);
-            const { data: existing } = await client.from("college_memberships").select("id").eq("user_id", request.student_id).eq("college_id", request.college_id).eq("is_active", true).maybeSingle();
+            await client
+                .from("college_join_requests")
+                .update({ 
+                    status: "approved",
+                    reviewed_at: new Date().toISOString()
+                })
+                .eq("id", requestId);
+            
+            const { data: existing } = await client
+                .from("college_memberships")
+                .select("id")
+                .eq("user_id", request.student_id)
+                .eq("college_id", request.college_id)
+                .eq("is_active", true)
+                .maybeSingle();
+            
             if(!existing){
-                await client.from("college_memberships").insert({
-                    user_id: request.student_id,
-                    college_id: request.college_id,
-                    course: request.course,
-                    year_of_study: request.year_of_study,
-                    specialization: request.specialization,
-                    department: request.department,
-                    is_active: true,
-                    joined_at: new Date().toISOString()
-                });
+                await client
+                    .from("college_memberships")
+                    .insert({
+                        user_id: request.student_id,
+                        college_id: request.college_id,
+                        course: request.course,
+                        year_of_study: request.year_of_study,
+                        specialization: request.specialization,
+                        department: request.department,
+                        is_active: true,
+                        joined_at: new Date().toISOString()
+                    });
             }
-            alert(`✅ ${request.profiles.full_name} approved!`);
+            
+            alert("✅ Student approved successfully!");
+            
         } else {
-            await client.from("college_join_requests").update({ status: "rejected", reviewed_at: new Date().toISOString() }).eq("id", requestId);
-            alert(`❌ Request rejected.`);
+            await client
+                .from("college_join_requests")
+                .update({ 
+                    status: "rejected",
+                    reviewed_at: new Date().toISOString()
+                })
+                .eq("id", requestId);
+            
+            alert("❌ Request rejected.");
         }
+        
         await loadRequests();
         await loadCollegeManagementCounts(selectedCollegeId);
+        
     } catch(error) {
-        alert("Error: " + error.message);
+        console.error(error);
+        alert("Error processing request: " + error.message);
     }
 }
 
