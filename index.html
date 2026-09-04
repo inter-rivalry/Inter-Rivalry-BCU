@@ -4,8 +4,15 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>INTER RIVALRY</title>
+
+<!-- ============ LOAD IN THIS ORDER ============ -->
+<!-- 1. Supabase SDK (external) -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<!-- 2. Styles (CSS first so page looks good while loading) -->
 <link rel="stylesheet" href="style.css">
+
+<!-- 3. Loading screen styles (inline so it shows immediately) -->
 <style>
 /* Loading Screen */
 #loadingScreen{position:fixed;top:0;left:0;right:0;bottom:0;background:#080808;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:99999;transition:opacity 0.5s}
@@ -575,12 +582,13 @@
 </main>
 </section>
 
+<!-- ==================== SCRIPTS - LOAD IN ORDER ==================== -->
 <script src="config.js"></script>
 <script src="auth.js"></script>
 <script src="dashboard.js"></script>
 <script src="features.js"></script>
 
-<!-- Hide loading screen -->
+<!-- Hide loading screen after everything loads -->
 <script>
 window.addEventListener('load', function() {
     setTimeout(function() {
@@ -588,5 +596,6 @@ window.addEventListener('load', function() {
     }, 500);
 });
 </script>
+
 </body>
 </html>
