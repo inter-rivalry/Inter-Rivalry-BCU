@@ -21,17 +21,11 @@ button{cursor:pointer}
 .input-group input,.input-group select,.input-group textarea{width:100%;padding:14px;background:#090909;border:1px solid #303030;border-radius:10px;color:white;outline:none}
 .input-group textarea{min-height:100px;resize:vertical}
 .input-group select option{background:#111}
-.primary-btn{width:100%;padding:14px;border:none;border-radius:10px;background:white;color:black;font-weight:800;transition:0.2s}
-.primary-btn:hover{background:#ddd}
-.secondary-btn{width:100%;padding:13px;border:1px solid #333;border-radius:10px;background:transparent;color:white;margin-top:10px;transition:0.2s}
-.secondary-btn:hover{background:#1a1a1a}
 .message{text-align:center;color:#aaa;font-size:14px;margin-top:16px;line-height:1.5}
 .navbar{min-height:70px;padding:0 25px;display:flex;align-items:center;justify-content:space-between;background:#0d0d0d;border-bottom:1px solid #222}
 .nav-logo{font-size:20px;font-weight:900;letter-spacing:2px}
 .nav-right{display:flex;align-items:center;gap:12px}
 .role-badge{padding:7px 10px;border:1px solid #333;border-radius:8px;font-size:12px;color:#aaa}
-.logout-btn{padding:9px 15px;border:1px solid #333;background:transparent;color:white;border-radius:8px;transition:0.2s}
-.logout-btn:hover{background:#1a1a1a}
 .container{width:100%;max-width:1150px;margin:auto;padding:30px 20px}
 .welcome{margin-bottom:25px}
 .welcome h1{font-size:32px;margin-bottom:7px}
@@ -63,22 +57,6 @@ button{cursor:pointer}
 .college-card h3{margin-bottom:8px}
 .college-code{color:#888;font-size:14px;margin-bottom:10px}
 .college-location{color:#777;font-size:13px;margin-bottom:15px}
-.small-btn{padding:9px 13px;border:1px solid #333;background:transparent;color:white;border-radius:8px;font-size:13px;transition:.2s}
-.small-btn:hover{background:#1a1a1a}
-.success-btn{background:white;color:black;border-color:white}
-.success-btn:hover{background:#ddd}
-.approve-btn{background:#00c853;color:white;border:none}
-.approve-btn:hover{background:#00e676}
-.reject-btn{border-color:#555;color:#ff6b6b}
-.reject-btn:hover{background:#1a1a1a}
-.danger-btn{border-color:#555;color:#ff6b6b}
-.danger-btn:hover{background:#1a1a1a}
-.challenge-btn{background:white;color:black;border-color:white;font-weight:800}
-.challenge-btn:hover{background:#ddd}
-.team-btn{background:#222;color:white;border-color:#444}
-.team-btn:hover{background:#333}
-.back-btn{margin-bottom:20px;padding:10px 15px;border:1px solid #333;background:transparent;color:white;border-radius:9px;transition:0.2s}
-.back-btn:hover{background:#1a1a1a}
 .management-header{margin-bottom:25px}
 .management-header h1{font-size:30px;margin-bottom:7px}
 .management-header p{color:#888}
@@ -120,10 +98,6 @@ button{cursor:pointer}
 @media(max-width:600px){.navbar{padding:0 15px}.container{padding:22px 15px}.welcome h1{font-size:26px}.auth-box{padding:24px}.role-badge{display:none}}
 .action-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:15px}
 .action-row .small-btn{flex:1;min-width:110px}
-.accept-btn{background:#00c853;color:white;border:none;font-weight:800}
-.accept-btn:hover{background:#00e676}
-.result-btn{background:white;color:black;border-color:white;font-weight:800}
-.result-btn:hover{background:#ddd}
 .filter-row{display:grid;grid-template-columns:1fr 220px;gap:10px;margin-bottom:15px}
 .interest-category{margin-bottom:22px}
 .interest-category h3{margin-bottom:10px}
@@ -158,6 +132,66 @@ button{cursor:pointer}
 .invite-card h4{margin-bottom:5px}
 .invite-card .invite-info{color:#999;font-size:14px;line-height:1.6}
 .invite-actions{display:flex;gap:10px;margin-top:12px}
+
+/* ============ 3D PUSH BUTTONS - ALL STYLES ============ */
+.btn-3d,.btn-3d-primary,.btn-3d-success,.btn-3d-danger,.btn-3d-gold,.btn-3d-white,.btn-3d-pink,.btn-3d-dark,.btn-3d-sm,.btn-3d-sm-success,.btn-3d-sm-danger,.btn-3d-sm-primary,.btn-3d-sm-gold,.btn-3d-sm-white,.btn-3d-xs,.btn-3d-xs-success,.btn-3d-xs-danger,.btn-3d-xs-gold{position:relative;border:none;border-radius:12px;font-weight:800;text-transform:uppercase;letter-spacing:1px;cursor:pointer;transition:all 0.08s ease;transform:translateY(0);display:inline-flex;align-items:center;justify-content:center;gap:8px;text-decoration:none;text-align:center;user-select:none;font-family:inherit;width:100%}
+.btn-3d:active,.btn-3d-primary:active,.btn-3d-success:active,.btn-3d-danger:active,.btn-3d-gold:active,.btn-3d-white:active,.btn-3d-pink:active,.btn-3d-dark:active{transform:translateY(6px)}
+.btn-3d:hover,.btn-3d-primary:hover,.btn-3d-success:hover,.btn-3d-danger:hover,.btn-3d-gold:hover,.btn-3d-white:hover,.btn-3d-pink:hover,.btn-3d-dark:hover{transform:translateY(-2px)}
+.btn-3d{padding:14px 32px;font-size:16px;color:white;background:linear-gradient(180deg,#00d2ff,#0088cc);box-shadow:0 8px 0 #006699,0 8px 20px rgba(0,0,0,0.3)}
+.btn-3d:active{box-shadow:0 2px 0 #006699,0 5px 15px rgba(0,0,0,0.2)}
+.btn-3d:hover{box-shadow:0 10px 0 #006699,0 12px 25px rgba(0,0,0,0.3)}
+.btn-3d-primary{padding:14px 32px;font-size:16px;color:white;background:linear-gradient(180deg,#6c5ce7,#4834d4);box-shadow:0 8px 0 #2d1b69,0 8px 20px rgba(0,0,0,0.3)}
+.btn-3d-primary:active{box-shadow:0 2px 0 #2d1b69,0 5px 15px rgba(0,0,0,0.2)}
+.btn-3d-primary:hover{box-shadow:0 10px 0 #2d1b69,0 12px 25px rgba(0,0,0,0.3)}
+.btn-3d-success{padding:14px 32px;font-size:16px;color:white;background:linear-gradient(180deg,#00b894,#00856a);box-shadow:0 8px 0 #005a46,0 8px 20px rgba(0,0,0,0.3)}
+.btn-3d-success:active{box-shadow:0 2px 0 #005a46,0 5px 15px rgba(0,0,0,0.2)}
+.btn-3d-success:hover{box-shadow:0 10px 0 #005a46,0 12px 25px rgba(0,0,0,0.3)}
+.btn-3d-danger{padding:14px 32px;font-size:16px;color:white;background:linear-gradient(180deg,#e17055,#c0392b);box-shadow:0 8px 0 #78281f,0 8px 20px rgba(0,0,0,0.3)}
+.btn-3d-danger:active{box-shadow:0 2px 0 #78281f,0 5px 15px rgba(0,0,0,0.2)}
+.btn-3d-danger:hover{box-shadow:0 10px 0 #78281f,0 12px 25px rgba(0,0,0,0.3)}
+.btn-3d-gold{padding:14px 32px;font-size:16px;color:#2d3436;background:linear-gradient(180deg,#fdcb6e,#f39c12);box-shadow:0 8px 0 #b7791f,0 8px 20px rgba(0,0,0,0.3)}
+.btn-3d-gold:active{box-shadow:0 2px 0 #b7791f,0 5px 15px rgba(0,0,0,0.2)}
+.btn-3d-gold:hover{box-shadow:0 10px 0 #b7791f,0 12px 25px rgba(0,0,0,0.3)}
+.btn-3d-white{padding:14px 32px;font-size:16px;color:#2d3436;background:linear-gradient(180deg,#ffffff,#dfe6e9);box-shadow:0 8px 0 #b2bec3,0 8px 20px rgba(0,0,0,0.3)}
+.btn-3d-white:active{box-shadow:0 2px 0 #b2bec3,0 5px 15px rgba(0,0,0,0.2)}
+.btn-3d-white:hover{box-shadow:0 10px 0 #b2bec3,0 12px 25px rgba(0,0,0,0.3)}
+.btn-3d-pink{padding:14px 32px;font-size:16px;color:white;background:linear-gradient(180deg,#fd79a8,#e84393);box-shadow:0 8px 0 #a8216b,0 8px 20px rgba(0,0,0,0.3)}
+.btn-3d-pink:active{box-shadow:0 2px 0 #a8216b,0 5px 15px rgba(0,0,0,0.2)}
+.btn-3d-pink:hover{box-shadow:0 10px 0 #a8216b,0 12px 25px rgba(0,0,0,0.3)}
+.btn-3d-dark{padding:14px 32px;font-size:16px;color:white;background:linear-gradient(180deg,#2d3436,#1a1a1a);box-shadow:0 8px 0 #000000,0 8px 20px rgba(0,0,0,0.5)}
+.btn-3d-dark:active{box-shadow:0 2px 0 #000000,0 5px 15px rgba(0,0,0,0.3)}
+.btn-3d-dark:hover{box-shadow:0 10px 0 #000000,0 12px 25px rgba(0,0,0,0.4)}
+.btn-3d-sm{padding:10px 20px;font-size:13px;color:white;background:linear-gradient(180deg,#00d2ff,#0088cc);box-shadow:0 5px 0 #006699,0 5px 15px rgba(0,0,0,0.3);border-radius:10px}
+.btn-3d-sm:active{box-shadow:0 1px 0 #006699,0 3px 10px rgba(0,0,0,0.2);transform:translateY(4px)}
+.btn-3d-sm:hover{box-shadow:0 6px 0 #006699,0 8px 18px rgba(0,0,0,0.3);transform:translateY(-1px)}
+.btn-3d-sm-success{padding:10px 20px;font-size:13px;color:white;background:linear-gradient(180deg,#00b894,#00856a);box-shadow:0 5px 0 #005a46,0 5px 15px rgba(0,0,0,0.3);border-radius:10px}
+.btn-3d-sm-success:active{box-shadow:0 1px 0 #005a46,0 3px 10px rgba(0,0,0,0.2);transform:translateY(4px)}
+.btn-3d-sm-success:hover{box-shadow:0 6px 0 #005a46,0 8px 18px rgba(0,0,0,0.3);transform:translateY(-1px)}
+.btn-3d-sm-danger{padding:10px 20px;font-size:13px;color:white;background:linear-gradient(180deg,#e17055,#c0392b);box-shadow:0 5px 0 #78281f,0 5px 15px rgba(0,0,0,0.3);border-radius:10px}
+.btn-3d-sm-danger:active{box-shadow:0 1px 0 #78281f,0 3px 10px rgba(0,0,0,0.2);transform:translateY(4px)}
+.btn-3d-sm-danger:hover{box-shadow:0 6px 0 #78281f,0 8px 18px rgba(0,0,0,0.3);transform:translateY(-1px)}
+.btn-3d-sm-primary{padding:10px 20px;font-size:13px;color:white;background:linear-gradient(180deg,#6c5ce7,#4834d4);box-shadow:0 5px 0 #2d1b69,0 5px 15px rgba(0,0,0,0.3);border-radius:10px}
+.btn-3d-sm-primary:active{box-shadow:0 1px 0 #2d1b69,0 3px 10px rgba(0,0,0,0.2);transform:translateY(4px)}
+.btn-3d-sm-primary:hover{box-shadow:0 6px 0 #2d1b69,0 8px 18px rgba(0,0,0,0.3);transform:translateY(-1px)}
+.btn-3d-sm-gold{padding:10px 20px;font-size:13px;color:#2d3436;background:linear-gradient(180deg,#fdcb6e,#f39c12);box-shadow:0 5px 0 #b7791f,0 5px 15px rgba(0,0,0,0.3);border-radius:10px}
+.btn-3d-sm-gold:active{box-shadow:0 1px 0 #b7791f,0 3px 10px rgba(0,0,0,0.2);transform:translateY(4px)}
+.btn-3d-sm-gold:hover{box-shadow:0 6px 0 #b7791f,0 8px 18px rgba(0,0,0,0.3);transform:translateY(-1px)}
+.btn-3d-sm-white{padding:10px 20px;font-size:13px;color:#2d3436;background:linear-gradient(180deg,#ffffff,#dfe6e9);box-shadow:0 5px 0 #b2bec3,0 5px 15px rgba(0,0,0,0.3);border-radius:10px}
+.btn-3d-sm-white:active{box-shadow:0 1px 0 #b2bec3,0 3px 10px rgba(0,0,0,0.2);transform:translateY(4px)}
+.btn-3d-sm-white:hover{box-shadow:0 6px 0 #b2bec3,0 8px 18px rgba(0,0,0,0.3);transform:translateY(-1px)}
+.btn-3d-xs{padding:6px 14px;font-size:11px;font-weight:700;color:white;background:linear-gradient(180deg,#00d2ff,#0088cc);box-shadow:0 4px 0 #006699,0 4px 10px rgba(0,0,0,0.3);border-radius:8px;letter-spacing:0.5px}
+.btn-3d-xs:active{transform:translateY(3px);box-shadow:0 1px 0 #006699,0 2px 8px rgba(0,0,0,0.2)}
+.btn-3d-xs:hover{transform:translateY(-1px);box-shadow:0 5px 0 #006699,0 6px 12px rgba(0,0,0,0.3)}
+.btn-3d-xs-success{padding:6px 14px;font-size:11px;font-weight:700;color:white;background:linear-gradient(180deg,#00b894,#00856a);box-shadow:0 4px 0 #005a46,0 4px 10px rgba(0,0,0,0.3);border-radius:8px;letter-spacing:0.5px}
+.btn-3d-xs-success:active{transform:translateY(3px);box-shadow:0 1px 0 #005a46,0 2px 8px rgba(0,0,0,0.2)}
+.btn-3d-xs-success:hover{transform:translateY(-1px);box-shadow:0 5px 0 #005a46,0 6px 12px rgba(0,0,0,0.3)}
+.btn-3d-xs-danger{padding:6px 14px;font-size:11px;font-weight:700;color:white;background:linear-gradient(180deg,#e17055,#c0392b);box-shadow:0 4px 0 #78281f,0 4px 10px rgba(0,0,0,0.3);border-radius:8px;letter-spacing:0.5px}
+.btn-3d-xs-danger:active{transform:translateY(3px);box-shadow:0 1px 0 #78281f,0 2px 8px rgba(0,0,0,0.2)}
+.btn-3d-xs-danger:hover{transform:translateY(-1px);box-shadow:0 5px 0 #78281f,0 6px 12px rgba(0,0,0,0.3)}
+.btn-3d-xs-gold{padding:6px 14px;font-size:11px;font-weight:700;color:#2d3436;background:linear-gradient(180deg,#fdcb6e,#f39c12);box-shadow:0 4px 0 #b7791f,0 4px 10px rgba(0,0,0,0.3);border-radius:8px;letter-spacing:0.5px}
+.btn-3d-xs-gold:active{transform:translateY(3px);box-shadow:0 1px 0 #b7791f,0 2px 8px rgba(0,0,0,0.2)}
+.btn-3d-xs-gold:hover{transform:translateY(-1px);box-shadow:0 5px 0 #b7791f,0 6px 12px rgba(0,0,0,0.3)}
+.btn-3d:disabled,.btn-3d-primary:disabled,.btn-3d-success:disabled,.btn-3d-danger:disabled,.btn-3d-gold:disabled,.btn-3d-white:disabled,.btn-3d-sm:disabled,.btn-3d-sm-success:disabled,.btn-3d-sm-danger:disabled{opacity:0.5;cursor:not-allowed;transform:translateY(4px)!important;box-shadow:0 2px 0 #333!important}
 </style>
 </head>
 <body>
@@ -174,18 +208,18 @@ button{cursor:pointer}
 <h2>Login</h2>
 <div class="input-group"><label>Email</label><input id="loginEmail" type="email" placeholder="Enter your email" autocomplete="email"></div>
 <div class="input-group"><label>Password</label><input id="loginPassword" type="password" placeholder="Enter your password" autocomplete="current-password"></div>
-<button class="primary-btn" onclick="login()">LOGIN</button>
-<button class="secondary-btn" onclick="forgotPassword()">FORGOT PASSWORD?</button>
-<button class="secondary-btn" onclick="resendConfirmationEmail()">RESEND CONFIRMATION EMAIL</button>
-<button class="secondary-btn" onclick="showSignup()">CREATE ACCOUNT</button>
+<button class="btn-3d" onclick="login()">⚡ LOGIN</button>
+<button class="btn-3d-white" onclick="forgotPassword()">🔑 FORGOT PASSWORD?</button>
+<button class="btn-3d-white" onclick="resendConfirmationEmail()">📧 RESEND CONFIRMATION</button>
+<button class="btn-3d-success" onclick="showSignup()">✨ CREATE ACCOUNT</button>
 </div>
 <div id="signupForm" class="hidden">
 <h2>Create Account</h2>
 <div class="input-group"><label>Full Name</label><input id="signupName" type="text" placeholder="Enter your full name"></div>
 <div class="input-group"><label>Email</label><input id="signupEmail" type="email" placeholder="Enter your email"></div>
 <div class="input-group"><label>Password</label><input id="signupPassword" type="password" placeholder="Create a password"></div>
-<button class="primary-btn" onclick="signup()">CREATE ACCOUNT</button>
-<button class="secondary-btn" onclick="showLogin()">BACK TO LOGIN</button>
+<button class="btn-3d-success" onclick="signup()">✨ CREATE ACCOUNT</button>
+<button class="btn-3d-white" onclick="showLogin()">⬅️ BACK TO LOGIN</button>
 </div>
 <div id="authMessage" class="message"></div>
 </div>
@@ -195,7 +229,7 @@ button{cursor:pointer}
 <section id="studentDashboard" class="hidden">
 <nav class="navbar">
 <div class="nav-logo">INTER RIVALRY</div>
-<div class="nav-right"><div class="role-badge">STUDENT</div><button class="logout-btn" onclick="logout()">Logout</button></div>
+<div class="nav-right"><div class="role-badge">STUDENT</div><button class="btn-3d-sm-danger" style="width:auto;padding:8px 16px;font-size:12px;" onclick="logout()">🚪 LOGOUT</button></div>
 </nav>
 <main class="container">
 <div class="welcome"><h1>Welcome, <span id="userName">Student</span></h1><p>Your rivalry journey starts here.</p></div>
@@ -205,13 +239,13 @@ button{cursor:pointer}
 <div class="college-status" id="collegeStatus">College: Not joined yet</div>
 </div>
 <div id="myQuickStats"></div>
-<div class="profile-card" style="margin-top:18px"><h2>🎯 Your Interests</h2><div id="myInterestSummary" style="margin-top:10px"></div><button class="small-btn" style="margin-top:15px" onclick="showOnlyInterests()">EDIT INTERESTS</button></div>
+<div class="profile-card" style="margin-top:18px"><h2>🎯 Your Interests</h2><div id="myInterestSummary" style="margin-top:10px"></div><button class="btn-3d-sm" style="margin-top:15px;" onclick="showOnlyInterests()">✏️ EDIT INTERESTS</button></div>
 
 <!-- TEAMS SECTION -->
 <div style="margin-top:30px;margin-bottom:30px;">
 <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:16px;">
 <h2 class="section-title" style="margin-bottom:0;">👥 My Teams</h2>
-<button class="small-btn success-btn" onclick="showCreateTeam()">+ CREATE TEAM</button>
+<button class="btn-3d-sm-success" style="width:auto;padding:10px 24px;" onclick="showCreateTeam()">➕ CREATE TEAM</button>
 </div>
 <div id="myTeamsList"><div class="empty-box">Loading your teams...</div></div>
 </div>
@@ -247,11 +281,11 @@ button{cursor:pointer}
 
 <!-- MY CHALLENGES -->
 <div style="margin-top:25px">
-<button class="primary-btn" onclick="showOnlyMyChallenges()">⚔️ MY CHALLENGES</button>
+<button class="btn-3d-gold" onclick="showOnlyMyChallenges()">⚔️ MY CHALLENGES</button>
 </div>
 <div class="grid" style="margin-top:12px">
-<button class="small-btn" onclick="showOnlyInterests()">🎯 MY INTERESTS</button>
-<button class="small-btn" onclick="showOnlyResults()">🏆 RESULTS & WINS</button>
+<button class="btn-3d-sm" onclick="showOnlyInterests()">🎯 MY INTERESTS</button>
+<button class="btn-3d-sm-gold" onclick="showOnlyResults()">🏆 RESULTS & WINS</button>
 </div>
 <div class="empty-rank">No skill ranks yet.<br>Participate in a skill to begin your ranking journey.</div>
 </main>
@@ -259,38 +293,38 @@ button{cursor:pointer}
 
 <!-- CREATE TEAM PAGE -->
 <section id="createTeamPage" class="hidden">
-<nav class="navbar"><div class="nav-logo">INTER RIVALRY</div><div class="nav-right"><div class="role-badge">CREATE TEAM</div><button class="logout-btn" onclick="logout()">Logout</button></div></nav>
+<nav class="navbar"><div class="nav-logo">INTER RIVALRY</div><div class="nav-right"><div class="role-badge">CREATE TEAM</div><button class="btn-3d-sm-danger" style="width:auto;padding:8px 16px;font-size:12px;" onclick="logout()">🚪 LOGOUT</button></div></nav>
 <main class="container">
-<button class="back-btn" onclick="backToStudentDashboard()">← BACK</button>
+<button class="btn-3d-dark" style="width:auto;padding:10px 20px;font-size:14px;margin-bottom:20px;" onclick="backToStudentDashboard()">⬅️ BACK</button>
 <div class="challenge-header"><h1>👥 Create a Team</h1><p>Build your squad and invite players!</p></div>
 <div class="profile-card">
 <div class="input-group"><label>Team Name</label><input id="createTeamName" type="text" placeholder="Example: BCU Warriors"></div>
 <div id="createTeamMessage" class="message"></div>
-<button class="primary-btn" onclick="createTeam()">🚀 CREATE TEAM</button>
+<button class="btn-3d-success" onclick="createTeam()">🚀 CREATE TEAM</button>
 </div>
 </main>
 </section>
 
 <!-- TEAM DETAILS PAGE -->
 <section id="teamDetailsPage" class="hidden">
-<nav class="navbar"><div class="nav-logo">INTER RIVALRY</div><div class="nav-right"><div class="role-badge">TEAM</div><button class="logout-btn" onclick="logout()">Logout</button></div></nav>
+<nav class="navbar"><div class="nav-logo">INTER RIVALRY</div><div class="nav-right"><div class="role-badge">TEAM</div><button class="btn-3d-sm-danger" style="width:auto;padding:8px 16px;font-size:12px;" onclick="logout()">🚪 LOGOUT</button></div></nav>
 <main class="container">
-<button class="back-btn" onclick="backToStudentDashboard()">← BACK</button>
+<button class="btn-3d-dark" style="width:auto;padding:10px 20px;font-size:14px;margin-bottom:20px;" onclick="backToStudentDashboard()">⬅️ BACK</button>
 <div id="teamDetailsContent"><div class="empty-box">Loading team details...</div></div>
 </main>
 </section>
 
 <!-- PROFILE PAGE -->
 <section id="profilePage" class="hidden">
-<nav class="navbar"><div class="nav-logo">INTER RIVALRY</div><div class="nav-right"><div class="role-badge">RIVAL PROFILE</div><button class="logout-btn" onclick="logout()">Logout</button></div></nav>
+<nav class="navbar"><div class="nav-logo">INTER RIVALRY</div><div class="nav-right"><div class="role-badge">RIVAL PROFILE</div><button class="btn-3d-sm-danger" style="width:auto;padding:8px 16px;font-size:12px;" onclick="logout()">🚪 LOGOUT</button></div></nav>
 <main class="container">
-<button class="back-btn" onclick="backToStudentDashboard()">← BACK</button>
+<button class="btn-3d-dark" style="width:auto;padding:10px 20px;font-size:14px;margin-bottom:20px;" onclick="backToStudentDashboard()">⬅️ BACK</button>
 <div class="profile-card profile-big">
 <div class="profile-avatar">👤</div>
 <h1 id="viewProfileName">User</h1>
 <p id="viewProfileRivalry">IR-XXXX-XXXX</p>
 <div id="viewProfileCollege" style="margin-top:10px;color:#777">College</div>
-<div style="margin-top:20px"><button class="small-btn challenge-btn" onclick="openChallengePage()">⚔️ CHALLENGE</button></div>
+<div style="margin-top:20px"><button class="btn-3d-gold" style="width:auto;padding:12px 30px;" onclick="openChallengePage()">⚔️ CHALLENGE</button></div>
 </div>
 <div class="profile-card skill-box">
 <h2>🎯 Skills</h2>
@@ -303,9 +337,9 @@ button{cursor:pointer}
 
 <!-- CHALLENGE PAGE -->
 <section id="challengePage" class="hidden">
-<nav class="navbar"><div class="nav-logo">INTER RIVALRY</div><div class="nav-right"><div class="role-badge">CHALLENGE</div><button class="logout-btn" onclick="logout()">Logout</button></div></nav>
+<nav class="navbar"><div class="nav-logo">INTER RIVALRY</div><div class="nav-right"><div class="role-badge">CHALLENGE</div><button class="btn-3d-sm-danger" style="width:auto;padding:8px 16px;font-size:12px;" onclick="logout()">🚪 LOGOUT</button></div></nav>
 <main class="container">
-<button class="back-btn" onclick="backToProfile()">← BACK</button>
+<button class="btn-3d-dark" style="width:auto;padding:10px 20px;font-size:14px;margin-bottom:20px;" onclick="backToProfile()">⬅️ BACK</button>
 <div class="challenge-header"><h1>⚔️ Challenge Rival</h1><p>Choose the battlefield and send your challenge.</p></div>
 <div class="challenge-target"><strong>Opponent:</strong> <span id="challengeOpponentName">User</span><br><span id="challengeOpponentId" style="color:#777">IR-XXXX-XXXX</span></div>
 <div class="profile-card">
@@ -331,7 +365,7 @@ button{cursor:pointer}
 <div class="input-group"><label>Description</label><textarea id="challengeDescription" placeholder="Describe your challenge..."></textarea></div>
 <div class="input-group"><label>Start Time</label><input id="challengeStart" type="datetime-local"></div>
 <div class="input-group"><label>End Time</label><input id="challengeEnd" type="datetime-local"></div>
-<button class="primary-btn" onclick="sendChallenge()">⚔️ SEND CHALLENGE</button>
+<button class="btn-3d-gold" onclick="sendChallenge()">⚔️ SEND CHALLENGE</button>
 <div id="challengeMessage" class="message"></div>
 </div>
 </main>
@@ -339,9 +373,9 @@ button{cursor:pointer}
 
 <!-- MY CHALLENGES PAGE -->
 <section id="myChallengesPage" class="hidden">
-<nav class="navbar"><div class="nav-logo">INTER RIVALRY</div><div class="nav-right"><div class="role-badge">CHALLENGES</div><button class="logout-btn" onclick="logout()">Logout</button></div></nav>
+<nav class="navbar"><div class="nav-logo">INTER RIVALRY</div><div class="nav-right"><div class="role-badge">CHALLENGES</div><button class="btn-3d-sm-danger" style="width:auto;padding:8px 16px;font-size:12px;" onclick="logout()">🚪 LOGOUT</button></div></nav>
 <main class="container">
-<button class="back-btn" onclick="backToStudentDashboard()">← BACK</button>
+<button class="btn-3d-dark" style="width:auto;padding:10px 20px;font-size:14px;margin-bottom:20px;" onclick="backToStudentDashboard()">⬅️ BACK</button>
 <h1>⚔️ My Challenges</h1>
 <p style="color:#888;margin-top:7px;margin-bottom:25px">Challenges sent and received by you.</p>
 <div id="myChallengesList"></div>
@@ -350,13 +384,13 @@ button{cursor:pointer}
 
 <!-- INTERESTS PAGE -->
 <section id="interestsPage" class="hidden">
-<nav class="navbar"><div class="nav-logo">INTER RIVALRY</div><div class="nav-right"><div class="role-badge">INTERESTS</div><button class="logout-btn" onclick="logout()">Logout</button></div></nav>
+<nav class="navbar"><div class="nav-logo">INTER RIVALRY</div><div class="nav-right"><div class="role-badge">INTERESTS</div><button class="btn-3d-sm-danger" style="width:auto;padding:8px 16px;font-size:12px;" onclick="logout()">🚪 LOGOUT</button></div></nav>
 <main class="container">
-<button class="back-btn" onclick="backToStudentDashboard()">← BACK</button>
+<button class="btn-3d-dark" style="width:auto;padding:10px 20px;font-size:14px;margin-bottom:20px;" onclick="backToStudentDashboard()">⬅️ BACK</button>
 <div class="challenge-header"><h1>🎯 My Interests</h1><p>Choose the skills and categories you want to compete in.</p></div>
 <div class="profile-card">
 <div id="interestEditor"><div class="empty-box">Loading interests...</div></div>
-<button class="primary-btn" style="margin-top:18px" onclick="saveInterests()">SAVE INTERESTS</button>
+<button class="btn-3d-success" style="margin-top:18px;" onclick="saveInterests()">💾 SAVE INTERESTS</button>
 <div id="interestMessage" class="message"></div>
 </div>
 </main>
@@ -364,9 +398,9 @@ button{cursor:pointer}
 
 <!-- RESULTS PAGE -->
 <section id="resultsPage" class="hidden">
-<nav class="navbar"><div class="nav-logo">INTER RIVALRY</div><div class="nav-right"><div class="role-badge">RESULTS</div><button class="logout-btn" onclick="logout()">Logout</button></div></nav>
+<nav class="navbar"><div class="nav-logo">INTER RIVALRY</div><div class="nav-right"><div class="role-badge">RESULTS</div><button class="btn-3d-sm-danger" style="width:auto;padding:8px 16px;font-size:12px;" onclick="logout()">🚪 LOGOUT</button></div></nav>
 <main class="container">
-<button class="back-btn" onclick="backToStudentDashboard()">← BACK</button>
+<button class="btn-3d-dark" style="width:auto;padding:10px 20px;font-size:14px;margin-bottom:20px;" onclick="backToStudentDashboard()">⬅️ BACK</button>
 <h1>🏆 Results & Wins</h1>
 <p style="color:#888;margin-top:7px;margin-bottom:22px">Your completed rivalry record.</p>
 <div id="resultStats" class="stat-grid"></div>
@@ -376,7 +410,7 @@ button{cursor:pointer}
 
 <!-- ADMIN DASHBOARD -->
 <section id="adminDashboard" class="hidden">
-<nav class="navbar"><div class="nav-logo">INTER RIVALRY</div><div class="nav-right"><div class="role-badge">SUPER ADMIN</div><button class="logout-btn" onclick="logout()">Logout</button></div></nav>
+<nav class="navbar"><div class="nav-logo">INTER RIVALRY</div><div class="nav-right"><div class="role-badge">SUPER ADMIN</div><button class="btn-3d-sm-danger" style="width:auto;padding:8px 16px;font-size:12px;" onclick="logout()">🚪 LOGOUT</button></div></nav>
 <main class="container">
 <div class="admin-header"><div><h1>👑 Super Admin</h1><p>INTER RIVALRY platform management</p></div></div>
 <div class="grid">
@@ -390,7 +424,7 @@ button{cursor:pointer}
 <div class="input-group"><label>College Code</label><input id="collegeCode" type="text" placeholder="Example: BCU"></div>
 <div class="input-group"><label>City</label><input id="collegeCity" type="text" placeholder="Example: Bengaluru"></div>
 <div class="input-group"><label>State</label><input id="collegeState" type="text" placeholder="Example: Karnataka"></div>
-<button class="primary-btn" onclick="addCollege()">+ ADD COLLEGE</button>
+<button class="btn-3d-primary" onclick="addCollege()">➕ ADD COLLEGE</button>
 <div id="adminMessage" class="message"></div>
 </div>
 <h2 class="section-title">🏫 Colleges</h2>
@@ -400,9 +434,9 @@ button{cursor:pointer}
 
 <!-- COLLEGE MANAGEMENT -->
 <section id="collegeManagement" class="hidden">
-<nav class="navbar"><div class="nav-logo">INTER RIVALRY</div><div class="nav-right"><div class="role-badge">SUPER ADMIN</div><button class="logout-btn" onclick="logout()">Logout</button></div></nav>
+<nav class="navbar"><div class="nav-logo">INTER RIVALRY</div><div class="nav-right"><div class="role-badge">SUPER ADMIN</div><button class="btn-3d-sm-danger" style="width:auto;padding:8px 16px;font-size:12px;" onclick="logout()">🚪 LOGOUT</button></div></nav>
 <main class="container">
-<button class="back-btn" onclick="backToAdmin()">← BACK TO DASHBOARD</button>
+<button class="btn-3d-dark" style="width:auto;padding:10px 20px;font-size:14px;margin-bottom:20px;" onclick="backToAdmin()">⬅️ BACK TO DASHBOARD</button>
 <div class="management-header"><h1>🏫 <span id="manageCollegeName">College</span></h1><p id="manageCollegeLocation">Loading...</p></div>
 <div class="profile-card management-info">
 <h2>College Information</h2>
@@ -411,9 +445,9 @@ button{cursor:pointer}
 <p>State: <span id="manageCollegeState">-</span></p>
 </div>
 <div class="management-grid">
-<div class="management-card"><div class="icon">👥</div><div id="manageAdminCount" class="count">0</div><div class="label">College Admins</div><button class="small-btn" onclick="openAdmins()">MANAGE ADMINS</button></div>
-<div class="management-card"><div class="icon">🎓</div><div id="manageStudentCount" class="count">0</div><div class="label">Students</div><button class="small-btn" onclick="openStudents()">VIEW STUDENTS</button></div>
-<div class="management-card"><div class="icon">📩</div><div id="manageRequestCount" class="count">0</div><div class="label">Join Requests</div><button class="small-btn" onclick="openRequests()">VIEW REQUESTS</button></div>
+<div class="management-card"><div class="icon">👥</div><div id="manageAdminCount" class="count">0</div><div class="label">College Admins</div><button class="btn-3d-sm" onclick="openAdmins()">👥 MANAGE ADMINS</button></div>
+<div class="management-card"><div class="icon">🎓</div><div id="manageStudentCount" class="count">0</div><div class="label">Students</div><button class="btn-3d-sm" onclick="openStudents()">🎓 VIEW STUDENTS</button></div>
+<div class="management-card"><div class="icon">📩</div><div id="manageRequestCount" class="count">0</div><div class="label">Join Requests</div><button class="btn-3d-sm-gold" onclick="openRequests()">📩 VIEW REQUESTS</button></div>
 </div>
 <div class="profile-card">
 <h2>⚙️ Edit College</h2><br>
@@ -421,7 +455,7 @@ button{cursor:pointer}
 <div class="input-group"><label>College Code</label><input id="editCollegeCode" type="text"></div>
 <div class="input-group"><label>City</label><input id="editCollegeCity" type="text"></div>
 <div class="input-group"><label>State</label><input id="editCollegeState" type="text"></div>
-<button class="primary-btn" onclick="saveCollegeChanges()">SAVE CHANGES</button>
+<button class="btn-3d-success" onclick="saveCollegeChanges()">💾 SAVE CHANGES</button>
 <div id="editMessage" class="message"></div>
 </div>
 </main>
@@ -429,15 +463,15 @@ button{cursor:pointer}
 
 <!-- ADMINS PAGE -->
 <section id="adminsPage" class="hidden">
-<nav class="navbar"><div class="nav-logo">INTER RIVALRY</div><div class="nav-right"><div class="role-badge">SUPER ADMIN</div><button class="logout-btn" onclick="logout()">Logout</button></div></nav>
+<nav class="navbar"><div class="nav-logo">INTER RIVALRY</div><div class="nav-right"><div class="role-badge">SUPER ADMIN</div><button class="btn-3d-sm-danger" style="width:auto;padding:8px 16px;font-size:12px;" onclick="logout()">🚪 LOGOUT</button></div></nav>
 <main class="container">
-<button class="back-btn" onclick="backToManagement()">← BACK</button>
+<button class="btn-3d-dark" style="width:auto;padding:10px 20px;font-size:14px;margin-bottom:20px;" onclick="backToManagement()">⬅️ BACK</button>
 <h1>👥 College Admins</h1>
 <p id="adminsCollegeName" style="color:#888;margin-top:8px;margin-bottom:25px">College</p>
 <div class="profile-card">
 <h2>➕ Add College Admin</h2><br>
 <div class="input-group"><label>User ID</label><input id="adminUserId" type="text" placeholder="Paste user's UUID"></div>
-<button class="primary-btn" onclick="addCollegeAdmin()">ADD ADMIN</button>
+<button class="btn-3d-primary" onclick="addCollegeAdmin()">➕ ADD ADMIN</button>
 <div id="adminManageMessage" class="message"></div>
 </div>
 <h2 class="section-title">Current Admins</h2>
@@ -447,9 +481,9 @@ button{cursor:pointer}
 
 <!-- STUDENTS PAGE -->
 <section id="studentsPage" class="hidden">
-<nav class="navbar"><div class="nav-logo">INTER RIVALRY</div><div class="nav-right"><div class="role-badge">SUPER ADMIN</div><button class="logout-btn" onclick="logout()">Logout</button></div></nav>
+<nav class="navbar"><div class="nav-logo">INTER RIVALRY</div><div class="nav-right"><div class="role-badge">SUPER ADMIN</div><button class="btn-3d-sm-danger" style="width:auto;padding:8px 16px;font-size:12px;" onclick="logout()">🚪 LOGOUT</button></div></nav>
 <main class="container">
-<button class="back-btn" onclick="backToManagement()">← BACK</button>
+<button class="btn-3d-dark" style="width:auto;padding:10px 20px;font-size:14px;margin-bottom:20px;" onclick="backToManagement()">⬅️ BACK</button>
 <h1>🎓 Students</h1>
 <p id="studentsCollegeName" style="color:#888;margin-top:8px;margin-bottom:25px">College</p>
 <div id="studentsList"></div>
@@ -458,9 +492,9 @@ button{cursor:pointer}
 
 <!-- REQUESTS PAGE -->
 <section id="requestsPage" class="hidden">
-<nav class="navbar"><div class="nav-logo">INTER RIVALRY</div><div class="nav-right"><div class="role-badge">SUPER ADMIN</div><button class="logout-btn" onclick="logout()">Logout</button></div></nav>
+<nav class="navbar"><div class="nav-logo">INTER RIVALRY</div><div class="nav-right"><div class="role-badge">SUPER ADMIN</div><button class="btn-3d-sm-danger" style="width:auto;padding:8px 16px;font-size:12px;" onclick="logout()">🚪 LOGOUT</button></div></nav>
 <main class="container">
-<button class="back-btn" onclick="backToManagement()">← BACK</button>
+<button class="btn-3d-dark" style="width:auto;padding:10px 20px;font-size:14px;margin-bottom:20px;" onclick="backToManagement()">⬅️ BACK</button>
 <h1>📩 Join Requests</h1>
 <p id="requestsCollegeName" style="color:#888;margin-top:8px;margin-bottom:25px">College</p>
 <div id="requestsList"></div>
@@ -622,30 +656,135 @@ async function loadStudentColleges(){
     data.forEach(college => {
         const card = document.createElement("div");
         card.className = "college-card";
-        card.innerHTML = `<h3>${escapeHTML(college.college_name)}</h3><div class="college-code">${escapeHTML(college.college_code)}</div><div class="college-location">${escapeHTML(college.city || "")}${college.state ? ", " + escapeHTML(college.state) : ""}</div><button class="small-btn success-btn" onclick="showJoinForm('${college.id}')">JOIN COLLEGE</button>`;
+        card.innerHTML = `<h3>${escapeHTML(college.college_name)}</h3><div class="college-code">${escapeHTML(college.college_code)}</div><div class="college-location">${escapeHTML(college.city || "")}${college.state ? ", " + escapeHTML(college.state) : ""}</div><button class="btn-3d-sm" onclick="showJoinForm('${college.id}')">🏫 JOIN COLLEGE</button>`;
         list.appendChild(card);
     });
 }
 
+// ============ SHOW JOIN FORM WITH BUTTONS ============
 async function showJoinForm(collegeId){
-    const course = prompt("Enter course:\nBCA, BBA or B.Com");
-    if(!course) return;
-    const normalizedCourse = course.trim().toUpperCase();
-    if(!["BCA","BBA","B.COM"].includes(normalizedCourse)){ alert("Please enter BCA, BBA or B.Com."); return; }
-    const year = prompt("Enter year:\n1 = 1st Year\n2 = 2nd Year\n3 = 3rd Year");
-    const yearNumber = Number(year);
-    if(![1,2,3].includes(yearNumber)){ alert("Please enter 1, 2 or 3."); return; }
-    let specialization = null;
-    if(normalizedCourse === "BCA"){
-        specialization = prompt("BCA specialization:\nAI ML\nData Science\nGeneral");
-        if(!specialization) return;
-        specialization = specialization.trim();
+    const overlay = document.createElement('div');
+    overlay.style.cssText = `
+        position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+        background: rgba(0,0,0,0.85); display: flex; justify-content: center; align-items: center;
+        z-index: 9999; padding: 20px; backdrop-filter: blur(10px);
+    `;
+    const modal = document.createElement('div');
+    modal.style.cssText = `
+        background: #1a1a1a; border: 1px solid #333; border-radius: 20px;
+        padding: 40px; max-width: 500px; width: 100%; max-height: 90vh; overflow-y: auto;
+    `;
+    let selectedCourse = null;
+    let selectedYear = null;
+    let selectedSpecialization = null;
+    
+    modal.innerHTML = `
+        <h2 style="color:white;margin-bottom:10px;text-align:center;">🎓 Join College</h2>
+        <p style="color:#888;text-align:center;margin-bottom:25px;">Select your details below</p>
+        <div style="margin-bottom:20px;">
+            <label style="color:#aaa;display:block;margin-bottom:10px;font-weight:700;">📚 Select Course</label>
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;">
+                <button class="course-btn btn-3d-sm" data-value="BCA" style="background:linear-gradient(180deg,#6c5ce7,#4834d4);box-shadow:0 5px 0 #2d1b69;">BCA</button>
+                <button class="course-btn btn-3d-sm-success" data-value="BBA">BBA</button>
+                <button class="course-btn btn-3d-sm-gold" data-value="B.COM">B.Com</button>
+            </div>
+            <div id="selectedCourseDisplay" style="color:#888;margin-top:8px;text-align:center;font-weight:700;">⬆️ Select a course above</div>
+        </div>
+        <div style="margin-bottom:20px;">
+            <label style="color:#aaa;display:block;margin-bottom:10px;font-weight:700;">📅 Select Year</label>
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;">
+                <button class="year-btn btn-3d-sm" data-value="1">1st Year</button>
+                <button class="year-btn btn-3d-sm" data-value="2">2nd Year</button>
+                <button class="year-btn btn-3d-sm" data-value="3">3rd Year</button>
+            </div>
+            <div id="selectedYearDisplay" style="color:#888;margin-top:8px;text-align:center;font-weight:700;">⬆️ Select a year above</div>
+        </div>
+        <div id="specializationSection" style="margin-bottom:25px;display:none;">
+            <label style="color:#aaa;display:block;margin-bottom:10px;font-weight:700;">🎯 Select Specialization</label>
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;">
+                <button class="spec-btn btn-3d-sm-danger" data-value="AI ML">🤖 AI ML</button>
+                <button class="spec-btn btn-3d-sm-primary" data-value="Data Science">📊 Data Science</button>
+                <button class="spec-btn btn-3d-sm-success" data-value="General">📚 General</button>
+            </div>
+            <div id="selectedSpecDisplay" style="color:#888;margin-top:8px;text-align:center;font-weight:700;">⬆️ Select specialization above</div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+            <button id="confirmJoinBtn" class="btn-3d-success" disabled style="opacity:0.5;">⚠️ SELECT ALL</button>
+            <button id="cancelJoinBtn" class="btn-3d-danger">❌ CANCEL</button>
+        </div>
+    `;
+    overlay.appendChild(modal);
+    document.body.appendChild(overlay);
+    
+    modal.querySelectorAll('.course-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            modal.querySelectorAll('.course-btn').forEach(b => { b.style.opacity = '0.5'; b.style.transform = 'scale(0.95)'; });
+            this.style.opacity = '1'; this.style.transform = 'scale(1)';
+            selectedCourse = this.dataset.value;
+            document.getElementById('selectedCourseDisplay').textContent = '✅ ' + selectedCourse;
+            document.getElementById('selectedCourseDisplay').style.color = '#00b894';
+            if(selectedCourse === 'BCA') {
+                document.getElementById('specializationSection').style.display = 'block';
+            } else {
+                document.getElementById('specializationSection').style.display = 'none';
+                selectedSpecialization = null;
+                document.getElementById('selectedSpecDisplay').textContent = 'Not needed';
+                document.getElementById('selectedSpecDisplay').style.color = '#888';
+            }
+            checkAllSelected();
+        });
+    });
+    modal.querySelectorAll('.year-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            modal.querySelectorAll('.year-btn').forEach(b => { b.style.opacity = '0.5'; b.style.transform = 'scale(0.95)'; });
+            this.style.opacity = '1'; this.style.transform = 'scale(1)';
+            selectedYear = this.dataset.value;
+            const yearText = selectedYear === '1' ? '1st Year' : selectedYear === '2' ? '2nd Year' : '3rd Year';
+            document.getElementById('selectedYearDisplay').textContent = '✅ ' + yearText;
+            document.getElementById('selectedYearDisplay').style.color = '#00b894';
+            checkAllSelected();
+        });
+    });
+    modal.querySelectorAll('.spec-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            modal.querySelectorAll('.spec-btn').forEach(b => { b.style.opacity = '0.5'; b.style.transform = 'scale(0.95)'; });
+            this.style.opacity = '1'; this.style.transform = 'scale(1)';
+            selectedSpecialization = this.dataset.value;
+            document.getElementById('selectedSpecDisplay').textContent = '✅ ' + selectedSpecialization;
+            document.getElementById('selectedSpecDisplay').style.color = '#00b894';
+            checkAllSelected();
+        });
+    });
+    function checkAllSelected() {
+        const confirmBtn = document.getElementById('confirmJoinBtn');
+        if(selectedCourse && selectedYear) {
+            if(selectedCourse === 'BCA' && !selectedSpecialization) {
+                confirmBtn.disabled = true; confirmBtn.textContent = '⚠️ SELECT SPECIALIZATION'; confirmBtn.style.opacity = '0.5'; return;
+            }
+            confirmBtn.disabled = false; confirmBtn.textContent = '✅ CONFIRM & JOIN'; confirmBtn.style.opacity = '1';
+        } else {
+            confirmBtn.disabled = true; confirmBtn.textContent = '⚠️ SELECT ALL FIELDS'; confirmBtn.style.opacity = '0.5';
+        }
     }
-    const { data: { user } } = await client.auth.getUser();
-    if(!user){ alert("Please login first."); return; }
-    const { error } = await client.from("college_join_requests").insert({ student_id: user.id, college_id: collegeId, course: normalizedCourse, year_of_study: yearNumber, specialization });
-    if(error){ alert("Could not send request: " + error.message); return; }
-    alert("Join request submitted! Waiting for approval.");
+    document.getElementById('cancelJoinBtn').addEventListener('click', function() { document.body.removeChild(overlay); });
+    document.getElementById('confirmJoinBtn').addEventListener('click', async function() {
+        if(!selectedCourse || !selectedYear || (selectedCourse === 'BCA' && !selectedSpecialization)) {
+            alert('Please select all fields'); return;
+        }
+        this.textContent = '⏳ PROCESSING...'; this.disabled = true;
+        const { data: { user } } = await client.auth.getUser();
+        if(!user){ alert('Please login first.'); document.body.removeChild(overlay); return; }
+        const { error } = await client.from('college_join_requests').insert({
+            student_id: user.id, college_id: collegeId,
+            course: selectedCourse, year_of_study: parseInt(selectedYear),
+            specialization: selectedSpecialization
+        });
+        if(error){ alert('Could not send request: ' + error.message); document.body.removeChild(overlay); return; }
+        alert('✅ Join request submitted! Waiting for approval.');
+        document.body.removeChild(overlay);
+        await loadStudentColleges();
+    });
+    overlay.addEventListener('click', function(e) { if(e.target === overlay) document.body.removeChild(overlay); });
 }
 
 // ============ RIVALS ============
@@ -658,8 +797,7 @@ async function loadRivals(){
     const { data: profiles, error } = await client.from("profiles").select("id,full_name,inter_rivalry_id,role").neq("id",user.id).eq("role","student").order("full_name",{ascending:true});
     if(error){ list.innerHTML = `<div class='empty-box'>${escapeHTML(error.message)}</div>`; return; }
     allRivalsCache = profiles || [];
-    rivalInterestMap = new Map();
-    rivalAcademicMap = new Map();
+    rivalInterestMap = new Map(); rivalAcademicMap = new Map();
     if(allRivalsCache.length){
         const ids = allRivalsCache.map(x=>x.id);
         const { data: parts } = await client.from("participations").select("user_id,subcategory_id,subcategories(name,categories(name))").in("user_id",ids);
@@ -667,8 +805,7 @@ async function loadRivals(){
         const { data: memberships } = await client.from("college_memberships").select("user_id,college_id,course,year_of_study,department,specialization,is_active,colleges(college_name,college_code)").in("user_id",ids).eq("is_active",true);
         (memberships||[]).forEach(m => { if(!rivalAcademicMap.has(m.user_id)) rivalAcademicMap.set(m.user_id, m); });
     }
-    buildRivalFilters();
-    renderRivals();
+    buildRivalFilters(); renderRivals();
 }
 
 function buildRivalFilters(){
@@ -726,7 +863,7 @@ function renderRivals(){
             const specialization = academic.specialization || "";
             academicHtml = `<div class="rival-academic"><strong>College:</strong> ${escapeHTML(collegeName)}<br><strong>Course:</strong> ${escapeHTML(course)} • <strong>Year:</strong> ${escapeHTML(year)}${department ? `<br><strong>Department:</strong> ${escapeHTML(department)}` : ""}${specialization ? `<br><strong>Specialization:</strong> ${escapeHTML(specialization)}` : ""}</div>`;
         }
-        card.innerHTML = `<h3>👤 ${escapeHTML(profile.full_name||"Student")}</h3><div class="rival-info">INTER RIVALRY ID: ${escapeHTML(profile.inter_rivalry_id||"-")}${academicHtml}<div style="margin-top:10px">${tags.length ? tags.map(t => `<span class="category-tag">${escapeHTML(t)}</span>`).join("") : "<span style='color:#666'>No interests</span>"}</div></div><div class="rival-actions"><button class="small-btn challenge-btn" onclick="viewProfile('${profile.id}')">VIEW PROFILE</button></div>`;
+        card.innerHTML = `<h3>👤 ${escapeHTML(profile.full_name||"Student")}</h3><div class="rival-info">INTER RIVALRY ID: ${escapeHTML(profile.inter_rivalry_id||"-")}${academicHtml}<div style="margin-top:10px">${tags.length ? tags.map(t => `<span class="category-tag">${escapeHTML(t)}</span>`).join("") : "<span style='color:#666'>No interests</span>"}</div></div><div class="rival-actions"><button class="btn-3d-sm" onclick="viewProfile('${profile.id}')">👤 VIEW PROFILE</button></div>`;
         list.appendChild(card);
     });
 }
@@ -867,11 +1004,7 @@ async function sendChallenge(){
             { challenge_id: challenge.id, team_id: myTeamId, side: "challenger" },
             { challenge_id: challenge.id, team_id: opponentTeamId, side: "opponent" }
         ]);
-        if(teamError){
-            await client.from("challenges").delete().eq("id",challenge.id);
-            message.textContent = "Team error: " + teamError.message;
-            return;
-        }
+        if(teamError){ await client.from("challenges").delete().eq("id",challenge.id); message.textContent = "Team error: " + teamError.message; return; }
     }
     message.textContent = selectedChallengeMode === "team" ? "Team challenge sent! 👥⚔️" : "Challenge sent! ⚔️";
     document.getElementById("challengeTitle").value = "";
@@ -896,11 +1029,11 @@ async function loadMyChallenges(){
         const card = document.createElement("div"); card.className = "challenge-card";
         let actions = "";
         if(c.status === "pending" && !sender){
-            actions = `<div class="action-row"><button class="small-btn accept-btn" onclick="updateChallengeStatus('${c.id}','accepted')">✅ ACCEPT</button><button class="small-btn reject-btn" onclick="updateChallengeStatus('${c.id}','declined')">❌ REJECT</button></div>`;
+            actions = `<div class="action-row"><button class="btn-3d-sm-success" onclick="updateChallengeStatus('${c.id}','accepted')">✅ ACCEPT</button><button class="btn-3d-sm-danger" onclick="updateChallengeStatus('${c.id}','declined')">❌ REJECT</button></div>`;
         } else if(c.status === "pending" && sender){
-            actions = `<div class="action-row"><button class="small-btn danger-btn" onclick="deleteChallenge('${c.id}')">🗑️ DELETE</button></div>`;
+            actions = `<div class="action-row"><button class="btn-3d-sm-danger" onclick="deleteChallenge('${c.id}')">🗑️ DELETE</button></div>`;
         } else if(c.status === "accepted"){
-            actions = `<div class="action-row"><button class="small-btn result-btn" onclick="recordChallengeResult('${c.id}')">🏆 REPORT RESULT</button>${sender ? `<button class="small-btn danger-btn" onclick="deleteChallenge('${c.id}')">🗑️ DELETE</button>` : ""}</div>`;
+            actions = `<div class="action-row"><button class="btn-3d-sm-gold" onclick="recordChallengeResult('${c.id}')">🏆 REPORT RESULT</button>${sender ? `<button class="btn-3d-sm-danger" onclick="deleteChallenge('${c.id}')">🗑️ DELETE</button>` : ""}</div>`;
         } else if(c.status === "completed"){
             let winner = c.rules?.result === "draw" ? "Draw" : c.rules?.winner_id === user.id ? "You won" : (c.rules?.winner_name || "Opponent won");
             actions = `<div class="challenge-info" style="margin-top:12px"><strong>Result:</strong> ${escapeHTML(winner)}${c.rules?.my_score !== undefined ? `<br><strong>Score:</strong> ${escapeHTML(c.rules.my_score)} - ${escapeHTML(c.rules.opponent_score)}` : ""}</div>`;
@@ -929,23 +1062,96 @@ async function deleteChallenge(challengeId){
     await loadMyChallenges();
 }
 
-async function recordChallengeResult(challengeId){
-    const { data: { user } } = await client.auth.getUser(); if(!user) return;
+// ============ RECORD CHALLENGE RESULT WITH BUTTONS ============
+async function recordChallengeResult(challengeId) {
+    const { data: { user } } = await client.auth.getUser();
+    if (!user) return;
     const { data: c } = await client.from("challenges").select("id,challenger_id,opponent_id,status,rules").eq("id",challengeId).single();
-    if(!c || c.status !== "accepted") return alert("Only accepted challenges can have results.");
-    if(c.challenger_id !== user.id && c.opponent_id !== user.id) return alert("You are not in this challenge.");
+    if (!c || c.status !== "accepted") return alert("Only accepted challenges can have results.");
+    if (c.challenger_id !== user.id && c.opponent_id !== user.id) return alert("You are not in this challenge.");
     const otherId = c.challenger_id === user.id ? c.opponent_id : c.challenger_id;
     const { data: other } = await client.from("profiles").select("full_name").eq("id",otherId).single();
-    const choice = prompt(`Enter result:\n1 = I won\n2 = ${other?.full_name || "Opponent"} won\n3 = Draw`);
-    if(!["1","2","3"].includes(choice)) return;
-    const myScore = prompt("Your score (optional):");
-    const opponentScore = prompt("Opponent score (optional):");
-    const winnerId = choice === "1" ? user.id : choice === "2" ? otherId : null;
-    const rules = { ...(c.rules||{}), result: choice === "3" ? "draw" : "win", winner_id: winnerId, my_score: myScore || null, opponent_score: opponentScore || null, recorded_by: user.id, recorded_at: new Date().toISOString(), winner_name: choice === "2" ? (other?.full_name || "Opponent") : null };
-    const { error } = await client.from("challenges").update({ status: "completed", rules }).eq("id",challengeId);
-    if(error) return alert("Error: " + error.message);
-    alert("Result recorded! 🏆");
-    await loadMyChallenges();
+    const overlay = document.createElement('div');
+    overlay.style.cssText = `position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.85);display:flex;justify-content:center;align-items:center;z-index:9999;padding:20px;backdrop-filter:blur(10px);`;
+    const modal = document.createElement('div');
+    modal.style.cssText = `background:#1a1a1a;border:1px solid #333;border-radius:20px;padding:40px;max-width:500px;width:100%;max-height:90vh;overflow-y:auto;`;
+    let selectedResult = null; let myScore = null; let opponentScore = null;
+    modal.innerHTML = `
+        <h2 style="color:white;text-align:center;margin-bottom:10px;">🏆 Report Result</h2>
+        <p style="color:#888;text-align:center;margin-bottom:25px;">vs ${escapeHTML(other?.full_name || "Opponent")}</p>
+        <div style="margin-bottom:20px;"><label style="color:#aaa;display:block;margin-bottom:10px;font-weight:700;">🏅 Who Won?</label>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;">
+            <button class="result-btn-option btn-3d-sm-success" data-value="me">✅ Me</button>
+            <button class="result-btn-option btn-3d-sm-danger" data-value="them">❌ Opponent</button>
+            <button class="result-btn-option btn-3d-sm-gold" data-value="draw">🤝 Draw</button>
+        </div>
+        <div id="selectedResultDisplay" style="color:#888;margin-top:8px;text-align:center;">⬆️ Select result above</div></div>
+        <div style="margin-bottom:20px;"><label style="color:#aaa;display:block;margin-bottom:10px;font-weight:700;">📊 Your Score</label>
+        <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px;">
+            ${[0,1,2,3,4,5,6,7,8,9,10].map(n => `<button class="score-btn-my btn-3d-sm" data-value="${n}">${n}</button>`).join('')}
+        </div>
+        <div id="selectedMyScore" style="color:#888;margin-top:8px;text-align:center;">⬆️ Select your score</div></div>
+        <div style="margin-bottom:25px;"><label style="color:#aaa;display:block;margin-bottom:10px;font-weight:700;">📊 Opponent Score</label>
+        <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px;">
+            ${[0,1,2,3,4,5,6,7,8,9,10].map(n => `<button class="score-btn-opp btn-3d-sm-danger" data-value="${n}">${n}</button>`).join('')}
+        </div>
+        <div id="selectedOppScore" style="color:#888;margin-top:8px;text-align:center;">⬆️ Select opponent score</div></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+            <button id="confirmResultBtn" class="btn-3d-success" disabled style="opacity:0.5;">⚠️ SELECT ALL</button>
+            <button id="cancelResultBtn" class="btn-3d-danger">❌ CANCEL</button>
+        </div>
+    `;
+    overlay.appendChild(modal); document.body.appendChild(overlay);
+    modal.querySelectorAll('.result-btn-option').forEach(btn => {
+        btn.addEventListener('click', function() {
+            modal.querySelectorAll('.result-btn-option').forEach(b => { b.style.opacity='0.5'; b.style.transform='scale(0.95)'; });
+            this.style.opacity='1'; this.style.transform='scale(1)';
+            selectedResult = this.dataset.value;
+            const text = selectedResult === 'me' ? '✅ I won' : selectedResult === 'them' ? '❌ Opponent won' : '🤝 Draw';
+            document.getElementById('selectedResultDisplay').textContent = text;
+            document.getElementById('selectedResultDisplay').style.color = '#00b894';
+            checkResultAllSelected();
+        });
+    });
+    modal.querySelectorAll('.score-btn-my').forEach(btn => {
+        btn.addEventListener('click', function() {
+            modal.querySelectorAll('.score-btn-my').forEach(b => { b.style.opacity='0.5'; b.style.transform='scale(0.95)'; });
+            this.style.opacity='1'; this.style.transform='scale(1)';
+            myScore = this.dataset.value;
+            document.getElementById('selectedMyScore').textContent = '✅ ' + myScore;
+            document.getElementById('selectedMyScore').style.color = '#00b894';
+            checkResultAllSelected();
+        });
+    });
+    modal.querySelectorAll('.score-btn-opp').forEach(btn => {
+        btn.addEventListener('click', function() {
+            modal.querySelectorAll('.score-btn-opp').forEach(b => { b.style.opacity='0.5'; b.style.transform='scale(0.95)'; });
+            this.style.opacity='1'; this.style.transform='scale(1)';
+            opponentScore = this.dataset.value;
+            document.getElementById('selectedOppScore').textContent = '✅ ' + opponentScore;
+            document.getElementById('selectedOppScore').style.color = '#00b894';
+            checkResultAllSelected();
+        });
+    });
+    function checkResultAllSelected() {
+        const confirmBtn = document.getElementById('confirmResultBtn');
+        if (selectedResult && myScore !== null && opponentScore !== null) {
+            confirmBtn.disabled = false; confirmBtn.textContent = '✅ CONFIRM RESULT'; confirmBtn.style.opacity = '1';
+        } else {
+            confirmBtn.disabled = true; confirmBtn.textContent = '⚠️ SELECT ALL'; confirmBtn.style.opacity = '0.5';
+        }
+    }
+    document.getElementById('cancelResultBtn').addEventListener('click', function() { document.body.removeChild(overlay); });
+    document.getElementById('confirmResultBtn').addEventListener('click', async function() {
+        if (!selectedResult || myScore === null || opponentScore === null) { alert('Please select all fields'); return; }
+        this.textContent = '⏳ SAVING...'; this.disabled = true;
+        const winnerId = selectedResult === 'me' ? user.id : selectedResult === 'them' ? otherId : null;
+        const rules = { ...(c.rules || {}), result: selectedResult === 'draw' ? 'draw' : 'win', winner_id: winnerId, my_score: myScore, opponent_score: opponentScore, recorded_by: user.id, recorded_at: new Date().toISOString(), winner_name: selectedResult === 'them' ? (other?.full_name || 'Opponent') : null };
+        const { error } = await client.from("challenges").update({ status: "completed", rules }).eq("id", challengeId);
+        if (error) { alert("Error: " + error.message); document.body.removeChild(overlay); return; }
+        alert("🏆 Result recorded!"); document.body.removeChild(overlay); await loadMyChallenges();
+    });
+    overlay.addEventListener('click', function(e) { if(e.target === overlay) document.body.removeChild(overlay); });
 }
 
 // ============ INTERESTS ============
@@ -978,8 +1184,7 @@ async function saveInterests(){
     if(toInsert.length){ await client.from("participations").insert(toInsert); }
     currentInterestIds = new Set(selected);
     message.textContent = "✅ Interests saved! 🎯";
-    await loadMyInterestSummary();
-    await loadRivals();
+    await loadMyInterestSummary(); await loadRivals();
 }
 
 async function loadMyInterestSummary(){
@@ -1042,7 +1247,7 @@ async function loadMyTeams(){
         const { count } = await client.from("team_members").select("id",{count:"exact",head:true}).eq("team_id",team.id);
         const card = document.createElement("div");
         card.className = "team-card";
-        card.innerHTML = `<h3>👥 ${escapeHTML(team.name)} ${isCaptain ? '👑' : ''}</h3><div class="team-info"><strong>Captain:</strong> ${escapeHTML(team.profiles?.full_name || "Unknown")}<br><strong>Members:</strong> ${count || 0}<br><strong>Your Role:</strong> ${escapeHTML(m.role || "member")}</div><div class="action-row"><button class="small-btn team-btn" onclick="viewTeamDetails('${team.id}')">📋 MANAGE</button>${!isCaptain ? `<button class="small-btn danger-btn" onclick="leaveTeam('${team.id}')">🚪 LEAVE</button>` : ''}</div>`;
+        card.innerHTML = `<h3>👥 ${escapeHTML(team.name)} ${isCaptain ? '👑' : ''}</h3><div class="team-info"><strong>Captain:</strong> ${escapeHTML(team.profiles?.full_name || "Unknown")}<br><strong>Members:</strong> ${count || 0}<br><strong>Your Role:</strong> ${escapeHTML(m.role || "member")}</div><div class="action-row"><button class="btn-3d-sm" onclick="viewTeamDetails('${team.id}')">📋 MANAGE</button>${!isCaptain ? `<button class="btn-3d-sm-danger" onclick="leaveTeam('${team.id}')">🚪 LEAVE</button>` : ''}</div>`;
         list.appendChild(card);
     }
 }
@@ -1061,33 +1266,55 @@ async function viewTeamDetails(teamId){
     const { data: allStudents } = await client.from("profiles").select("id,full_name,inter_rivalry_id").eq("role","student").not("id","in",`(${memberIds.length ? memberIds.join(',') : ''})`);
     let html = `<div class="profile-card"><h2>👥 ${escapeHTML(team.name)}</h2><div class="team-info"><strong>Captain:</strong> ${escapeHTML(team.profiles?.full_name || "Unknown")}<br><strong>ID:</strong> ${escapeHTML(team.profiles?.inter_rivalry_id || "-")}<br><strong>Created:</strong> ${formatDate(team.created_at)}<br><strong>Members:</strong> ${members?.length || 0}</div></div>`;
     if(isCaptain && allStudents && allStudents.length > 0){
-        html += `<div class="profile-card"><h3>📩 Invite Players</h3><div class="invite-row"><select id="invitePlayerSelect"><option value="">Select a player...</option>${allStudents.map(s => `<option value="${s.id}">${escapeHTML(s.full_name)} (${escapeHTML(s.inter_rivalry_id || "-")})</option>`).join("")}</select><button class="small-btn success-btn" onclick="sendTeamInvite('${teamId}')">SEND INVITE</button></div><div id="teamInviteMessage" class="message"></div></div>`;
+        html += `<div class="profile-card"><h3>📩 Invite Players</h3><div class="invite-row"><select id="invitePlayerSelect"><option value="">Select a player...</option>${allStudents.map(s => `<option value="${s.id}">${escapeHTML(s.full_name)} (${escapeHTML(s.inter_rivalry_id || "-")})</option>`).join("")}</select><button class="btn-3d-sm-success" onclick="sendTeamInvite('${teamId}')">📨 SEND INVITE</button></div><div id="teamInviteMessage" class="message"></div></div>`;
     }
     if(invites && invites.length > 0){
-        html += `<h3 style="margin-top:20px">📨 Pending Invites</h3>${invites.map(inv => `<div class="invite-card"><h4>👤 ${escapeHTML(inv.profiles?.full_name || "Unknown")}</h4><div class="invite-info">ID: ${escapeHTML(inv.profiles?.inter_rivalry_id || "-")}<br>Status: <span class="status-pill status-pending">Pending</span></div>${isCaptain ? `<div class="invite-actions"><button class="small-btn danger-btn" onclick="cancelTeamInvite('${inv.id}')">❌ CANCEL</button></div>` : ''}</div>`).join("")}`;
+        html += `<h3 style="margin-top:20px">📨 Pending Invites</h3>${invites.map(inv => `<div class="invite-card"><h4>👤 ${escapeHTML(inv.profiles?.full_name || "Unknown")}</h4><div class="invite-info">ID: ${escapeHTML(inv.profiles?.inter_rivalry_id || "-")}<br>Status: <span class="status-pill status-pending">Pending</span></div>${isCaptain ? `<div class="invite-actions"><button class="btn-3d-sm-danger" onclick="cancelTeamInvite('${inv.id}')">❌ CANCEL</button></div>` : ''}</div>`).join("")}`;
     }
-    html += `<h3 style="margin-top:20px">👥 Members</h3>${(members||[]).map(m => `<div class="invite-card"><h4>${escapeHTML(m.profiles?.full_name || "Unknown")} ${m.role === 'captain' ? '👑' : ''}</h4><div class="invite-info">ID: ${escapeHTML(m.profiles?.inter_rivalry_id || "-")}<br>Role: ${escapeHTML(m.role || "member")}</div>${isCaptain && m.role !== 'captain' ? `<div class="invite-actions"><button class="small-btn danger-btn" onclick="removeTeamMember('${teamId}','${m.user_id}')">🗑️ REMOVE</button></div>` : ''}</div>`).join("") || "<div class='empty-box'>No members yet.</div>"}`;
-    if(isCaptain){ html += `<div style="margin-top:20px"><button class="small-btn danger-btn" onclick="deleteTeam('${teamId}')">🗑️ DELETE TEAM</button></div>`; }
+    html += `<h3 style="margin-top:20px">👥 Members</h3>${(members||[]).map(m => `<div class="invite-card"><h4>${escapeHTML(m.profiles?.full_name || "Unknown")} ${m.role === 'captain' ? '👑' : ''}</h4><div class="invite-info">ID: ${escapeHTML(m.profiles?.inter_rivalry_id || "-")}<br>Role: ${escapeHTML(m.role || "member")}</div>${isCaptain && m.role !== 'captain' ? `<div class="invite-actions"><button class="btn-3d-sm-danger" onclick="removeTeamMember('${teamId}','${m.user_id}')">🗑️ REMOVE</button></div>` : ''}</div>`).join("") || "<div class='empty-box'>No members yet.</div>"}`;
+    if(isCaptain){ html += `<div style="margin-top:20px"><button class="btn-3d-danger" onclick="deleteTeam('${teamId}')">🗑️ DELETE TEAM</button></div>`; }
     document.getElementById("teamDetailsContent").innerHTML = html;
     document.getElementById("teamDetailsContent").dataset.teamId = teamId;
 }
 
 async function createTeam(){
-    const name = document.getElementById("createTeamName")?.value.trim();
-    const msg = document.getElementById("createTeamMessage");
-    if(!name){ msg.textContent = "Enter a team name."; return; }
-    const { data: { user } } = await client.auth.getUser();
-    if(!user){ msg.textContent = "Please login first."; return; }
-    const { data: existing } = await client.from("team_members").select("team_id").eq("user_id",user.id).limit(1);
-    if(existing && existing.length > 0){ msg.textContent = "You're already in a team! Leave first."; return; }
-    const { data: membership } = await client.from("college_memberships").select("college_id").eq("user_id",user.id).eq("is_active",true).maybeSingle();
-    msg.textContent = "Creating team...";
-    const { data: team, error } = await client.from("teams").insert({ name, captain_id: user.id, college_id: membership?.college_id || null }).select("id").single();
-    if(error){ msg.textContent = "Error: " + error.message; return; }
-    await client.from("team_members").insert({ team_id: team.id, user_id: user.id, role: "captain" });
-    msg.textContent = "✅ Team created! 🎉";
-    document.getElementById("createTeamName").value = "";
-    setTimeout(() => { backToStudentDashboard(); loadMyTeams(); }, 1500);
+    const overlay = document.createElement('div');
+    overlay.style.cssText = `position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.85);display:flex;justify-content:center;align-items:center;z-index:9999;padding:20px;backdrop-filter:blur(10px);`;
+    const modal = document.createElement('div');
+    modal.style.cssText = `background:#1a1a1a;border:1px solid #333;border-radius:20px;padding:40px;max-width:450px;width:100%;`;
+    modal.innerHTML = `
+        <h2 style="color:white;text-align:center;margin-bottom:10px;">👥 Create Team</h2>
+        <p style="color:#888;text-align:center;margin-bottom:25px;">Enter your team name below</p>
+        <div style="margin-bottom:20px;">
+            <label style="color:#aaa;display:block;margin-bottom:10px;font-weight:700;">🏷️ Team Name</label>
+            <input id="teamNameInput" type="text" placeholder="Type team name..." style="width:100%;padding:14px;background:#0a0a0a;border:1px solid #333;border-radius:10px;color:white;font-size:16px;text-align:center;">
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+            <button id="confirmTeamBtn" class="btn-3d-success">✅ CREATE</button>
+            <button id="cancelTeamBtn" class="btn-3d-danger">❌ CANCEL</button>
+        </div>
+        <div id="teamCreateMessage" style="color:#888;text-align:center;margin-top:12px;"></div>
+    `;
+    overlay.appendChild(modal); document.body.appendChild(overlay);
+    document.getElementById('cancelTeamBtn').addEventListener('click', function() { document.body.removeChild(overlay); });
+    document.getElementById('confirmTeamBtn').addEventListener('click', async function() {
+        const name = document.getElementById('teamNameInput').value.trim();
+        const msg = document.getElementById('teamCreateMessage');
+        if (!name) { msg.textContent = '⚠️ Please enter a team name'; msg.style.color = '#ff6b6b'; return; }
+        this.textContent = '⏳ CREATING...'; this.disabled = true;
+        const { data: { user } } = await client.auth.getUser();
+        if (!user) { msg.textContent = 'Please login first'; msg.style.color = '#ff6b6b'; this.textContent = '✅ CREATE'; this.disabled = false; return; }
+        const { data: existing } = await client.from("team_members").select("team_id").eq("user_id", user.id).limit(1);
+        if (existing && existing.length > 0) { msg.textContent = '⚠️ You\'re already in a team!'; msg.style.color = '#ff6b6b'; this.textContent = '✅ CREATE'; this.disabled = false; return; }
+        const { data: membership } = await client.from("college_memberships").select("college_id").eq("user_id", user.id).eq("is_active", true).maybeSingle();
+        const { data: team, error } = await client.from("teams").insert({ name, captain_id: user.id, college_id: membership?.college_id || null }).select("id").single();
+        if (error) { msg.textContent = '❌ ' + error.message; msg.style.color = '#ff6b6b'; this.textContent = '✅ CREATE'; this.disabled = false; return; }
+        await client.from("team_members").insert({ team_id: team.id, user_id: user.id, role: "captain" });
+        msg.textContent = '✅ Team created! 🎉'; msg.style.color = '#00b894';
+        document.getElementById('teamNameInput').value = '';
+        setTimeout(() => { document.body.removeChild(overlay); backToStudentDashboard(); loadMyTeams(); }, 1500);
+    });
+    overlay.addEventListener('click', function(e) { if(e.target === overlay) document.body.removeChild(overlay); });
 }
 
 async function sendTeamInvite(teamId){
@@ -1146,7 +1373,7 @@ async function loadTeamInvites(){
     for(const inv of invites){
         const card = document.createElement("div");
         card.className = "invite-card";
-        card.innerHTML = `<h4>👥 ${escapeHTML(inv.teams?.name || "Team")}</h4><div class="invite-info"><strong>From:</strong> ${escapeHTML(inv.profiles?.full_name || "Unknown")}<br><strong>ID:</strong> ${escapeHTML(inv.profiles?.inter_rivalry_id || "-")}<br><strong>Sent:</strong> ${formatDate(inv.created_at)}</div><div class="invite-actions"><button class="small-btn accept-btn" onclick="acceptTeamInvite('${inv.id}')">✅ ACCEPT</button><button class="small-btn reject-btn" onclick="declineTeamInvite('${inv.id}')">❌ DECLINE</button></div>`;
+        card.innerHTML = `<h4>👥 ${escapeHTML(inv.teams?.name || "Team")}</h4><div class="invite-info"><strong>From:</strong> ${escapeHTML(inv.profiles?.full_name || "Unknown")}<br><strong>ID:</strong> ${escapeHTML(inv.profiles?.inter_rivalry_id || "-")}<br><strong>Sent:</strong> ${formatDate(inv.created_at)}</div><div class="invite-actions"><button class="btn-3d-sm-success" onclick="acceptTeamInvite('${inv.id}')">✅ ACCEPT</button><button class="btn-3d-sm-danger" onclick="declineTeamInvite('${inv.id}')">❌ DECLINE</button></div>`;
         list.appendChild(card);
     }
 }
@@ -1197,7 +1424,7 @@ async function loadAdminColleges(){
     data.forEach(college => {
         const card = document.createElement("div");
         card.className = "college-card";
-        card.innerHTML = `<h3>${escapeHTML(college.college_name)}</h3><div class="college-code">Code: ${escapeHTML(college.college_code)}</div><div class="college-location">${escapeHTML(college.city || "")}${college.state ? ", " + escapeHTML(college.state) : ""}</div><button class="small-btn" onclick="viewCollege('${college.id}')">MANAGE</button>`;
+        card.innerHTML = `<h3>${escapeHTML(college.college_name)}</h3><div class="college-code">Code: ${escapeHTML(college.college_code)}</div><div class="college-location">${escapeHTML(college.city || "")}${college.state ? ", " + escapeHTML(college.state) : ""}</div><button class="btn-3d-sm" onclick="viewCollege('${college.id}')">📋 MANAGE</button>`;
         list.appendChild(card);
     });
 }
@@ -1213,12 +1440,8 @@ async function addCollege(){
     const { error } = await client.from("colleges").insert({ college_name: name, college_code: code, city: city || null, state: state || null, country: "India" });
     if(error){ message.textContent = "Error: " + error.message; return; }
     message.textContent = "✅ College added!";
-    document.getElementById("collegeName").value = "";
-    document.getElementById("collegeCode").value = "";
-    document.getElementById("collegeCity").value = "";
-    document.getElementById("collegeState").value = "";
-    await loadAdminStats();
-    await loadAdminColleges();
+    document.getElementById("collegeName").value = ""; document.getElementById("collegeCode").value = ""; document.getElementById("collegeCity").value = ""; document.getElementById("collegeState").value = "";
+    await loadAdminStats(); await loadAdminColleges();
 }
 
 async function viewCollege(collegeId){
@@ -1283,7 +1506,7 @@ async function loadAdmins(){
         const profile = admin.profiles;
         const card = document.createElement("div");
         card.className = "admin-card";
-        card.innerHTML = `<h3>👤 ${escapeHTML(profile?.full_name || "Unknown")}</h3><div class="admin-info">ID: ${escapeHTML(profile?.inter_rivalry_id || "Unknown")}<br>User ID: ${escapeHTML(admin.user_id)}</div><br><button class="small-btn danger-btn" onclick="removeCollegeAdmin('${admin.id}')">REMOVE ADMIN</button>`;
+        card.innerHTML = `<h3>👤 ${escapeHTML(profile?.full_name || "Unknown")}</h3><div class="admin-info">ID: ${escapeHTML(profile?.inter_rivalry_id || "Unknown")}<br>User ID: ${escapeHTML(admin.user_id)}</div><br><button class="btn-3d-sm-danger" onclick="removeCollegeAdmin('${admin.id}')">🗑️ REMOVE ADMIN</button>`;
         list.appendChild(card);
     });
 }
@@ -1332,7 +1555,7 @@ async function loadStudents(){
         const { data: profile } = await client.from("profiles").select("full_name,inter_rivalry_id").eq("id",student.user_id).maybeSingle();
         const card = document.createElement("div");
         card.className = "student-card";
-        card.innerHTML = `<h3>🎓 ${escapeHTML(profile?.full_name || "Unknown")}</h3><div class="student-info">ID: ${escapeHTML(profile?.inter_rivalry_id || "Unknown")}<br>Course: ${escapeHTML(student.course || "-")}<br>Year: ${escapeHTML(student.year_of_study || "-")}<br>Department: ${escapeHTML(student.department || "-")}<br>Specialization: ${escapeHTML(student.specialization || "-")}</div><div class="student-actions"><button class="small-btn" onclick="viewProfile('${student.user_id}')">VIEW PROFILE</button></div>`;
+        card.innerHTML = `<h3>🎓 ${escapeHTML(profile?.full_name || "Unknown")}</h3><div class="student-info">ID: ${escapeHTML(profile?.inter_rivalry_id || "Unknown")}<br>Course: ${escapeHTML(student.course || "-")}<br>Year: ${escapeHTML(student.year_of_study || "-")}<br>Department: ${escapeHTML(student.department || "-")}<br>Specialization: ${escapeHTML(student.specialization || "-")}</div><div class="student-actions"><button class="btn-3d-sm" onclick="viewProfile('${student.user_id}')">👤 VIEW PROFILE</button></div>`;
         list.appendChild(card);
     }
 }
@@ -1351,140 +1574,65 @@ async function loadRequests(){
     if(!list) return;
     list.innerHTML = "<div class='empty-box'>Loading requests...</div>";
     if(!selectedCollegeId){ list.innerHTML = "<div class='empty-box'>No college selected.</div>"; return; }
-    
     try {
-        const { data, error } = await client
-            .from("college_join_requests")
-            .select(`
-                id,
-                student_id,
-                course,
-                year_of_study,
-                department,
-                specialization,
-                status,
-                created_at,
-                profiles!college_join_requests_student_id_fkey (
-                    full_name,
-                    inter_rivalry_id
-                )
-            `)
-            .eq("college_id", selectedCollegeId)
-            .eq("status", "pending")
-            .order("created_at", { ascending: true });
-        
-        if(error){ 
-            list.innerHTML = `<div class='empty-box'>Error: ${escapeHTML(error.message)}</div>`; 
-            return; 
-        }
-        
+        const { data, error } = await client.from("college_join_requests")
+            .select(`id,student_id,course,year_of_study,department,specialization,status,created_at,profiles!college_join_requests_student_id_fkey(full_name,inter_rivalry_id)`)
+            .eq("college_id", selectedCollegeId).eq("status", "pending").order("created_at", { ascending: true });
+        if(error){ list.innerHTML = `<div class='empty-box'>Error: ${escapeHTML(error.message)}</div>`; return; }
         const validRequests = (data || []).filter(r => r.profiles !== null);
-        if(!validRequests || validRequests.length === 0){ 
-            list.innerHTML = "<div class='empty-box'>🎉 No pending join requests.</div>"; 
-            return; 
-        }
-        
+        if(!validRequests || validRequests.length === 0){ list.innerHTML = "<div class='empty-box'>🎉 No pending join requests.</div>"; return; }
         list.innerHTML = "";
-        
         for(const request of validRequests){
             const profile = request.profiles;
-            const card = document.createElement("div");
-            card.className = "request-card";
+            const card = document.createElement("div"); card.className = "request-card";
             card.innerHTML = `
                 <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:10px;">
                     <div>
                         <h3>📩 ${escapeHTML(profile?.full_name || "Unknown")}</h3>
-                        <div class="request-info">
-                            <strong>INTER RIVALRY ID:</strong> ${escapeHTML(profile?.inter_rivalry_id || "Not assigned")}
-                            <br><strong>Course:</strong> ${escapeHTML(request.course || "-")}
-                            <br><strong>Year:</strong> ${escapeHTML(request.year_of_study || "-")}
-                            <br><strong>Department:</strong> ${escapeHTML(request.department || "-")}
-                            <br><strong>Specialization:</strong> ${escapeHTML(request.specialization || "-")}
-                            <br><small style="color:#666;display:inline-block;margin-top:5px;">Requested: ${formatDate(request.created_at)}</small>
-                        </div>
+                        <div class="request-info"><strong>INTER RIVALRY ID:</strong> ${escapeHTML(profile?.inter_rivalry_id || "Not assigned")}
+                        <br><strong>Course:</strong> ${escapeHTML(request.course || "-")}
+                        <br><strong>Year:</strong> ${escapeHTML(request.year_of_study || "-")}
+                        <br><strong>Department:</strong> ${escapeHTML(request.department || "-")}
+                        <br><strong>Specialization:</strong> ${escapeHTML(request.specialization || "-")}
+                        <br><small style="color:#666;display:inline-block;margin-top:5px;">Requested: ${formatDate(request.created_at)}</small></div>
                     </div>
                     <div style="display:flex;gap:8px;flex-wrap:wrap;">
-                        <button class="small-btn approve-btn" onclick="reviewRequest('${request.id}', true)">✅ APPROVE</button>
-                        <button class="small-btn reject-btn" onclick="reviewRequest('${request.id}', false)">❌ REJECT</button>
+                        <button class="btn-3d-sm-success" onclick="reviewRequest('${request.id}', true)">✅ APPROVE</button>
+                        <button class="btn-3d-sm-danger" onclick="reviewRequest('${request.id}', false)">❌ REJECT</button>
                     </div>
                 </div>
             `;
             list.appendChild(card);
         }
-    } catch(error) {
-        list.innerHTML = `<div class='empty-box'>Error: ${escapeHTML(error.message)}</div>`;
-    }
+    } catch(error) { list.innerHTML = `<div class='empty-box'>Error: ${escapeHTML(error.message)}</div>`; }
 }
 
 async function reviewRequest(requestId, approve){
     const action = approve ? "APPROVE" : "REJECT";
     if(!confirm(`Are you sure you want to ${action} this request?`)) return;
-    
     try {
-        const { data: request, error: fetchError } = await client
-            .from("college_join_requests")
+        const { data: request, error: fetchError } = await client.from("college_join_requests")
             .select(`id, student_id, college_id, course, year_of_study, specialization, department`)
-            .eq("id", requestId)
-            .single();
-        
-        if(fetchError || !request){
-            alert("Request not found.");
-            return;
-        }
-        
+            .eq("id", requestId).single();
+        if(fetchError || !request){ alert("Request not found."); return; }
         if(approve){
-            await client
-                .from("college_join_requests")
-                .update({ 
-                    status: "approved",
-                    reviewed_at: new Date().toISOString()
-                })
-                .eq("id", requestId);
-            
-            const { data: existing } = await client
-                .from("college_memberships")
-                .select("id")
-                .eq("user_id", request.student_id)
-                .eq("college_id", request.college_id)
-                .eq("is_active", true)
-                .maybeSingle();
-            
+            await client.from("college_join_requests").update({ status: "approved", reviewed_at: new Date().toISOString() }).eq("id", requestId);
+            const { data: existing } = await client.from("college_memberships").select("id").eq("user_id", request.student_id).eq("college_id", request.college_id).eq("is_active", true).maybeSingle();
             if(!existing){
-                await client
-                    .from("college_memberships")
-                    .insert({
-                        user_id: request.student_id,
-                        college_id: request.college_id,
-                        course: request.course,
-                        year_of_study: request.year_of_study,
-                        specialization: request.specialization,
-                        department: request.department,
-                        is_active: true,
-                        joined_at: new Date().toISOString()
-                    });
+                await client.from("college_memberships").insert({
+                    user_id: request.student_id, college_id: request.college_id,
+                    course: request.course, year_of_study: request.year_of_study,
+                    specialization: request.specialization, department: request.department,
+                    is_active: true, joined_at: new Date().toISOString()
+                });
             }
-            
             alert("✅ Student approved successfully!");
-            
         } else {
-            await client
-                .from("college_join_requests")
-                .update({ 
-                    status: "rejected",
-                    reviewed_at: new Date().toISOString()
-                })
-                .eq("id", requestId);
-            
+            await client.from("college_join_requests").update({ status: "rejected", reviewed_at: new Date().toISOString() }).eq("id", requestId);
             alert("❌ Request rejected.");
         }
-        
-        await loadRequests();
-        await loadCollegeManagementCounts(selectedCollegeId);
-        
-    } catch(error) {
-        console.error(error);
-        alert("Error processing request: " + error.message);
-    }
+        await loadRequests(); await loadCollegeManagementCounts(selectedCollegeId);
+    } catch(error) { alert("Error: " + error.message); }
 }
 
 async function loadCollegeAdminDashboard(user, profile){
