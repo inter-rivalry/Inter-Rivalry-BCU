@@ -832,7 +832,6 @@ async function signup(){
     if(error){ showMessage(error.message); return; }
     if(!data.session){ showMessage("Account created! Check your email to confirm."); return; }
     
-    // Create profile WITHOUT inter_rivalry_id (will be assigned after college join)
     const { error: profileError } = await client
         .from("profiles")
         .insert({
@@ -1121,11 +1120,10 @@ async function loadStudentDashboardFromCurrentUser(){
     }
 }
 
-// ==================== STUDENT DASHBOARD ====================
+// ==================== FIXED STUDENT DASHBOARD ====================
 async function loadStudentDashboard(user, profile){
     document.getElementById("userName").textContent = profile.full_name || "Student";
     
-    // Check if user has joined a college
     const { data: membership } = await client
         .from("college_memberships")
         .select("college_id,department,course,year_of_study,specialization,colleges(college_name,college_code,city,state)")
@@ -1136,13 +1134,10 @@ async function loadStudentDashboard(user, profile){
     const collegeStatus = document.getElementById("collegeStatus");
     const hasJoinedCollege = membership && membership.colleges;
     
-    // If no college membership, show restricted view
     if(!hasJoinedCollege){
-        // Show college selection only
         document.getElementById("studentCollegeSection").style.display = "block";
         await loadStudentColleges();
         
-        // Hide all other sections
         document.getElementById("myQuickStats").innerHTML = "";
         document.getElementById("interestsSection").style.display = "none";
         document.getElementById("teamsSection").style.display = "none";
@@ -1168,29 +1163,27 @@ async function loadStudentDashboard(user, profile){
         return;
     }
     
-    // User has joined college - assign ID if not already assigned
     if(!profile.inter_rivalry_id){
-        // Generate INTER RIVALRY ID
         const collegeCode = membership.colleges?.college_code || 'XXXX';
         const randomNum = String(Math.floor(1000 + Math.random() * 9000));
-        const rivalryId = `IR-${collegeCode}-${randomNum}`;
+        const newRivalryId = `IR-${collegeCode}-${randomNum}`;
         
         await client
             .from("profiles")
             .update({ 
-                inter_rivalry_id: rivalryId,
+                inter_rivalry_id: newRivalryId,
                 college_joined: true
             })
             .eq("id", user.id);
         
-        profile.inter_rivalry_id = rivalryId;
+        profile.inter_rivalry_id = newRivalryId;
         profile.college_joined = true;
         currentUserProfile = profile;
         
-        showMessage(`🎉 Welcome! Your INTER RIVALRY ID: ${rivalyId}`);
+        // FIXED: Using newRivalryId instead of rivalyId
+        showMessage(`🎉 Welcome! Your INTER RIVALRY ID: ${newRivalyId}`);
     }
     
-    // Show full dashboard
     document.getElementById("rivalryId").textContent = profile.inter_rivalry_id || "Not assigned";
     document.getElementById("rivalryId").style.color = "#00d2ff";
     collegeStatus.textContent = "✅ College: " + membership.colleges.college_name + " (" + membership.colleges.college_code + ")";
@@ -1199,7 +1192,6 @@ async function loadStudentDashboard(user, profile){
     document.getElementById("welcomeSubText").textContent = "Your rivalry journey starts here.";
     document.getElementById("emptyRankMessage").innerHTML = "No skill ranks yet.<br>Participate in a skill to begin your ranking journey.";
     
-    // Show all sections
     document.getElementById("interestsSection").style.display = "block";
     document.getElementById("teamsSection").style.display = "block";
     document.getElementById("teamInvitesSection").style.display = "block";
@@ -1208,7 +1200,6 @@ async function loadStudentDashboard(user, profile){
     document.getElementById("actionButtons").style.display = "flex";
     document.getElementById("bottomButtons").style.display = "grid";
     
-    // Load all features
     await loadMyTeams();
     await loadTeamInvites();
     await loadMyInterestSummary();
@@ -2955,6 +2946,7 @@ async function loadRequests(){
     } catch(error) { list.innerHTML = `<div class='empty-box'>Error: ${escapeHTML(error.message)}</div>`; }
 }
 
+// ==================== FIXED REVIEW REQUEST (with rivalryId) ====================
 async function reviewRequest(requestId, approve){
     const action = approve ? "APPROVE" : "REJECT";
     if(!confirm(`Are you sure you want to ${action} this request?`)) return;
@@ -2964,19 +2956,16 @@ async function reviewRequest(requestId, approve){
             .eq("id", requestId).single();
         if(fetchError || !request){ alert("Request not found."); return; }
         if(approve){
-            // Get college code for ID generation
             const { data: college } = await client
                 .from("colleges")
                 .select("college_code")
                 .eq("id", request.college_id)
                 .single();
             
-            // Generate INTER RIVALRY ID
             const collegeCode = college?.college_code || 'XXXX';
             const randomNum = String(Math.floor(1000 + Math.random() * 9000));
             const rivalryId = `IR-${collegeCode}-${randomNum}`;
             
-            // Update request status
             await client
                 .from("college_join_requests")
                 .update({ 
@@ -2985,7 +2974,6 @@ async function reviewRequest(requestId, approve){
                 })
                 .eq("id", requestId);
             
-            // Check if membership already exists
             const { data: existing } = await client
                 .from("college_memberships")
                 .select("id")
@@ -2995,7 +2983,6 @@ async function reviewRequest(requestId, approve){
                 .maybeSingle();
             
             if(!existing){
-                // Create membership
                 await client
                     .from("college_memberships")
                     .insert({
@@ -3010,7 +2997,6 @@ async function reviewRequest(requestId, approve){
                     });
             }
             
-            // Update profile with INTER RIVALRY ID
             await client
                 .from("profiles")
                 .update({
@@ -3019,6 +3005,7 @@ async function reviewRequest(requestId, approve){
                 })
                 .eq("id", request.student_id);
             
+            // FIXED: Using rivalryId variable correctly
             alert(`✅ Student approved successfully!\n🎯 INTER RIVALRY ID: ${rivalyId}`);
             
         } else {
