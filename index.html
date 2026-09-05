@@ -1632,20 +1632,30 @@ async function loadMyChallenges(){
 }
 
 // ==================== UPDATE CHALLENGE STATUS WITH QUIZ GENERATION ====================
+
 async function updateChallengeStatus(challengeId, status){
     const label = status === "accepted" ? "accept" : "reject";
     if(!confirm(`Are you sure you want to ${label} this challenge?`)) return;
-    const { data: { user } } = await client.auth.getUser(); if(!user) return;
-    const { data: c } = await client.from("challenges").select("opponent_id,status,subcategory_id,subcategories(name),rules,challenger_id").eq("id",challengeId).single();
-    if(!c || c.opponent_id !== user.id || c.status !== "pending") return alert("Cannot update this challenge.");
+    
+    const { data: { user } } = await client.auth.getUser(); 
+    if(!user) return;
+    
+    const { data: c } = await client
+        .from("challenges")
+        .select("opponent_id,status,subcategory_id,subcategories(name),subject,question_count,challenger_id")
+        .eq("id",challengeId)
+        .single();
+    
+    if(!c || c.opponent_id !== user.id || c.status !== "pending") 
+        return alert("Cannot update this challenge.");
     
     if(status === "accepted"){
-        // Generate quiz questions
-        const questionCount = c.rules?.question_count || 10;
-        const skillName = c.subcategories?.name || "General Knowledge";
+        // Generate quiz using Groq
+        const subject = c.subject || "General Knowledge";
+        const subcategory = c.subcategories?.name || "General";
+        const questionCount = c.question_count || 10;
         
-        // Generate questions using AI (Gemini/Groq) - For now, use mock or edge function
-        await generateQuizQuestions(challengeId, skillName, questionCount);
+        await generateQuizWithGroq(challengeId, subject, subcategory, questionCount);
     }
     
     const { error } = await client.from("challenges").update({ status }).eq("id",challengeId);
@@ -1654,67 +1664,60 @@ async function updateChallengeStatus(challengeId, status){
     if(status === "accepted"){
         // Notify both players
         await client.from("notifications").insert([
-            { user_id: c.challenger_id, title: "🎯 Challenge Accepted!", message: `${user.email} accepted your challenge! Quiz is ready.` },
-            { user_id: c.opponent_id, title: "🎯 Challenge Accepted!", message: `You accepted the challenge! Quiz is ready.` }
+            { 
+                user_id: c.challenger_id, 
+                title: "🎯 Challenge Accepted!", 
+                message: `${user.email} accepted your challenge on "${c.subject}"! Quiz is ready.` 
+            },
+            { 
+                user_id: c.opponent_id, 
+                title: "🎯 Challenge Accepted!", 
+                message: `You accepted the challenge on "${c.subject}"! Quiz is ready.` 
+            }
         ]);
     }
     
     await loadMyChallenges();
 }
 
-// ==================== GENERATE QUIZ QUESTIONS ====================
-async function generateQuizQuestions(challengeId, skill, count){
-    // First, try to use Supabase Edge Function if available
+    
+    async function generateQuizWithGroq(challengeId, subject, subcategory, questionCount){
     try {
+        // Show loading message
+        const msg = document.getElementById("challengeMessage");
+        if(msg) msg.textContent = "⏳ Generating quiz questions with AI...";
+        
         const { data, error } = await client.functions.invoke("generate-quiz", {
-            body: { challengeId, skill, questionCount: count }
+            body: { 
+                challengeId, 
+                subject, 
+                subcategory, 
+                questionCount 
+            }
         });
-        if(!error && data?.success){
-            console.log("Quiz generated via Edge Function");
+        
+        if(error){
+            console.error("Edge Function error:", error);
+            alert("Failed to generate quiz. Please try again.");
             return;
         }
+        
+        if(!data?.success){
+            console.error("Quiz generation failed:", data?.error);
+            alert("Failed to generate quiz: " + (data?.error || "Unknown error"));
+            return;
+        }
+        
+        console.log(`✅ Quiz generated! ${data.count} questions created.`);
+        
+        if(msg) msg.textContent = "✅ Quiz generated successfully!";
+        
     } catch(e) {
-        console.log("Edge Function not available, using fallback...");
+        console.error("Error generating quiz:", e);
+        alert("Error generating quiz. Please try again.");
     }
-    
-    // FALLBACK: Generate mock questions (for demo/testing)
-    const mockQuestions = [];
-    const topics = [
-        `What is the capital of France?`,
-        `What is 2 + 2?`,
-        `What is the largest planet?`,
-        `What is the chemical symbol for water?`,
-        `What is the speed of light?`
-    ];
-    const options = [
-        ["London", "Paris", "Berlin", "Madrid"],
-        ["3", "4", "5", "6"],
-        ["Earth", "Mars", "Jupiter", "Saturn"],
-        ["H2O", "CO2", "NaCl", "HCl"],
-        ["300,000 km/s", "150,000 km/s", "500,000 km/s", "100,000 km/s"]
-    ];
-    const corrects = [1, 1, 2, 0, 0];
-    const explanations = [
-        "Paris is the capital of France.",
-        "2 + 2 equals 4.",
-        "Jupiter is the largest planet in our solar system.",
-        "H2O is the chemical formula for water.",
-        "Light travels at approximately 300,000 km/s."
-    ];
-    
-    for(let i = 0; i < Math.min(count, topics.length); i++){
-        mockQuestions.push({
-            challenge_id: challengeId,
-            question_text: topics[i % topics.length],
-            options: options[i % options.length],
-            correct_answer: corrects[i % corrects.length],
-            explanation: explanations[i % explanations.length]
-        });
-    }
-    
-    const { error } = await client.from("quiz_questions").insert(mockQuestions);
-    if(error) console.error("Failed to save mock questions:", error);
 }
+// ==================== GENERATE QUIZ QUESTIONS ====================
 
 // ==================== DELETE CHALLENGE ====================
 async function deleteChallenge(challengeId){
