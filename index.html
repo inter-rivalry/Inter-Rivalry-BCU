@@ -851,11 +851,22 @@ async function enablePushNotifications() {
 
         if (btn) { btn.disabled = false; btn.textContent = "✅ PUSH ON"; }
         alert("Push notifications are enabled on this device!");
-    } catch (error) {
-        console.error('Push notification setup failed:', error);
-        if (btn) { btn.disabled = false; btn.textContent = "🔔 ENABLE PUSH"; }
-        alert("Could not enable push notifications: " + error.message);
+     } catch (error) {
+    console.error("FULL PUSH ERROR:", error);
+    console.error("Error name:", error?.name);
+    console.error("Error message:", error?.message);
+    console.error("Error stack:", error?.stack);
+
+    if (btn) {
+        btn.disabled = false;
+        btn.textContent = "🔔 ENABLE PUSH";
     }
+
+    alert(
+        "Push failed\n\n" +
+        "Name: " + (error?.name || "Unknown") + "\n" +
+        "Message: " + (error?.message || "Unknown error")
+    );
 }
 
 async function restorePushNotificationState() {
