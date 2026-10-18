@@ -1,497 +1,125 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
-  <meta name="theme-color" content="#080b14">
-  <meta name="mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-
-  <title>INTER RIVALRY: RIVALS</title>
-
-  <style>
-    * {
-      box-sizing: border-box;
-      -webkit-tap-highlight-color: transparent;
-      user-select: none;
-      -webkit-user-select: none;
-      touch-action: none;
-    }
-
-    html, body {
-      margin: 0;
-      width: 100%;
-      height: 100%;
-      overflow: hidden;
-      position: fixed;
-      inset: 0;
-      background: #080b14;
-      color: white;
-      font-family: Arial, Helvetica, sans-serif;
-    }
-
-    button {
-      border: 1px solid #ffffff35;
-      color: white;
-      background: #111827eF;
-      font-weight: 800;
-      cursor: pointer;
-      touch-action: manipulation;
-    }
-
-    #game-root {
-      position: fixed;
-      inset: 0;
-      width: 100%;
-      height: 100%;
-      overflow: hidden;
-      background: #080b14;
-    }
-
-    #game-root canvas {
-      display: block;
-      width: 100%;
-      height: 100%;
-    }
-
-    .screen {
-      position: fixed;
-      inset: 0;
-      z-index: 20;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 20px;
-      background:
-        radial-gradient(ellipse at center, #17253b 0%, #080b14 75%);
-    }
-
-    .panel {
-      width: min(440px, 94vw);
-      padding: 28px;
-      text-align: center;
-      border: 1px solid #ffffff25;
-      border-radius: 18px;
-      background: #080b14ed;
-      box-shadow: 0 0 45px #0009;
-    }
-
-    .logo {
-      font-size: clamp(27px, 5vw, 48px);
-      font-weight: 1000;
-      letter-spacing: 2px;
-      line-height: 1.05;
-      margin-bottom: 8px;
-    }
-
-    .logo span {
-      color: #ff354d;
-    }
-
-    .subtitle {
-      color: #aab8ce;
-      font-size: 12px;
-      letter-spacing: 3px;
-      margin-bottom: 26px;
-    }
-
-    .play-button {
-      width: 100%;
-      min-height: 54px;
-      border: 0;
-      border-radius: 8px;
-      background: linear-gradient(100deg, #ff263f, #c80c2a);
-      font-size: 17px;
-      letter-spacing: 2px;
-    }
-
-    .small-text {
-      margin-top: 16px;
-      color: #9caac0;
-      font-size: 11px;
-      line-height: 1.5;
-    }
-
-    #hud {
-      display: none;
-      position: fixed;
-      inset: 0;
-      z-index: 5;
-      pointer-events: none;
-    }
-
-    #top-hud {
-      position: absolute;
-      left: 12px;
-      right: 12px;
-      top: max(10px, env(safe-area-inset-top));
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      gap: 8px;
-    }
-
-    .hud-box {
-      min-width: 75px;
-      padding: 8px 11px;
-      border: 1px solid #ffffff2b;
-      border-radius: 8px;
-      background: #080b14c9;
-      font-size: 12px;
-      font-weight: 800;
-    }
-
-    .hud-label {
-      color: #9caac0;
-      font-size: 9px;
-      letter-spacing: 1px;
-      margin-bottom: 4px;
-    }
-
-    #health {
-      color: #50f19a;
-    }
-
-    #ammo {
-      color: #ffd45c;
-    }
-
-    #score {
-      color: #70c9ff;
-    }
-
-    #healthbar {
-      height: 4px;
-      margin-top: 5px;
-      width: 100%;
-      background: #ffffff20;
-      border-radius: 5px;
-      overflow: hidden;
-    }
-
-    #health-fill {
-      width: 100%;
-      height: 100%;
-      background: #50f19a;
-    }
-
-    #hud-buttons {
-      position: absolute;
-      top: max(75px, calc(env(safe-area-inset-top) + 65px));
-      right: 12px;
-      display: flex;
-      gap: 7px;
-      pointer-events: auto;
-    }
-
-    .small-button {
-      padding: 8px 12px;
-      border-radius: 7px;
-      font-size: 10px;
-    }
-
-    #crosshair {
-      position: absolute;
-      left: 50%;
-      top: 50%;
-      width: 18px;
-      height: 18px;
-      transform: translate(-50%, -50%);
-      border: 2px solid #ffffffdd;
-      border-radius: 50%;
-    }
-
-    #crosshair::before,
-    #crosshair::after {
-      content: "";
-      position: absolute;
-      background: #ffffffdd;
-    }
-
-    #crosshair::before {
-      width: 2px;
-      height: 26px;
-      left: 6px;
-      top: -6px;
-    }
-
-    #crosshair::after {
-      height: 2px;
-      width: 26px;
-      top: 6px;
-      left: -6px;
-    }
-
-    #aim-lock {
-      display: none;
-      position: absolute;
-      width: 48px;
-      height: 48px;
-      border: 2px solid #ff354d;
-      border-radius: 50%;
-      transform: translate(-50%, -50%);
-      box-shadow: 0 0 12px #ff354d80;
-    }
-
-    #aim-lock::after {
-      content: "";
-      position: absolute;
-      inset: 7px;
-      border: 1px solid #ff354d99;
-      border-radius: 50%;
-    }
-
-    #hit {
-      display: none;
-      position: absolute;
-      left: 50%;
-      top: 50%;
-      transform: translate(-50%, -50%);
-      color: #ff354d;
-      font-size: 35px;
-      font-weight: 900;
-    }
-
-    #toast {
-      position: absolute;
-      top: 23%;
-      left: 50%;
-      transform: translateX(-50%);
-      padding: 8px 14px;
-      border-radius: 6px;
-      background: #080b14c9;
-      font-size: 12px;
-      font-weight: 800;
-      opacity: 0;
-      white-space: nowrap;
-    }
-
-    #mobile {
-      display: none;
-      position: absolute;
-      inset: 0;
-      pointer-events: none;
-    }
-
-    #joy-zone {
-      position: absolute;
-      left: 0;
-      bottom: 0;
-      width: 42%;
-      height: 65%;
-      pointer-events: auto;
-    }
-
-    #joy-base {
-      position: absolute;
-      width: 112px;
-      height: 112px;
-      left: 30px;
-      bottom: 25px;
-      border: 2px solid #ffffff55;
-      border-radius: 50%;
-      background: #ffffff12;
-    }
-
-    #joy-knob {
-      position: absolute;
-      width: 48px;
-      height: 48px;
-      left: 30px;
-      top: 30px;
-      border: 2px solid #ffffffaa;
-      border-radius: 50%;
-      background: #ffffff35;
-    }
-
-    #aim-zone {
-      position: absolute;
-      left: 42%;
-      right: 0;
-      top: 15%;
-      bottom: 0;
-      pointer-events: auto;
-    }
-
-    #actions {
-      position: absolute;
-      right: max(18px, env(safe-area-inset-right));
-      bottom: max(18px, env(safe-area-inset-bottom));
-      display: flex;
-      align-items: flex-end;
-      gap: 10px;
-      pointer-events: auto;
-    }
-
-    .action-button {
-      width: 58px;
-      height: 58px;
-      border-radius: 50%;
-      font-size: 10px;
-      background: #111827cc;
-    }
-
-    #fire-btn {
-      width: 76px;
-      height: 76px;
-      background: #e91e3aee;
-      border: 2px solid #ff8492;
-      font-size: 12px;
-    }
-
-    #pause {
-      display: none;
-      z-index: 30;
-    }
-
-    #pause .panel {
-      width: min(360px, 92vw);
-    }
-
-    .menu-button {
-      width: 100%;
-      min-height: 45px;
-      margin-top: 10px;
-      border-radius: 7px;
-    }
-
-    #resume-btn {
-      background: #e91e3a;
-      border: 0;
-    }
-
-    @media (orientation: landscape) {
-      .panel {
-        padding: 18px 24px;
-      }
-
-      .subtitle {
-        margin-bottom: 16px;
-      }
-
-      #joy-base {
-        left: 35px;
-        bottom: 25px;
-      }
-
-      #hud-buttons {
-        top: max(60px, calc(env(safe-area-inset-top) + 52px));
-      }
-    }
-  </style>
+  <meta charset="utf-8" />
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover"
+  />
+  <meta name="theme-color" content="#080b16" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="RIVALS" />
+  <meta name="description" content="INTER RIVALRY: RIVALS — Phase 1 practice arena. Move, aim, and take down humanoid targets in a colour-clash arena." />
+  <title>INTER RIVALRY: RIVALS — Phase 1</title>
+  <link rel="stylesheet" href="style.css" />
 </head>
-
 <body>
+
+  <!-- Three.js canvas mounts here -->
   <div id="game-root"></div>
 
-  <div id="start" class="screen">
-    <div class="panel">
-      <div class="logo">INTER <span>RIVALRY</span></div>
-      <div class="subtitle">RIVALS · BATTLE ARENA</div>
-      <button id="start-btn" class="play-button">PLAY NOW</button>
-      <div class="small-text">
-        Enter the arena. Find your rivals. Win the battle.
-      </div>
+  <!-- Portrait warning (mobile) -->
+  <div id="rotate-notice" role="alert" aria-live="polite">
+    <div>
+      ↻ ROTATE YOUR PHONE
+      <span>INTER RIVALRY: RIVALS is designed for landscape gameplay.</span>
     </div>
   </div>
 
-  <div id="hud">
-    <div id="top-hud">
-      <div class="hud-box">
-        <div class="hud-label">HEALTH</div>
-        <div id="health">100</div>
-        <div id="healthbar"><div id="health-fill"></div></div>
+  <!-- ================= START SCREEN ================= -->
+  <section id="start" class="overlay" aria-label="Start screen">
+    <div class="panel">
+      <div class="eyebrow">INTER RIVALRY PRESENTS</div>
+      <h1>RIVALS <span>// PHASE 1</span></h1>
+      <p class="subtitle">COLOUR CLASH — PRACTICE ARENA</p>
+      <p>
+        Move through the arena, aim, and take down the glowing humanoid targets.
+        This is the first single-player prototype.
+      </p>
+
+      <div class="controls">
+        <div>
+          <b>PC</b>
+          <span>WASD move · Mouse aim · Click shoot · Space jump · R reload · Esc pause</span>
+        </div>
+        <div>
+          <b>ANDROID</b>
+          <span>Left joystick move · Drag right side to aim · FIRE, JUMP and ↻ buttons</span>
+        </div>
       </div>
 
-      <div class="hud-box">
-        <div class="hud-label">ELIMINATIONS</div>
-        <div id="score">0</div>
+      <button id="start-btn" class="primary" type="button">ENTER THE ARENA</button>
+      <small>Phase 1 prototype · Online multiplayer is not enabled yet</small>
+    </div>
+  </section>
+
+  <!-- ================= IN-GAME HUD ================= -->
+  <div id="hud" class="hidden" aria-live="polite">
+
+    <header>
+      <div class="brand">
+        <b>IR</b>
+        <span>
+          RIVALS
+          <small>COLOUR CLASH</small>
+        </span>
       </div>
 
-      <div class="hud-box">
-        <div class="hud-label">AMMO</div>
-        <div id="ammo">30 / 90</div>
+      <div class="stat">
+        HEALTH
+        <strong id="health">100</strong>
+        <div class="meter"><i id="healthbar"></i></div>
       </div>
 
-      <div class="hud-box">
-        <div class="hud-label">ENEMIES LEFT</div>
-        <div id="count">8</div>
+      <div class="stat">
+        AMMO
+        <strong id="ammo">12 <em>/ 12</em></strong>
       </div>
+
+      <button id="pause-btn" type="button" aria-label="Pause game">Ⅱ</button>
+    </header>
+
+    <div class="score">
+      🔵 BLUE <b id="score">0</b>　|　🔴 TARGETS <b id="count">8</b>
     </div>
 
-    <div id="hud-buttons">
-      <button id="view-btn" class="small-button">FP / SP</button>
-      <button id="pause-btn" class="small-button">PAUSE</button>
+    <div id="crosshair" aria-hidden="true">
+      <i></i><i></i><i></i><i></i><b></b>
     </div>
 
-    <div id="crosshair"></div>
-    <div id="aim-lock"></div>
-    <div id="hit">×</div>
-    <div id="toast"></div>
+    <div id="hit" aria-hidden="true">✕</div>
+    <div id="toast" role="status" aria-live="polite"></div>
 
-    <div id="mobile">
+    <!-- Mobile controls -->
+    <div id="mobile" class="hidden">
       <div id="joy-zone">
         <div id="joy-base">
           <div id="joy-knob"></div>
         </div>
       </div>
-
-      <div id="aim-zone"></div>
-
-      <div id="actions">
-        <button id="reload-btn" class="action-button">RELOAD</button>
-        <button id="jump-btn" class="action-button">JUMP</button>
-        <button id="fire-btn" class="action-button">FIRE</button>
+      <div class="actions">
+        <button id="reload-btn" type="button" aria-label="Reload">↻</button>
+        <button id="jump-btn" type="button" aria-label="Jump">JUMP</button>
+        <button id="fire-btn" type="button" aria-label="Fire">FIRE</button>
       </div>
     </div>
+
+    <div id="hint">WASD MOVE　•　MOUSE AIM　•　CLICK SHOOT　•　R RELOAD</div>
   </div>
 
-  <div id="pause" class="screen">
-    <div class="panel">
-      <div class="logo">BATTLE <span>PAUSED</span></div>
-      <div class="subtitle">INTER RIVALRY: RIVALS</div>
-      <div id="pause-score">ELIMINATIONS: 0</div>
-      <button id="resume-btn" class="menu-button">RESUME</button>
-      <button id="restart-btn" class="menu-button">RESTART MATCH</button>
+  <!-- ================= PAUSE SCREEN ================= -->
+  <section id="pause" class="overlay hidden" aria-label="Paused">
+    <div class="panel compact">
+      <div class="eyebrow">MATCH PAUSED</div>
+      <h2>TAKE A BREATHER</h2>
+      <p>Targets hit: <b id="pause-score">0</b></p>
+      <button id="resume-btn" class="primary" type="button">RESUME</button>
+      <button id="restart-btn" class="secondary" type="button">RESTART PRACTICE</button>
     </div>
-  </div>
+  </section>
 
-  <script>
-    /*
-      PWA LANDSCAPE MODE
-
-      Request landscape orientation when the player taps PLAY.
-      On supported browsers, fullscreen plus orientation lock
-      can allow the PWA to rotate automatically.
-
-      Some browsers do not permit orientation locking for
-      ordinary web pages, even when installed as a PWA.
-    */
-
-    async function enterLandscapeMode() {
-      try {
-        if (!document.fullscreenElement && document.documentElement.requestFullscreen) {
-          await document.documentElement.requestFullscreen();
-        }
-      } catch (error) {
-        console.log("Fullscreen request unavailable:", error);
-      }
-
-      try {
-        if (screen.orientation && screen.orientation.lock) {
-          await screen.orientation.lock("landscape");
-        }
-      } catch (error) {
-        console.log("Landscape lock unavailable in this browser:", error);
-      }
-    }
-
-    document.getElementById("start-btn").addEventListener("click", () => {
-      enterLandscapeMode();
-    });
-  </script>
-
-  <script type="module" src="./game.js"></script>
+  <script type="module" src="game.js"></script>
 </body>
 </html>
