@@ -429,3 +429,9 @@ header {
     transition-duration: 0.001ms !important;
   }
 }
+.diff-tab {
+  padding: 6px 12px; font: 700 11px Orbitron;
+  background: #ffffff08; color: var(--text-dim);
+  border: 1px solid #ffffff12; border-radius: 3px; cursor: pointer;
+}
+.diff-tab.active { background: var(--blue)18; color: var(--blue); border-color: var(--blue); }
