@@ -26,6 +26,7 @@ const INVULN = .6, RESPAWN = 3;
 const LOCK_CONE = .20, LOCK_RANGE = 25, LOCK_PULL = 12, DRIFT_BREAK = .35;
 const HEAD_CD = .8, HEAD_ACCUM = touch ? 60 : 100;
 const CAPTURES_TO_WIN = 3, BROADCAST_HZ = 15;
+const STEAL_RANGE = 4, TREASURE_RANGE = 6;
 
 const MODES = {
   practice: { desc: "Solo arena. Targets don't fire back. Perfect for warming up.", enemyFire: false, matchTime: 999 },
@@ -337,7 +338,51 @@ function onHitReceived(d) {
     if (health <= 0) die(d.shooter, d.headshot);
   }
 }
+
 function onFlagUpdate(d) {
+  // Capture / treasure request (host validates)
+  if (d.type === 'capture' && isHost) {
+    const f = flags[d.team];
+    if (!f || f.carrier !== d.carrier) return;
+    const carrier = players.get(d.carrier);
+    if (!carrier || !carrier.alive) return;
+    const ownBaseX = carrier.team === 'blue' ? -21 : 21;
+    const dx = carrier.group.position.x - ownBaseX;
+    const dz = carrier.group.position.z;
+    if (dx * dx + dz * dz > TREASURE_RANGE * TREASURE_RANGE) return;
+    if (carrier.team === 'blue') scoreBlue++; else scoreRed++;
+    captures++;
+    f.carrier = null;
+    net.broadcastMatch('score', { scoreBlue, scoreRed });
+    net.broadcastMatch('flag', {
+      team: d.team, carrier: null, baseX: f.basePos.x, baseZ: f.basePos.z,
+      scoreBlue, scoreRed,
+    });
+    if (scoreBlue >= CAPTURES_TO_WIN || scoreRed >= CAPTURES_TO_WIN) {
+      endMatch(scoreBlue >= CAPTURES_TO_WIN ? 'blue' : 'red');
+    }
+    return;
+  }
+
+  // Steal request (host validates)
+  if (d.type === 'steal' && isHost) {
+    const f = flags[d.team];
+    if (!f || f.carrier) return;
+    const stealer = players.get(d.stealer);
+    if (!stealer || !stealer.alive) return;
+    if (stealer.team === d.team) return; // can't steal own flag
+    const dx = stealer.group.position.x - f.mesh.position.x;
+    const dz = stealer.group.position.z - f.mesh.position.z;
+    if (dx * dx + dz * dz > STEAL_RANGE * STEAL_RANGE) return;
+    f.carrier = stealer.id;
+    net.broadcastMatch('flag', {
+      team: d.team, carrier: stealer.id, baseX: f.basePos.x, baseZ: f.basePos.z,
+      scoreBlue, scoreRed,
+    });
+    return;
+  }
+
+  // Normal flag state update
   const f = flags[d.team];
   if (!f) return;
   f.carrier = d.carrier;
@@ -346,6 +391,7 @@ function onFlagUpdate(d) {
   scoreRed = d.scoreRed ?? scoreRed;
   updateHud();
 }
+
 function onScoreUpdate(d) {
   scoreBlue = d.scoreBlue; scoreRed = d.scoreRed;
   updateHud();
@@ -363,6 +409,12 @@ function onMatchEnd(d) {
 /* ===== GAME ACTIONS ===== */
 function die(killerId, headshot) {
   alive = false; respawnTimer = RESPAWN; deaths++;
+  // Drop flag on death
+  for (const team of ['blue', 'red']) {
+    if (flags[team]?.carrier === localId) {
+      net.broadcastMatch('flag', { type: 'drop', team, carrier: localId });
+    }
+  }
   const killer = players.get(killerId);
   net.broadcastMatch('kill', {
     killer: killerId, killerName: killer?.name || '?', killerIr: killer?.irId || '',
@@ -475,7 +527,8 @@ function tryDash() {
   dashT = DASH_DUR; dashCd = DASH_CD;
 }
 
-/* ===== AIM LOCK ===== */
+/* ===== AIM LOCK (with LOS) ===== */
+const losRay = new THREE.Raycaster();
 function updateAimLock(dt) {
   if (!running || paused || gameOver) { aim.locked = null; return; }
   aim.locked = null;
@@ -493,7 +546,16 @@ function updateAimLock(dt) {
     const nx = dx / dist, ny = dy / dist, nz = dz / dist;
     const dot = forward.x * nx + forward.y * ny + forward.z * nz;
     const ang = Math.acos(clamp(dot, -1, 1));
-    if (ang < bestAngle) { bestAngle = ang; bestRef = refId; }
+    if (ang >= bestAngle) return;
+
+    // Line-of-sight check — skip if a wall blocks the path
+    losRay.set(camera.position, new THREE.Vector3(nx, ny, nz));
+    losRay.far = dist;
+    const wallHits = losRay.intersectObjects(wallMeshes, false);
+    if (wallHits.length > 0) return;
+
+    bestAngle = ang;
+    bestRef = refId;
   };
 
   if (practiceMode) {
@@ -532,7 +594,12 @@ function updateAimLock(dt) {
     const drift = Math.hypot(ddy, ddp);
     const flickingUp = aim.upAccum > 30;
 
-    if (drift > DRIFT_BREAK && !flickingUp) {
+    // Release lock if target ducks behind a wall
+    losRay.set(camera.position, new THREE.Vector3(dx / dist, dy / dist, dz / dist));
+    losRay.far = dist;
+    const blocked = losRay.intersectObjects(wallMeshes, false).length > 0;
+
+    if ((drift > DRIFT_BREAK && !flickingUp) || blocked) {
       aim.locked = null;
       aim.lockPoint = 'chest';
     } else {
@@ -563,7 +630,7 @@ function updateAimLock(dt) {
   }
 }
 
-/* ===== FLAG LOGIC (HOST) ===== */
+/* ===== FLAG LOGIC (HOST) — resets flag on carrier death ===== */
 let flagTick = 0;
 function hostFlagLogic(dt) {
   if (!isHost || practiceMode || !running) return;
@@ -573,50 +640,18 @@ function hostFlagLogic(dt) {
 
   for (const team of ['blue', 'red']) {
     const f = flags[team];
-    if (!f.carrier) {
-      for (const p of players.values()) {
-        if (p.team === team || !p.alive) continue;
-        const dx = p.group.position.x - f.mesh.position.x;
-        const dz = p.group.position.z - f.mesh.position.z;
-        if (dx * dx + dz * dz < 4) {
-          f.carrier = p.id;
-          net.broadcastMatch('flag', {
-            team, carrier: p.id, baseX: f.basePos.x, baseZ: f.basePos.z,
-            scoreBlue, scoreRed,
-          });
-          break;
-        }
-      }
-    } else {
-      const carrier = players.get(f.carrier);
-      if (!carrier || !carrier.alive) {
-        f.carrier = null;
-        net.broadcastMatch('flag', {
-          team, carrier: null, baseX: f.basePos.x, baseZ: f.basePos.z,
-          scoreBlue, scoreRed,
-        });
-        continue;
-      }
-      const ownBaseX = carrier.team === 'blue' ? -21 : 21;
-      const dx = carrier.group.position.x - ownBaseX;
-      const dz = carrier.group.position.z;
-      if (dx * dx + dz * dz < 8) {
-        if (carrier.team === 'blue') scoreBlue++; else scoreRed++;
-        captures++;
-        f.carrier = null;
-        net.broadcastMatch('score', { scoreBlue, scoreRed });
-        net.broadcastMatch('flag', {
-          team, carrier: null, baseX: f.basePos.x, baseZ: f.basePos.z,
-          scoreBlue, scoreRed,
-        });
-        if (scoreBlue >= CAPTURES_TO_WIN || scoreRed >= CAPTURES_TO_WIN) {
-          endMatch(scoreBlue >= CAPTURES_TO_WIN ? 'blue' : 'red');
-          return;
-        }
-      } else {
-        f.mesh.position.set(carrier.group.position.x, 0, carrier.group.position.z);
-      }
+    if (!f.carrier) continue;
+    const carrier = players.get(f.carrier);
+    if (!carrier || !carrier.alive) {
+      f.carrier = null;
+      net.broadcastMatch('flag', {
+        team, carrier: null, baseX: f.basePos.x, baseZ: f.basePos.z,
+        scoreBlue, scoreRed,
+      });
+      continue;
     }
+    // Flag follows carrier
+    f.mesh.position.set(carrier.group.position.x, 0, carrier.group.position.z);
   }
 }
 
@@ -652,6 +687,8 @@ function leaveMatch() {
   $('pause').classList.add('hidden');
   $('gameover').classList.add('hidden');
   $('mobile').classList.add('hidden');
+  $('steal-btn').classList.add('hidden');
+  $('treasure-btn').classList.add('hidden');
   $('lobby').classList.remove('hidden');
   document.exitPointerLock?.();
   practiceMode = false;
@@ -660,6 +697,60 @@ function leaveMatch() {
     lobbyPreview.setColor(COLORS[playerColorKey].hex);
     requestAnimationFrame(() => lobbyPreview.resize());
   }
+}
+
+/* ===== STEAL / TREASURE ACTIONS ===== */
+function doSteal() {
+  const enemyTeam = localTeam === 'blue' ? 'red' : 'blue';
+  const f = flags[enemyTeam];
+  if (!f || f.carrier) return;
+  const dx = camera.position.x - f.mesh.position.x;
+  const dz = camera.position.z - f.mesh.position.z;
+  if (dx * dx + dz * dz > STEAL_RANGE * STEAL_RANGE) return;
+  // Ask host to grant steal
+  net.broadcastMatch('flag', { type: 'steal', team: enemyTeam, stealer: localId });
+  toast('STEALING…');
+}
+
+function doTreasure() {
+  const enemyTeam = localTeam === 'blue' ? 'red' : 'blue';
+  const f = flags[enemyTeam];
+  if (!f || f.carrier !== localId) return;
+  const baseX = localTeam === 'blue' ? -21 : 21;
+  const dx = camera.position.x - baseX;
+  const dz = camera.position.z;
+  if (dx * dx + dz * dz > TREASURE_RANGE * TREASURE_RANGE) return;
+  net.broadcastMatch('flag', { type: 'capture', team: enemyTeam, carrier: localId });
+  toast('TREASURING…');
+}
+
+function updateFlagButtons() {
+  if (!running || paused || gameOver || practiceMode) {
+    $('steal-btn').classList.add('hidden');
+    $('treasure-btn').classList.add('hidden');
+    return;
+  }
+  const enemyTeam = localTeam === 'blue' ? 'red' : 'blue';
+  const ef = flags[enemyTeam];
+  let showSteal = false, showTreasure = false;
+
+  // Steal: enemy flag at base, no carrier, we're close, we're alive, not carrying anything
+  if (ef && !ef.carrier && alive) {
+    const dx = camera.position.x - ef.mesh.position.x;
+    const dz = camera.position.z - ef.mesh.position.z;
+    if (dx * dx + dz * dz <= STEAL_RANGE * STEAL_RANGE) showSteal = true;
+  }
+
+  // Treasure: we're carrying enemy flag and in own base zone
+  if (ef && ef.carrier === localId && alive) {
+    const baseX = localTeam === 'blue' ? -21 : 21;
+    const dx = camera.position.x - baseX;
+    const dz = camera.position.z;
+    if (dx * dx + dz * dz <= TREASURE_RANGE * TREASURE_RANGE) showTreasure = true;
+  }
+
+  $('steal-btn').classList.toggle('hidden', !showSteal);
+  $('treasure-btn').classList.toggle('hidden', !showTreasure);
 }
 
 /* ===== HUD ===== */
@@ -699,6 +790,8 @@ function bindInput() {
     keys[e.code] = true;
     if (['Space', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.code)) e.preventDefault();
     if (e.code === 'KeyR') startReload();
+    if (e.code === 'KeyE') doSteal();
+    if (e.code === 'KeyQ') doTreasure();
     if (e.code === 'Space' && !e.repeat) jump = true;
     if ((e.code === 'ShiftLeft' || e.code === 'ShiftRight') && !e.repeat) tryDash();
     if (e.code === 'Escape' && running) { paused = !paused; $('pause').classList.toggle('hidden', !paused); }
@@ -707,6 +800,7 @@ function bindInput() {
 
   renderer.domElement.addEventListener('pointerdown', e => {
     if (!running || paused) return;
+    if (!document.fullscreenElement) lockLandscape();
     if (!touch) {
       fire = true;
       if (document.pointerLockElement !== renderer.domElement) renderer.domElement.requestPointerLock?.();
@@ -769,6 +863,8 @@ function bindInput() {
   $('jump-btn').addEventListener('pointerdown', e => { e.preventDefault(); jump = true; });
   $('reload-btn').addEventListener('pointerdown', e => { e.preventDefault(); startReload(); });
   $('dash-btn').addEventListener('pointerdown', e => { e.preventDefault(); tryDash(); });
+  $('steal-btn').addEventListener('click', doSteal);
+  $('treasure-btn').addEventListener('click', doTreasure);
   $('pause-btn').addEventListener('click', () => { paused = true; $('pause').classList.remove('hidden'); document.exitPointerLock?.(); });
   $('resume-btn').addEventListener('click', () => { paused = false; $('pause').classList.add('hidden'); if (!touch) renderer.domElement.requestPointerLock?.(); });
   $('leave-match-btn').addEventListener('click', () => leaveMatch());
@@ -893,6 +989,7 @@ function update(dt, t) {
   const gap = 3 + (moving ? 3 : 1) + recoil * 40;
   document.documentElement.style.setProperty('--cross-gap', gap.toFixed(1) + 'px');
 
+  updateFlagButtons();
   updateHud();
 }
 
@@ -1018,6 +1115,11 @@ function showLobby() {
 }
 
 function bindLobby() {
+  // Fire fullscreen + landscape on the very first lobby tap
+  $('lobby').addEventListener('pointerdown', () => {
+    lockLandscape();
+  }, { once: true });
+
   document.querySelectorAll('.mode-tabs .tab').forEach(btn => {
     btn.addEventListener('click', () => {
       gameMode = btn.dataset.mode;
