@@ -50,9 +50,16 @@
           <button class="tab" data-mode="hardcore">HARDCORE</button>
         </div>
         <p class="mode-desc" id="mode-desc">Solo arena. Targets don't fire back. Perfect for warming up.</p>
-
         <div id="practice-panel">
-          <button id="btn-practice" class="primary" type="button">START PRACTICE</button>
+  <div class="size-row">
+    <span>DIFFICULTY</span>
+    <div class="size-tabs">
+      <button class="diff-tab" data-diff="easy" type="button">EASY</button>
+      <button class="diff-tab active" data-diff="medium" type="button">MEDIUM</button>
+      <button class="diff-tab" data-diff="hard" type="button">HARD</button>
+    </div>
+  </div>
+  <button id="btn-practice" class="primary" type="button">START PRACTICE</button>
         </div>
 
         <div id="match-panel" class="hidden">
