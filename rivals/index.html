@@ -49,17 +49,29 @@
           <button class="tab" data-mode="standard">STANDARD</button>
           <button class="tab" data-mode="hardcore">HARDCORE</button>
         </div>
-        <p class="mode-desc" id="mode-desc">Solo arena. Targets don't fire back. Perfect for warming up.</p>
+        <p class="mode-desc" id="mode-desc">Practice offline. Pick a mode below.</p>
+
         <div id="practice-panel">
-  <div class="size-row">
-    <span>DIFFICULTY</span>
-    <div class="size-tabs">
-      <button class="diff-tab" data-diff="easy" type="button">EASY</button>
-      <button class="diff-tab active" data-diff="medium" type="button">MEDIUM</button>
-      <button class="diff-tab" data-diff="hard" type="button">HARD</button>
-    </div>
-  </div>
-  <button id="btn-practice" class="primary" type="button">START PRACTICE</button>
+          <div class="practice-btns">
+            <button id="btn-range" class="primary practice-btn" type="button">
+              <span class="pb-icon">🎯</span>
+              <span class="pb-title">SHOOTING RANGE</span>
+              <span class="pb-sub">Aim + flags · No bots</span>
+            </button>
+            <button id="btn-botmatch" class="primary practice-btn" type="button">
+              <span class="pb-icon">🤖</span>
+              <span class="pb-title">BOT MATCH</span>
+              <span class="pb-sub">3v3 with AI</span>
+            </button>
+          </div>
+          <div class="size-row">
+            <span>BOT DIFFICULTY</span>
+            <div class="size-tabs">
+              <button class="diff-tab" data-diff="easy" type="button">EASY</button>
+              <button class="diff-tab active" data-diff="medium" type="button">MEDIUM</button>
+              <button class="diff-tab" data-diff="hard" type="button">HARD</button>
+            </div>
+          </div>
         </div>
 
         <div id="match-panel" class="hidden">
@@ -97,7 +109,6 @@
           </div>
         </div>
 
-        <div class="best-row">BEST <b id="lobby-best">0</b></div>
         <p class="lobby-name">PLAYING AS <b id="lobby-name">…</b></p>
         <button id="btn-logout" class="link-btn" type="button">SIGN OUT</button>
       </div>
@@ -129,7 +140,7 @@
 
   <div class="score-bar">
     <span class="team-blue">🔵 <b id="score-blue">0</b></span>
-    <span class="timer" id="timer">5:00</span>
+    <span class="timer" id="timer">∞</span>
     <span class="team-red"><b id="score-red">0</b> 🔴</span>
   </div>
 
