@@ -294,6 +294,41 @@ header {
 #damage-ring .diag.left { left: 0; top: 30%; bottom: 30%; width: 60px; background: linear-gradient(to right, #ff3050cc, transparent); }
 #damage-ring .diag.right { right: 0; top: 30%; bottom: 30%; width: 60px; background: linear-gradient(to left, #ff3050cc, transparent); }
 
+/* ===== FLAG ACTION BUTTONS ===== */
+#steal-btn,
+#treasure-btn {
+  position: absolute;
+  left: 50%;
+  bottom: 22%;
+  transform: translateX(-50%);
+  padding: 16px 42px;
+  font: 800 16px Orbitron;
+  letter-spacing: .15em;
+  color: #06101c;
+  border: 0;
+  border-radius: 4px;
+  cursor: pointer;
+  pointer-events: auto;
+  z-index: 10;
+  animation: flag-pulse 1s ease-in-out infinite;
+}
+#steal-btn {
+  background: linear-gradient(90deg, #ff7aa0, #ff4c73);
+  box-shadow: 0 0 30px #ff4c7380, 0 4px 16px #00000060;
+}
+#steal-btn:active { transform: translateX(-50%) scale(.95); }
+
+#treasure-btn {
+  background: linear-gradient(90deg, #52ffb1, #44d7ff);
+  box-shadow: 0 0 30px #52ffb180, 0 4px 16px #00000060;
+}
+#treasure-btn:active { transform: translateX(-50%) scale(.95); }
+
+@keyframes flag-pulse {
+  0%, 100% { box-shadow: 0 0 30px currentColor88, 0 4px 16px #00000060; }
+  50%      { box-shadow: 0 0 55px currentColorcc, 0 4px 16px #00000060; }
+}
+
 /* ===== MOBILE ===== */
 #mobile { position: absolute; inset: auto 0 0; height: 42%; pointer-events: none; }
 #joy-zone { position: absolute; left: 0; bottom: 0; width: 48%; height: 100%; pointer-events: auto; }
@@ -372,6 +407,7 @@ header {
   .actions button { width: 60px; height: 60px; font-size: 10px; }
   .actions #jump-btn { width: 48px; height: 48px; }
   .actions #reload-btn, .actions #dash-btn { width: 40px; height: 40px; font-size: 14px; }
+  #steal-btn, #treasure-btn { bottom: 18%; padding: 12px 32px; font-size: 14px; }
 }
 header {
   padding-top: max(12px, env(safe-area-inset-top));
