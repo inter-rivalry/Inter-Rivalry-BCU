@@ -1,639 +1,497 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<meta name="theme-color" content="#080b17">
-<meta name="description" content="INTER RIVALRY: RIVALS - FPS Arena">
-<title>INTER RIVALRY: RIVALS</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#080b14">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 
-<style>
-:root {
-    --bg: #080b17;
-    --panel: rgba(10,16,34,.96);
-    --blue: #27aaff;
-    --red: #ff2348;
-    --white: #f5f8ff;
-}
+  <title>INTER RIVALRY: RIVALS</title>
 
-* {
-    box-sizing: border-box;
-    -webkit-tap-highlight-color: transparent;
-}
-
-html, body {
-    width: 100%;
-    height: 100%;
-    margin: 0;
-    padding: 0;
-    overflow: hidden;
-    background: var(--bg);
-    color: var(--white);
-    font-family: Arial, Helvetica, sans-serif;
-    overscroll-behavior: none;
-}
-
-body {
-    position: fixed;
-    inset: 0;
-    user-select: none;
-    -webkit-user-select: none;
-    touch-action: none;
-}
-
-button {
-    font: inherit;
-    color: white;
-    border: 1px solid rgba(255,255,255,.22);
-    cursor: pointer;
-    touch-action: none;
-}
-
-#game-root {
-    position: fixed;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    overflow: hidden;
-    background: radial-gradient(ellipse at center,#17152c,#090d1a 70%,#060812);
-    isolation: isolate;
-}
-
-#game-root canvas {
-    position: absolute;
-    inset: 0;
-    display: block;
-    width: 100%;
-    height: 100%;
-    z-index: 1;
-    outline: none;
-}
-
-/* START MENU */
-
-#start {
-    position: absolute;
-    inset: 0;
-    z-index: 100;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 14px;
-    overflow-y: auto;
-    background: radial-gradient(ellipse at 50% 45%,rgba(47,35,86,.88),rgba(5,9,23,.97) 72%);
-}
-
-.start-card {
-    width: min(680px,100%);
-    max-height: 100%;
-    overflow-y: auto;
-    padding: clamp(15px,3vw,30px);
-    border: 1px solid rgba(39,170,255,.42);
-    border-radius: 12px;
-    background: rgba(8,13,30,.97);
-    box-shadow: 0 0 35px rgba(0,106,255,.13);
-    text-align: center;
-}
-
-.brand {
-    margin: 0 0 8px;
-    color: var(--blue);
-    font-size: clamp(12px,2vw,16px);
-    font-weight: 900;
-    letter-spacing: 5px;
-}
-
-#start h1 {
-    margin: 4px 0;
-    font-size: clamp(36px,7vw,76px);
-    font-weight: 1000;
-    font-style: italic;
-    line-height: 1;
-    letter-spacing: 2px;
-}
-
-#start h1 span {
-    color: var(--blue);
-}
-
-.phase {
-    margin: 12px 0;
-    color: var(--blue);
-    font-size: 12px;
-    font-weight: 900;
-    letter-spacing: 4px;
-}
-
-.start-description {
-    margin: 12px 0 18px;
-    color: #c5cee2;
-    font-size: 14px;
-    line-height: 1.6;
-}
-
-.control-info {
-    margin: 12px auto 20px;
-    padding: 13px;
-    border: 1px solid rgba(255,255,255,.14);
-    background: rgba(255,255,255,.035);
-    color: #d6e1f7;
-    font-size: 12px;
-    line-height: 1.9;
-    text-align: left;
-}
-
-.control-info strong {
-    color: var(--blue);
-    letter-spacing: 1px;
-}
-
-.primary-button {
-    min-width: 160px;
-    padding: 15px 26px;
-    border: 0;
-    border-radius: 3px;
-    background: linear-gradient(100deg,#138dff,#36d4ff);
-    color: #06101e;
-    font-size: 16px;
-    font-weight: 1000;
-    letter-spacing: 3px;
-    box-shadow: 0 0 20px rgba(39,170,255,.2);
-}
-
-.primary-button:active {
-    transform: scale(.97);
-}
-
-.small-note {
-    margin: 14px 0 0;
-    color: #8493b0;
-    font-size: 11px;
-}
-
-/* HUD */
-
-#hud {
-    position: absolute;
-    inset: 0;
-    z-index: 20;
-    pointer-events: none;
-}
-
-.hud-top {
-    position: absolute;
-    top: max(10px,env(safe-area-inset-top));
-    left: max(10px,env(safe-area-inset-left));
-    right: max(10px,env(safe-area-inset-right));
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    gap: 8px;
-}
-
-.hud-box {
-    min-width: 70px;
-    padding: 8px 10px;
-    border: 1px solid rgba(39,170,255,.45);
-    border-radius: 4px;
-    background: rgba(5,10,24,.88);
-}
-
-.hud-label {
-    display: block;
-    margin-bottom: 4px;
-    color: #91b9e5;
-    font-size: 9px;
-    font-weight: 900;
-    letter-spacing: 1.5px;
-}
-
-.hud-value {
-    color: white;
-    font-size: 16px;
-    font-weight: 900;
-}
-
-#health {
-    color: #52ffac;
-}
-
-#ammo {
-    color: #ffd85b;
-}
-
-.health-track {
-    width: 90px;
-    height: 5px;
-    margin-top: 5px;
-    overflow: hidden;
-    background: #29344b;
-}
-
-#healthbar {
-    width: 100%;
-    height: 100%;
-    background: #36ef9a;
-    transition: width .15s;
-}
-
-.hud-buttons {
-    display: flex;
-    gap: 6px;
-    pointer-events: auto;
-}
-
-.hud-button {
-    min-width: 54px;
-    min-height: 40px;
-    padding: 7px;
-    border-radius: 4px;
-    background: rgba(6,13,30,.94);
-    font-size: 10px;
-    font-weight: 900;
-}
-
-.hud-button:active {
-    background: #164a7a;
-}
-
-#crosshair {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 18px;
-    height: 18px;
-    transform: translate(-50%,-50%);
-    pointer-events: none;
-}
-
-#crosshair::before,
-#crosshair::after {
-    position: absolute;
-    content: "";
-    background: white;
-    box-shadow: 0 0 3px #000;
-}
-
-#crosshair::before {
-    width: 2px;
-    height: 18px;
-    left: 8px;
-    top: 0;
-}
-
-#crosshair::after {
-    width: 18px;
-    height: 2px;
-    left: 0;
-    top: 8px;
-}
-
-#hit {
-    display: none;
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 27px;
-    height: 27px;
-    border: 3px solid var(--red);
-    transform: translate(-50%,-50%) rotate(45deg);
-    pointer-events: none;
-}
-
-#toast {
-    display: none;
-    position: absolute;
-    top: 23%;
-    left: 50%;
-    transform: translateX(-50%);
-    padding: 9px 15px;
-    border: 1px solid rgba(39,170,255,.6);
-    border-radius: 3px;
-    background: rgba(5,10,24,.94);
-    color: white;
-    font-size: 12px;
-    font-weight: 900;
-    letter-spacing: 2px;
-    text-align: center;
-    white-space: nowrap;
-}
-
-/* MOBILE CONTROLS */
-
-#mobile {
-    position: absolute;
-    inset: 0;
-    z-index: 30;
-    pointer-events: none;
-}
-
-#joy-zone {
-    position: absolute;
-    left: max(18px,env(safe-area-inset-left));
-    bottom: max(20px,env(safe-area-inset-bottom));
-    width: 130px;
-    height: 130px;
-    border-radius: 50%;
-    pointer-events: auto;
-    touch-action: none;
-}
-
-#joy-base {
-    position: absolute;
-    inset: 8px;
-    border: 2px solid rgba(112,191,255,.65);
-    border-radius: 50%;
-    background: rgba(8,35,70,.34);
-    box-shadow: inset 0 0 20px rgba(39,170,255,.12);
-}
-
-#joy-knob {
-    position: absolute;
-    left: 50%;
-    top: 50%;
-    width: 49px;
-    height: 49px;
-    margin-left: -24.5px;
-    margin-top: -24.5px;
-    border: 2px solid rgba(255,255,255,.7);
-    border-radius: 50%;
-    background: rgba(39,170,255,.62);
-    pointer-events: none;
-}
-
-#actions {
-    position: absolute;
-    right: max(15px,env(safe-area-inset-right));
-    bottom: max(15px,env(safe-area-inset-bottom));
-    display: flex;
-    align-items: flex-end;
-    gap: 9px;
-    pointer-events: auto;
-}
-
-.action-button {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: clamp(52px,9vw,76px);
-    height: clamp(52px,9vw,76px);
-    border-radius: 50%;
-    background: rgba(10,18,38,.9);
-    font-size: 9px;
-    font-weight: 1000;
-    letter-spacing: .5px;
-    box-shadow: 0 4px 16px rgba(0,0,0,.3);
-    touch-action: none;
-}
-
-#fire-btn {
-    width: clamp(68px,11vw,92px);
-    height: clamp(68px,11vw,92px);
-    border: 2px solid #ff526d;
-    background: rgba(190,18,49,.85);
-    color: white;
-    font-size: 12px;
-}
-
-#jump-btn {
-    border-color: rgba(39,170,255,.8);
-}
-
-#reload-btn {
-    border-color: rgba(255,216,91,.85);
-    color: #ffe28b;
-}
-
-.action-button:active {
-    filter: brightness(1.4);
-    transform: scale(.95);
-}
-
-/* PAUSE MENU */
-
-#pause {
-    display: none;
-    position: absolute;
-    inset: 0;
-    z-index: 200;
-    align-items: center;
-    justify-content: center;
-    padding: 20px;
-    background: rgba(3,6,17,.84);
-}
-
-.pause-card {
-    width: min(350px,100%);
-    padding: 25px;
-    border: 1px solid rgba(39,170,255,.5);
-    background: var(--panel);
-    text-align: center;
-}
-
-#pause h2 {
-    margin: 0 0 15px;
-    color: var(--blue);
-    letter-spacing: 4px;
-}
-
-#pause-score {
-    margin-bottom: 18px;
-    color: #d4dced;
-}
-
-.pause-card button {
-    width: 100%;
-    margin-top: 10px;
-}
-
-/* SHORT LANDSCAPE SCREENS */
-
-@media (orientation: landscape) and (max-height: 430px) {
-    .start-card {
-        width: min(720px,94%);
-        padding: 10px 20px;
+  <style>
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+      -webkit-user-select: none;
+      touch-action: none;
     }
 
-    #start h1 {
-        font-size: clamp(32px,7vh,55px);
+    html, body {
+      margin: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      position: fixed;
+      inset: 0;
+      background: #080b14;
+      color: white;
+      font-family: Arial, Helvetica, sans-serif;
     }
 
-    .brand {
-        margin-bottom: 4px;
+    button {
+      border: 1px solid #ffffff35;
+      color: white;
+      background: #111827eF;
+      font-weight: 800;
+      cursor: pointer;
+      touch-action: manipulation;
     }
 
-    .phase {
-        margin: 6px 0;
+    #game-root {
+      position: fixed;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: #080b14;
     }
 
-    .start-description {
-        margin: 6px 0 10px;
+    #game-root canvas {
+      display: block;
+      width: 100%;
+      height: 100%;
     }
 
-    .control-info {
-        margin: 7px auto 10px;
-        padding: 7px 10px;
-        line-height: 1.55;
+    .screen {
+      position: fixed;
+      inset: 0;
+      z-index: 20;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      background:
+        radial-gradient(ellipse at center, #17253b 0%, #080b14 75%);
     }
 
-    .primary-button {
-        padding: 10px 22px;
+    .panel {
+      width: min(440px, 94vw);
+      padding: 28px;
+      text-align: center;
+      border: 1px solid #ffffff25;
+      border-radius: 18px;
+      background: #080b14ed;
+      box-shadow: 0 0 45px #0009;
     }
 
-    .small-note {
-        margin-top: 7px;
+    .logo {
+      font-size: clamp(27px, 5vw, 48px);
+      font-weight: 1000;
+      letter-spacing: 2px;
+      line-height: 1.05;
+      margin-bottom: 8px;
     }
 
-    #joy-zone {
-        width: 110px;
-        height: 110px;
+    .logo span {
+      color: #ff354d;
+    }
+
+    .subtitle {
+      color: #aab8ce;
+      font-size: 12px;
+      letter-spacing: 3px;
+      margin-bottom: 26px;
+    }
+
+    .play-button {
+      width: 100%;
+      min-height: 54px;
+      border: 0;
+      border-radius: 8px;
+      background: linear-gradient(100deg, #ff263f, #c80c2a);
+      font-size: 17px;
+      letter-spacing: 2px;
+    }
+
+    .small-text {
+      margin-top: 16px;
+      color: #9caac0;
+      font-size: 11px;
+      line-height: 1.5;
+    }
+
+    #hud {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 5;
+      pointer-events: none;
+    }
+
+    #top-hud {
+      position: absolute;
+      left: 12px;
+      right: 12px;
+      top: max(10px, env(safe-area-inset-top));
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 8px;
     }
 
     .hud-box {
-        padding: 6px 8px;
+      min-width: 75px;
+      padding: 8px 11px;
+      border: 1px solid #ffffff2b;
+      border-radius: 8px;
+      background: #080b14c9;
+      font-size: 12px;
+      font-weight: 800;
     }
 
-    .hud-value {
-        font-size: 14px;
+    .hud-label {
+      color: #9caac0;
+      font-size: 9px;
+      letter-spacing: 1px;
+      margin-bottom: 4px;
     }
-}
-</style>
+
+    #health {
+      color: #50f19a;
+    }
+
+    #ammo {
+      color: #ffd45c;
+    }
+
+    #score {
+      color: #70c9ff;
+    }
+
+    #healthbar {
+      height: 4px;
+      margin-top: 5px;
+      width: 100%;
+      background: #ffffff20;
+      border-radius: 5px;
+      overflow: hidden;
+    }
+
+    #health-fill {
+      width: 100%;
+      height: 100%;
+      background: #50f19a;
+    }
+
+    #hud-buttons {
+      position: absolute;
+      top: max(75px, calc(env(safe-area-inset-top) + 65px));
+      right: 12px;
+      display: flex;
+      gap: 7px;
+      pointer-events: auto;
+    }
+
+    .small-button {
+      padding: 8px 12px;
+      border-radius: 7px;
+      font-size: 10px;
+    }
+
+    #crosshair {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      width: 18px;
+      height: 18px;
+      transform: translate(-50%, -50%);
+      border: 2px solid #ffffffdd;
+      border-radius: 50%;
+    }
+
+    #crosshair::before,
+    #crosshair::after {
+      content: "";
+      position: absolute;
+      background: #ffffffdd;
+    }
+
+    #crosshair::before {
+      width: 2px;
+      height: 26px;
+      left: 6px;
+      top: -6px;
+    }
+
+    #crosshair::after {
+      height: 2px;
+      width: 26px;
+      top: 6px;
+      left: -6px;
+    }
+
+    #aim-lock {
+      display: none;
+      position: absolute;
+      width: 48px;
+      height: 48px;
+      border: 2px solid #ff354d;
+      border-radius: 50%;
+      transform: translate(-50%, -50%);
+      box-shadow: 0 0 12px #ff354d80;
+    }
+
+    #aim-lock::after {
+      content: "";
+      position: absolute;
+      inset: 7px;
+      border: 1px solid #ff354d99;
+      border-radius: 50%;
+    }
+
+    #hit {
+      display: none;
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      color: #ff354d;
+      font-size: 35px;
+      font-weight: 900;
+    }
+
+    #toast {
+      position: absolute;
+      top: 23%;
+      left: 50%;
+      transform: translateX(-50%);
+      padding: 8px 14px;
+      border-radius: 6px;
+      background: #080b14c9;
+      font-size: 12px;
+      font-weight: 800;
+      opacity: 0;
+      white-space: nowrap;
+    }
+
+    #mobile {
+      display: none;
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+    }
+
+    #joy-zone {
+      position: absolute;
+      left: 0;
+      bottom: 0;
+      width: 42%;
+      height: 65%;
+      pointer-events: auto;
+    }
+
+    #joy-base {
+      position: absolute;
+      width: 112px;
+      height: 112px;
+      left: 30px;
+      bottom: 25px;
+      border: 2px solid #ffffff55;
+      border-radius: 50%;
+      background: #ffffff12;
+    }
+
+    #joy-knob {
+      position: absolute;
+      width: 48px;
+      height: 48px;
+      left: 30px;
+      top: 30px;
+      border: 2px solid #ffffffaa;
+      border-radius: 50%;
+      background: #ffffff35;
+    }
+
+    #aim-zone {
+      position: absolute;
+      left: 42%;
+      right: 0;
+      top: 15%;
+      bottom: 0;
+      pointer-events: auto;
+    }
+
+    #actions {
+      position: absolute;
+      right: max(18px, env(safe-area-inset-right));
+      bottom: max(18px, env(safe-area-inset-bottom));
+      display: flex;
+      align-items: flex-end;
+      gap: 10px;
+      pointer-events: auto;
+    }
+
+    .action-button {
+      width: 58px;
+      height: 58px;
+      border-radius: 50%;
+      font-size: 10px;
+      background: #111827cc;
+    }
+
+    #fire-btn {
+      width: 76px;
+      height: 76px;
+      background: #e91e3aee;
+      border: 2px solid #ff8492;
+      font-size: 12px;
+    }
+
+    #pause {
+      display: none;
+      z-index: 30;
+    }
+
+    #pause .panel {
+      width: min(360px, 92vw);
+    }
+
+    .menu-button {
+      width: 100%;
+      min-height: 45px;
+      margin-top: 10px;
+      border-radius: 7px;
+    }
+
+    #resume-btn {
+      background: #e91e3a;
+      border: 0;
+    }
+
+    @media (orientation: landscape) {
+      .panel {
+        padding: 18px 24px;
+      }
+
+      .subtitle {
+        margin-bottom: 16px;
+      }
+
+      #joy-base {
+        left: 35px;
+        bottom: 25px;
+      }
+
+      #hud-buttons {
+        top: max(60px, calc(env(safe-area-inset-top) + 52px));
+      }
+    }
+  </style>
 </head>
 
 <body>
+  <div id="game-root"></div>
 
-<div id="game-root">
-
-    <section id="start">
-        <div class="start-card">
-
-            <p class="brand">INTER RIVALRY</p>
-
-            <h1>RIVALS <span>FPS</span></h1>
-
-            <p class="phase">// PHASE 1 — COLOUR CLASH ARENA</p>
-
-            <p class="start-description">
-                Enter the arena. Move through cover, find your enemies
-                and fight for victory.
-            </p>
-
-            <div class="control-info">
-                <strong>PC CONTROLS</strong><br>
-                WASD: Move · Mouse: Aim<br>
-                Click: Shoot · Space: Jump<br>
-                R: Reload · V: FP/SP · Esc: Pause
-                <br><br>
-                <strong>MOBILE CONTROLS</strong><br>
-                Left joystick: Move<br>
-                Drag the right side: Aim<br>
-                FIRE: Shoot · JUMP: Jump<br>
-                RELOAD: Reload · FP/SP: Change view
-            </div>
-
-            <button id="start-btn" class="primary-button">
-                ENTER ARENA
-            </button>
-
-            <p class="small-note">
-                PRACTICE MODE · LOCAL ENEMIES · PHASE 1
-            </p>
-
-        </div>
-    </section>
-
-    <div id="hud">
-
-        <div class="hud-top">
-
-            <div class="hud-box">
-                <span class="hud-label">HEALTH</span>
-                <span class="hud-value" id="health">100</span>
-                <div class="health-track">
-                    <div id="healthbar"></div>
-                </div>
-            </div>
-
-            <div class="hud-box">
-                <span class="hud-label">AMMO</span>
-                <span class="hud-value" id="ammo">30 / 30</span>
-            </div>
-
-            <div class="hud-box">
-                <span class="hud-label">ELIMINATIONS</span>
-                <span class="hud-value" id="score">0</span>
-            </div>
-
-            <div class="hud-box">
-                <span class="hud-label">ENEMIES</span>
-                <span class="hud-value" id="count">8</span>
-            </div>
-
-            <div class="hud-buttons">
-                <button id="view-btn" class="hud-button">FP / SP</button>
-                <button id="pause-btn" class="hud-button">PAUSE</button>
-            </div>
-
-        </div>
-
-        <div id="crosshair"></div>
-        <div id="hit"></div>
-        <div id="toast"></div>
-
+  <div id="start" class="screen">
+    <div class="panel">
+      <div class="logo">INTER <span>RIVALRY</span></div>
+      <div class="subtitle">RIVALS · BATTLE ARENA</div>
+      <button id="start-btn" class="play-button">PLAY NOW</button>
+      <div class="small-text">
+        Enter the arena. Find your rivals. Win the battle.
+      </div>
     </div>
+  </div>
+
+  <div id="hud">
+    <div id="top-hud">
+      <div class="hud-box">
+        <div class="hud-label">HEALTH</div>
+        <div id="health">100</div>
+        <div id="healthbar"><div id="health-fill"></div></div>
+      </div>
+
+      <div class="hud-box">
+        <div class="hud-label">ELIMINATIONS</div>
+        <div id="score">0</div>
+      </div>
+
+      <div class="hud-box">
+        <div class="hud-label">AMMO</div>
+        <div id="ammo">30 / 90</div>
+      </div>
+
+      <div class="hud-box">
+        <div class="hud-label">ENEMIES LEFT</div>
+        <div id="count">8</div>
+      </div>
+    </div>
+
+    <div id="hud-buttons">
+      <button id="view-btn" class="small-button">FP / SP</button>
+      <button id="pause-btn" class="small-button">PAUSE</button>
+    </div>
+
+    <div id="crosshair"></div>
+    <div id="aim-lock"></div>
+    <div id="hit">×</div>
+    <div id="toast"></div>
 
     <div id="mobile">
-
-        <div id="joy-zone">
-            <div id="joy-base"></div>
-            <div id="joy-knob"></div>
+      <div id="joy-zone">
+        <div id="joy-base">
+          <div id="joy-knob"></div>
         </div>
+      </div>
 
-        <div id="actions">
-            <button id="reload-btn" class="action-button">RELOAD</button>
-            <button id="jump-btn" class="action-button">JUMP</button>
-            <button id="fire-btn" class="action-button">FIRE</button>
-        </div>
+      <div id="aim-zone"></div>
 
+      <div id="actions">
+        <button id="reload-btn" class="action-button">RELOAD</button>
+        <button id="jump-btn" class="action-button">JUMP</button>
+        <button id="fire-btn" class="action-button">FIRE</button>
+      </div>
     </div>
+  </div>
 
-    <section id="pause">
-        <div class="pause-card">
-            <h2>PAUSED</h2>
-            <p id="pause-score">Take a breath, fighter.</p>
+  <div id="pause" class="screen">
+    <div class="panel">
+      <div class="logo">BATTLE <span>PAUSED</span></div>
+      <div class="subtitle">INTER RIVALRY: RIVALS</div>
+      <div id="pause-score">ELIMINATIONS: 0</div>
+      <button id="resume-btn" class="menu-button">RESUME</button>
+      <button id="restart-btn" class="menu-button">RESTART MATCH</button>
+    </div>
+  </div>
 
-            <button id="resume-btn" class="primary-button">RESUME</button>
-            <button id="restart-btn" class="primary-button">RESTART</button>
-        </div>
-    </section>
+  <script>
+    /*
+      PWA LANDSCAPE MODE
 
-</div>
+      Request landscape orientation when the player taps PLAY.
+      On supported browsers, fullscreen plus orientation lock
+      can allow the PWA to rotate automatically.
 
-<script>
-/*
- * Request landscape orientation after a user gesture.
- * Supported browsers may lock the screen; others may ignore it.
- */
-async function enterLandscapeMode() {
-    try {
-        if (screen.orientation && screen.orientation.lock) {
-            await screen.orientation.lock("landscape");
+      Some browsers do not permit orientation locking for
+      ordinary web pages, even when installed as a PWA.
+    */
+
+    async function enterLandscapeMode() {
+      try {
+        if (!document.fullscreenElement && document.documentElement.requestFullscreen) {
+          await document.documentElement.requestFullscreen();
         }
-    } catch (error) {
-        console.log("Landscape orientation lock is unavailable:", error);
+      } catch (error) {
+        console.log("Fullscreen request unavailable:", error);
+      }
+
+      try {
+        if (screen.orientation && screen.orientation.lock) {
+          await screen.orientation.lock("landscape");
+        }
+      } catch (error) {
+        console.log("Landscape lock unavailable in this browser:", error);
+      }
     }
-}
 
-document.addEventListener("DOMContentLoaded", () => {
-    const startButton = document.getElementById("start-btn");
+    document.getElementById("start-btn").addEventListener("click", () => {
+      enterLandscapeMode();
+    });
+  </script>
 
-    if (startButton) {
-        startButton.addEventListener("click", enterLandscapeMode);
-    }
-});
-</script>
-
-<script type="module" src="./game.js"></script>
-
+  <script type="module" src="./game.js"></script>
 </body>
 </html>
