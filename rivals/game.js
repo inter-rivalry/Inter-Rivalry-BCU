@@ -16,9 +16,7 @@ async function lockLandscape() {
       else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
     }
   } catch (_) {}
-  try {
-    if (screen.orientation?.lock) await screen.orientation.lock('landscape');
-  } catch (_) {}
+  try { if (screen.orientation?.lock) await screen.orientation.lock('landscape'); } catch (_) {}
 }
 
 /* ===== CONSTANTS ===== */
@@ -31,18 +29,18 @@ const STEAL_RANGE = 4, TREASURE_RANGE = 6;
 const BOT_RETREAT_HP = 30;
 
 const MODES = {
-  practice: { desc: 'Practice offline. Pick a mode below.', enemyFire: false, matchTime: 999 },
-  standard: { desc: '5 minutes. Enemies fire back. Balanced run.', enemyFire: true, matchTime: 300 },
-  hardcore: { desc: '3 minutes. Faster fire. Deadlier projectiles.', enemyFire: true, matchTime: 180 },
+  practice: { desc: 'Practice offline. Pick a mode below.', matchTime: 999 },
+  standard: { desc: '5 minutes. Enemies fire back.', matchTime: 300 },
+  hardcore: { desc: '3 minutes. Faster fire.', matchTime: 180 },
 };
 
 const DIFFICULTY = {
-  easy:   { fireDelay: [1.8, 3.2], accuracy: 0.55, speed: 6.5, projectileSpeed: 16, dmg: 8,  leadAim: false, retreat: false },
-  medium: { fireDelay: [1.2, 2.2], accuracy: 0.70, speed: 7.0, projectileSpeed: 20, dmg: 10, leadAim: true,  retreat: true },
-  hard:   { fireDelay: [0.8, 1.5], accuracy: 0.85, speed: 7.5, projectileSpeed: 24, dmg: 14, leadAim: true,  retreat: true },
+  easy:   { fireDelay: [1.8, 3.2], accuracy: 0.55, speed: 6.5, projectileSpeed: 16, dmg: 8 },
+  medium: { fireDelay: [1.2, 2.2], accuracy: 0.70, speed: 7.0, projectileSpeed: 20, dmg: 10 },
+  hard:   { fireDelay: [0.8, 1.5], accuracy: 0.85, speed: 7.5, projectileSpeed: 24, dmg: 14 },
 };
 
-const RANGE_FIRE_DELAY = [1.5, 2.5]; // range dummies fire speed
+const RANGE_FIRE_DELAY = [1.5, 2.5];
 const RANGE_PROJ_SPEED = 16;
 const RANGE_DMG = 8;
 
@@ -73,6 +71,14 @@ let kills = 0, deaths = 0, captures = 0, headshots = 0;
 let stateBroadcastTimer = 0, gameOver = false, matchMode = 'practice';
 let practiceDifficulty = 'medium';
 let frameCount = 0;
+let lastScoreBlue = 0, lastScoreRed = 0;
+
+// Animation state
+let walkBob = 0;
+let landingDip = 0;
+let landingRecover = 0;
+let dashWhoosh = 0;
+
 const lastPlayerPos = new THREE.Vector3();
 const playerVel = new THREE.Vector3();
 
@@ -90,10 +96,13 @@ const players = new Map();
 const bots = [];
 const targets = [];
 const projectiles = [];
+const effects = [];      // impact bursts, muzzle flashes
+const damageNumbers = []; // floating damage text (rendered as sprites)
 const flags = { blue: null, red: null };
 const covers = [], wallMeshes = [];
 const keys = {};
 let gunGroup = null;
+let muzzleFlash = null;
 
 /* ===== UTILS ===== */
 function box(w, h, d, mat, x, y, z) {
@@ -113,24 +122,15 @@ function isBlocked(x, z, margin = 0.5) {
   return covers.some(c =>
     Math.abs(x - c.x) < c.w / 2 + margin && Math.abs(z - c.z) < c.d / 2 + margin);
 }
-
-/* ===== STEERING MOVE ===== */
 function steerMove(entity, targetX, targetZ, speed, dt) {
-  const px = entity.group.position.x;
-  const pz = entity.group.position.z;
-  const dx = targetX - px;
-  const dz = targetZ - pz;
+  const px = entity.group.position.x, pz = entity.group.position.z;
+  const dx = targetX - px, dz = targetZ - pz;
   const dist = Math.hypot(dx, dz);
   if (dist < 0.3) return false;
-
   const step = Math.min(speed * dt, dist);
   const angle0 = Math.atan2(dz, dx);
-  const tryAngles = [0, 0.4, -0.4, 0.9, -0.9, 1.4, -1.4, 2.0, -2.0, 2.6, -2.6, Math.PI];
-
-  let bestFallback = null;
-  let bestFallbackScore = -Infinity;
-
-  for (const off of tryAngles) {
+  const angles = [0, 0.4, -0.4, 0.9, -0.9, 1.4, -1.4, 2.0, -2.0, 2.6, -2.6, Math.PI];
+  for (const off of angles) {
     const a = angle0 + off;
     const nx = clamp(px + Math.cos(a) * step, -24, 24);
     const nz = clamp(pz + Math.sin(a) * step, -24, 24);
@@ -139,43 +139,27 @@ function steerMove(entity, targetX, targetZ, speed, dt) {
       entity.group.position.z = nz;
       return true;
     }
-    // fallback scoring — how much closer to target this attempt gets
-    const newDist = Math.hypot(targetX - nx, targetZ - nz);
-    const score = -newDist - Math.abs(off) * 0.5;
-    if (score > bestFallbackScore) {
-      bestFallbackScore = score;
-      bestFallback = { nx, nz };
-    }
   }
-  // Best-effort fallback — move partway even if final spot is blocked
-  if (bestFallback) {
-    const stepHalf = step * 0.5;
-    const a = angle0;
-    const nx = clamp(px + Math.cos(a) * stepHalf, -24, 24);
-    const nz = clamp(pz + Math.sin(a) * stepHalf, -24, 24);
-    if (!isBlocked(nx, nz, 0.3)) {
-      entity.group.position.x = nx;
-      entity.group.position.z = nz;
-      return true;
-    }
-    // last resort — move sideways slightly
-    const sideA = angle0 + 1.5;
-    const sx = clamp(px + Math.cos(sideA) * stepHalf, -24, 24);
-    const sz = clamp(pz + Math.sin(sideA) * stepHalf, -24, 24);
-    if (!isBlocked(sx, sz, 0.3)) {
-      entity.group.position.x = sx;
-      entity.group.position.z = sz;
-      return true;
-    }
+  // Fallback: move sideways
+  const sideA = angle0 + 1.5;
+  const sx = clamp(px + Math.cos(sideA) * step * 0.5, -24, 24);
+  const sz = clamp(pz + Math.sin(sideA) * step * 0.5, -24, 24);
+  if (!isBlocked(sx, sz, 0.3)) {
+    entity.group.position.x = sx;
+    entity.group.position.z = sz;
+    return true;
   }
   return false;
 }
 
-/* ===== HUMANOID ===== */
+/* ===== HUMANOID WITH ANIMATED PARTS ===== */
 function buildHumanoid(color) {
   const g = new THREE.Group();
   const skin = new THREE.MeshStandardMaterial({ color, roughness: .8, metalness: 0, emissive: color, emissiveIntensity: .12 });
+  const skinDark = new THREE.MeshStandardMaterial({ color, roughness: .85, metalness: 0, emissive: color, emissiveIntensity: .08 });
   const hitParts = [];
+  const animParts = {};
+
   const part = (geo, m, x, y, z, isHead = false) => {
     const mesh = new THREE.Mesh(geo, m);
     mesh.position.set(x, y, z);
@@ -183,15 +167,60 @@ function buildHumanoid(color) {
     g.add(mesh); hitParts.push(mesh);
     return mesh;
   };
-  part(new THREE.SphereGeometry(.18, 10, 8), skin, 0, 1.76, 0, true);
-  part(new THREE.BoxGeometry(.48, .60, .24), skin, 0, 1.20, 0);
-  part(new THREE.BoxGeometry(.42, .15, .22), skin, 0, .825, 0);
-  for (const s of [-1, 1]) {
-    part(new THREE.BoxGeometry(.12, .36, .12), skin, s * .30, 1.32, 0);
-    part(new THREE.BoxGeometry(.10, .34, .10), skin, s * .30, .97, 0);
-    part(new THREE.BoxGeometry(.15, .40, .15), skin, s * .11, .55, 0);
-    part(new THREE.BoxGeometry(.13, .35, .13), skin, s * .11, .175, 0);
+
+  // Head
+  const head = part(new THREE.SphereGeometry(.18, 10, 8), skin, 0, 1.76, 0, true);
+  animParts.head = head;
+
+  // Torso group (pivots at waist)
+  const torsoPivot = new THREE.Group();
+  torsoPivot.position.set(0, 0.85, 0);
+  g.add(torsoPivot);
+  const torso = new THREE.Mesh(new THREE.BoxGeometry(.48, .60, .24), skin);
+  torso.position.set(0, .35, 0);
+  torsoPivot.add(torso);
+  hitParts.push(torso);
+  animParts.torso = torsoPivot;
+
+  // Hips
+  const hips = part(new THREE.BoxGeometry(.42, .15, .22), skinDark, 0, .825, 0);
+  animParts.hips = hips;
+
+  // Legs — pivot at hip
+  animParts.legs = [];
+  for (const side of [-1, 1]) {
+    const legPivot = new THREE.Group();
+    legPivot.position.set(side * .11, .775, 0);
+    g.add(legPivot);
+    const upper = new THREE.Mesh(new THREE.BoxGeometry(.15, .40, .15), skin);
+    upper.position.set(0, -.20, 0);
+    legPivot.add(upper);
+    hitParts.push(upper);
+    const lower = new THREE.Mesh(new THREE.BoxGeometry(.13, .35, .13), skin);
+    lower.position.set(0, -.55, 0);
+    legPivot.add(lower);
+    hitParts.push(lower);
+    animParts.legs.push(legPivot);
   }
+
+  // Arms — pivot at shoulder
+  animParts.arms = [];
+  for (const side of [-1, 1]) {
+    const armPivot = new THREE.Group();
+    armPivot.position.set(side * .30, 1.44, 0);
+    g.add(armPivot);
+    const upper = new THREE.Mesh(new THREE.BoxGeometry(.12, .36, .12), skin);
+    upper.position.set(0, -.18, 0);
+    armPivot.add(upper);
+    hitParts.push(upper);
+    const lower = new THREE.Mesh(new THREE.BoxGeometry(.10, .34, .10), skin);
+    lower.position.set(0, -.52, 0);
+    armPivot.add(lower);
+    hitParts.push(lower);
+    animParts.arms.push(armPivot);
+  }
+
+  // Fake shadow
   const shadow = new THREE.Mesh(
     new THREE.CircleGeometry(.45, 16),
     new THREE.MeshBasicMaterial({ color: 0x000000, transparent: true, opacity: .35 })
@@ -200,9 +229,96 @@ function buildHumanoid(color) {
   shadow.position.y = .02;
   shadow.raycast = () => {};
   g.add(shadow);
+
+  // Animation state on the group
+  g.userData.anim = {
+    walkPhase: 0,
+    aimTimer: 0,
+    hitTimer: 0,
+    deathTimer: 0,
+    spawnTimer: 0.4,
+    lastX: 0, lastZ: 0,
+    moving: false,
+  };
+  g.userData.animParts = animParts;
+  g.userData.materials = [skin, skinDark];
+  g.userData.originalScale = new THREE.Vector3(1, 1, 1);
+  g.scale.set(0.01, 0.01, 0.01);
+
   return { group: g, hitParts };
 }
 
+/* ===== ANIMATION UPDATE ===== */
+function updateHumanoidAnim(group, dt, isMoving, isAiming) {
+  const anim = group.userData.anim;
+  const parts = group.userData.animParts;
+  if (!anim || !parts) return;
+
+  // Spawn scale-in
+  if (anim.spawnTimer > 0) {
+    anim.spawnTimer -= dt;
+    const t = Math.max(0, anim.spawnTimer / 0.4);
+    const scale = 1 - t;
+    group.scale.setScalar(scale);
+  } else if (group.scale.x !== 1) {
+    group.scale.setScalar(1);
+  }
+
+  // Death animation
+  if (anim.deathTimer > 0) {
+    anim.deathTimer -= dt;
+    const t = 1 - Math.max(0, anim.deathTimer / 0.5);
+    group.rotation.z = t * Math.PI / 2;
+    const opacity = 1 - t;
+    group.userData.materials.forEach(m => { m.opacity = opacity; m.transparent = true; });
+    return;
+  }
+
+  // Walk cycle
+  if (isMoving) {
+    anim.walkPhase += dt * 10;
+    const swing = Math.sin(anim.walkPhase) * 0.5;
+    const armSwing = Math.sin(anim.walkPhase + Math.PI) * 0.4;
+    if (parts.legs[0]) parts.legs[0].rotation.x = swing;
+    if (parts.legs[1]) parts.legs[1].rotation.x = -swing;
+    if (parts.arms[0] && anim.aimTimer <= 0) parts.arms[0].rotation.x = armSwing;
+    if (parts.arms[1] && anim.aimTimer <= 0) parts.arms[1].rotation.x = -armSwing;
+    if (parts.torso) parts.torso.rotation.z = Math.sin(anim.walkPhase * 2) * 0.03;
+  } else {
+    // Idle sway
+    const breath = Math.sin(performance.now() / 1000 * 2) * 0.02;
+    if (parts.torso) parts.torso.rotation.z = breath;
+    if (parts.legs[0]) parts.legs[0].rotation.x *= 0.9;
+    if (parts.legs[1]) parts.legs[1].rotation.x *= 0.9;
+    if (parts.arms[0] && anim.aimTimer <= 0) parts.arms[0].rotation.x *= 0.9;
+    if (parts.arms[1] && anim.aimTimer <= 0) parts.arms[1].rotation.x *= 0.9;
+  }
+
+  // Aim pose — right arm raises
+  if (isAiming) anim.aimTimer = 0.3;
+  if (anim.aimTimer > 0) {
+    anim.aimTimer -= dt;
+    if (parts.arms[1]) parts.arms[1].rotation.x = -1.4; // raise right arm
+  }
+
+  // Hit flinch
+  if (anim.hitTimer > 0) {
+    anim.hitTimer -= dt;
+    const shake = Math.sin(anim.hitTimer * 60) * 0.08;
+    if (parts.torso) parts.torso.rotation.x = shake;
+  } else if (parts.torso) {
+    parts.torso.rotation.x *= 0.85;
+  }
+}
+
+function triggerHitAnim(group) {
+  if (group && group.userData.anim) group.userData.anim.hitTimer = 0.15;
+}
+function triggerDeathAnim(group) {
+  if (group && group.userData.anim) group.userData.anim.deathTimer = 0.5;
+}
+
+/* ===== BUILD FLAG ===== */
 function buildFlag(color) {
   const g = new THREE.Group();
   const pole = new THREE.Mesh(new THREE.CylinderGeometry(.04, .04, 2.2, 6), new THREE.MeshStandardMaterial({ color: 0x888888 }));
@@ -216,6 +332,7 @@ function buildFlag(color) {
   return g;
 }
 
+/* ===== FIRST-PERSON GUN WITH MUZZLE FLASH ===== */
 function buildGun() {
   const g = new THREE.Group();
   const dark = new THREE.MeshStandardMaterial({ color: 0x1a1a24, roughness: .6, metalness: .7 });
@@ -232,9 +349,59 @@ function buildGun() {
   grip.position.set(0, -.15, .04); grip.rotation.x = .18; g.add(grip);
   const sight = new THREE.Mesh(new THREE.BoxGeometry(.02, .04, .06), accent);
   sight.position.set(0, .09, -.15); g.add(sight);
+
+  // Muzzle flash (hidden until fire)
+  muzzleFlash = new THREE.Mesh(
+    new THREE.ConeGeometry(.12, .25, 8),
+    new THREE.MeshBasicMaterial({ color: 0xffdd44, transparent: true, opacity: 0 })
+  );
+  muzzleFlash.rotation.x = -Math.PI / 2;
+  muzzleFlash.position.set(0, .02, -.72);
+  g.add(muzzleFlash);
+
   g.position.set(.28, -.26, -.55);
   g.rotation.y = -.04;
   return g;
+}
+
+/* ===== EFFECTS ===== */
+function spawnMuzzleFlash() {
+  if (!muzzleFlash) return;
+  muzzleFlash.material.opacity = 1;
+  muzzleFlash.userData.life = 0.06;
+  effects.push(muzzleFlash);
+}
+
+function spawnImpact(x, y, z, color = 0xffffff) {
+  const geo = new THREE.RingGeometry(.05, .15, 12);
+  const mat = new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0.8, side: THREE.DoubleSide });
+  const ring = new THREE.Mesh(geo, mat);
+  ring.position.set(x, y, z);
+  ring.lookAt(camera.position);
+  scene.add(ring);
+  effects.push({ mesh: ring, life: 0.3, maxLife: 0.3, isImpact: true });
+}
+
+function spawnDamageNumber(x, y, z, text, isHeadshot) {
+  const canvas = document.createElement('canvas');
+  canvas.width = 128; canvas.height = 64;
+  const ctx = canvas.getContext('2d');
+  ctx.font = 'bold 48px Orbitron, Arial';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillStyle = isHeadshot ? '#52ffb1' : '#ffe38b';
+  ctx.strokeStyle = '#000';
+  ctx.lineWidth = 4;
+  ctx.strokeText(text, 64, 32);
+  ctx.fillText(text, 64, 32);
+
+  const tex = new THREE.CanvasTexture(canvas);
+  const mat = new THREE.SpriteMaterial({ map: tex, transparent: true, depthTest: false });
+  const sprite = new THREE.Sprite(mat);
+  sprite.position.set(x, y + 2.2, z);
+  sprite.scale.set(1.5, 0.75, 1);
+  scene.add(sprite);
+  damageNumbers.push({ sprite, life: 0.9, maxLife: 0.9, tex });
 }
 
 /* ===== LOBBY PREVIEW ===== */
@@ -258,6 +425,8 @@ class LobbyPreview {
   setColor(hex) {
     if (this.model) { this.scene.remove(this.model); disposeGroup(this.model); }
     const { group } = buildHumanoid(hex);
+    group.scale.setScalar(1);
+    if (group.userData.anim) group.userData.anim.spawnTimer = 0;
     this.model = group;
     this.scene.add(group);
   }
@@ -326,7 +495,6 @@ function initWorld() {
   box(50, 2, .8, wallM, 0, 1, 25);
   box(.8, 2, 50, wallM, -25, 1, 0);
   box(.8, 2, 50, wallM, 25, 1, 0);
-
   box(6, .2, 12, blue, -21, .1, 0);
   box(6, .2, 12, red, 21, .1, 0);
 
@@ -359,7 +527,7 @@ function initWorld() {
   });
 }
 
-/* ===== REMOTE REAL PLAYERS ===== */
+/* ===== REMOTE PLAYERS ===== */
 function addPlayer(id, name, irId, team) {
   if (players.has(id) || id === localId) return;
   const color = team === 'blue' ? 0x44d7ff : 0xff4c73;
@@ -372,7 +540,7 @@ function addPlayer(id, name, irId, team) {
   players.set(id, {
     id, name, irId, team, group, hitParts, label,
     targetPos: new THREE.Vector3(team === 'blue' ? -20 : 20, 0, 0),
-    yaw: 0, hp: 100, alive: true,
+    yaw: 0, hp: 100, alive: true, prevPos: new THREE.Vector3(),
   });
 }
 function removePlayer(id) {
@@ -396,16 +564,13 @@ function addBot(name, team) {
   label.innerHTML = `<div class="tag-name">${escapeHtml(name)}</div><div class="tag-ir">BOT</div>`;
   $('name-tags').appendChild(label);
   const bot = {
-    isBot: true,
-    id: 'bot_' + Math.random().toString(36).slice(2, 8),
+    isBot: true, id: 'bot_' + Math.random().toString(36).slice(2, 8),
     name, team, group, hitParts, label,
-    hp: 100, alive: true,
-    baseX, baseZ,
-    fireTimer: rand(.3, 1.2),
-    respawnTimer: 0,
-    carrying: null,
-    strafePhase: rand(0, 6.28),
-    debugTimer: 0,
+    hp: 100, alive: true, baseX, baseZ,
+    fireTimer: rand(.3, 1.2), respawnTimer: 0,
+    carrying: null, strafePhase: rand(0, 6.28),
+    prevPos: new THREE.Vector3(baseX, 0, baseZ),
+    isAiming: false,
   };
   bots.push(bot);
   return bot;
@@ -429,12 +594,9 @@ function addRangeTarget() {
   group.position.set(x, 0, z);
   scene.add(group);
   targets.push({
-    group, hitParts,
-    baseX: x, baseZ: z,
-    phase: rand(0, 6.28),
-    speed: rand(.5, 1.0),
-    alive: true,
-    respawnTimer: 0,
+    group, hitParts, baseX: x, baseZ: z,
+    phase: rand(0, 6.28), speed: rand(.5, 1.0),
+    alive: true, respawnTimer: 0,
     fireTimer: rand(RANGE_FIRE_DELAY[0], RANGE_FIRE_DELAY[1]),
   });
 }
@@ -448,8 +610,11 @@ function onMatchState(d) {
   const p = players.get(d.id);
   if (!p) return;
   p.targetPos.set(d.pos[0], d.pos[1], d.pos[2]);
-  p.yaw = d.yaw; p.hp = d.hp; p.alive = d.alive;
-  p.group.visible = d.alive;
+  p.yaw = d.yaw; p.hp = d.hp;
+  if (!d.alive && p.alive) triggerDeathAnim(p.group);
+  p.alive = d.alive;
+  if (!d.alive) setTimeout(() => { if (p.group) p.group.visible = false; }, 500);
+  else p.group.visible = true;
 }
 function onShotFired(d) {
   const from = new THREE.Vector3(...d.from);
@@ -482,8 +647,7 @@ function onFlagUpdate(d) {
     const dz = carrier.group.position.z;
     if (dx * dx + dz * dz > TREASURE_RANGE * TREASURE_RANGE) return;
     if (carrier.team === 'blue') scoreBlue++; else scoreRed++;
-    captures++;
-    f.carrier = null;
+    captures++; f.carrier = null;
     net.broadcastMatch('score', { scoreBlue, scoreRed });
     net.broadcastMatch('flag', { team: d.team, carrier: null, baseX: f.basePos.x, baseZ: f.basePos.z, scoreBlue, scoreRed });
     if (scoreBlue >= CAPTURES_TO_WIN || scoreRed >= CAPTURES_TO_WIN) endMatch(scoreBlue >= CAPTURES_TO_WIN ? 'blue' : 'red');
@@ -548,6 +712,7 @@ function shoot() {
   recoil = Math.min(recoil + .06, .2);
   cameraShake = Math.min(cameraShake + .12, .35);
   if (gunGroup) gunGroup.userData.kick = 0.12;
+  spawnMuzzleFlash();
   const ch = $('crosshair');
   ch.classList.add('fired');
   setTimeout(() => ch.classList.remove('fired'), 60);
@@ -583,7 +748,11 @@ function shoot() {
     if (practiceMode && practiceVariant === 'range') {
       const t = h.object.userData.__target;
       if (t && t.alive) {
-        t.alive = false; t.group.visible = false; t.respawnTimer = 1.2;
+        t.alive = false; t.respawnTimer = 1.2;
+        triggerDeathAnim(t.group);
+        setTimeout(() => { if (t.group) t.group.visible = false; }, 500);
+        spawnDamageNumber(t.group.position.x, 1.5, t.group.position.z, isHead ? '100' : '35', isHead);
+        spawnImpact(h.point.x, h.point.y, h.point.z, 0xff4c73);
         showHitMarker(isHead);
         if (isHead) headshots++;
         killFeed(isHead ? '🎯 HEADSHOT' : '💥 HIT');
@@ -591,11 +760,17 @@ function shoot() {
     } else if (practiceMode && practiceVariant === 'botmatch') {
       const b = h.object.userData.__bot;
       if (b && b.alive) {
-        b.hp -= isHead ? 100 : 35;
+        const dmg = isHead ? 100 : 35;
+        b.hp -= dmg;
+        triggerHitAnim(b.group);
+        spawnDamageNumber(b.group.position.x, 1.5, b.group.position.z, String(dmg), isHead);
+        spawnImpact(h.point.x, h.point.y, h.point.z, 0xff4c73);
         showHitMarker(isHead);
         if (isHead) headshots++;
         if (b.hp <= 0) {
-          b.alive = false; b.group.visible = false; b.respawnTimer = RESPAWN;
+          b.alive = false; b.respawnTimer = RESPAWN;
+          triggerDeathAnim(b.group);
+          setTimeout(() => { if (b.group) b.group.visible = false; }, 500);
           b.carrying = null; kills++;
           killFeed(isHead ? '🎯 HEADSHOT' : '💥 KILL');
         }
@@ -605,9 +780,17 @@ function shoot() {
       if (pid) {
         hitInfo = { id: pid, headshot: isHead };
         net.broadcastMatch('hit', { target: pid, damage: isHead ? 100 : 35, headshot: isHead, shooter: localId });
+        spawnDamageNumber(h.point.x, 1.5, h.point.z, isHead ? '100' : '35', isHead);
+        spawnImpact(h.point.x, h.point.y, h.point.z, 0xff4c73);
         showHitMarker(isHead);
         if (isHead) headshots++;
       }
+    }
+  } else if (hits.length === 0) {
+    // Hit wall / nothing
+    const wallHit = raycaster.intersectObjects(wallMeshes, false);
+    if (wallHit.length) {
+      spawnImpact(wallHit[0].point.x, wallHit[0].point.y, wallHit[0].point.z, 0xffffff);
     }
   }
 
@@ -622,7 +805,6 @@ function showHitMarker(isHead) {
   $('hit').classList.add('show');
   setTimeout(() => $('hit').classList.remove('show'), 180);
 }
-
 function startReload() {
   if (reloadT > 0 || ammo === 12) return;
   reloadT = 1.15;
@@ -637,42 +819,26 @@ function tryDash() {
   dashDirX = -Math.sin(yaw) * f + Math.cos(yaw) * s;
   dashDirZ = -Math.cos(yaw) * f - Math.sin(yaw) * s;
   dashT = DASH_DUR; dashCd = DASH_CD;
+  dashWhoosh = 0.2;
 }
 
-/* ===== BOT COMBAT ===== */
-// Find nearest enemy from ALL sources (players + bots + local)
+/* ===== BOT AI ===== */
 function findBotTarget(bot) {
-  let nearest = null, bestDist = 30;
-
-  // Real remote players
+  let nearest = null, bestDist = 60;
   for (const p of players.values()) {
     if (p.team === bot.team || !p.alive) continue;
     const d = p.group.position.distanceTo(bot.group.position);
-    if (d < bestDist) {
-      bestDist = d;
-      nearest = { pos: p.group.position, vel: new THREE.Vector3(), isLocal: false, ref: p };
-    }
+    if (d < bestDist) { bestDist = d; nearest = { pos: p.group.position, ref: p }; }
   }
-
-  // Other bots on opposite team
   for (const other of bots) {
     if (other === bot || other.team === bot.team || !other.alive) continue;
     const d = other.group.position.distanceTo(bot.group.position);
-    if (d < bestDist) {
-      bestDist = d;
-      nearest = { pos: other.group.position, vel: new THREE.Vector3(), isLocal: false, ref: other };
-    }
+    if (d < bestDist) { bestDist = d; nearest = { pos: other.group.position, ref: other }; }
   }
-
-  // Local player
   if (alive && localTeam !== bot.team) {
     const d = Math.hypot(camera.position.x - bot.group.position.x, camera.position.z - bot.group.position.z);
-    if (d < bestDist) {
-      bestDist = d;
-      nearest = { pos: camera.position, vel: playerVel, isLocal: true, ref: null };
-    }
+    if (d < bestDist) { bestDist = d; nearest = { pos: camera.position, ref: null, isLocal: true }; }
   }
-
   return nearest;
 }
 
@@ -680,35 +846,21 @@ function botFire(bot) {
   const diff = DIFFICULTY[practiceDifficulty];
   const target = findBotTarget(bot);
   if (!target) return;
-
   const tx = bot.group.position.x, tz = bot.group.position.z;
-  let px = target.pos.x, pz = target.pos.z;
-
-  if (diff.leadAim && target.vel.lengthSq() > 0.5) {
-    const dist = Math.hypot(px - tx, pz - tz);
-    const flightTime = dist / diff.projectileSpeed;
-    px += target.vel.x * flightTime * 0.7;
-    pz += target.vel.z * flightTime * 0.7;
-  }
-
+  const px = target.pos.x, pz = target.pos.z;
   const err = (1 - diff.accuracy) * 1.5;
-  const ax = px + rand(-err, err);
-  const az = pz + rand(-err, err);
+  const ax = px + rand(-err, err), az = pz + rand(-err, err);
   const dx = ax - tx, dz = az - tz;
   const dist = Math.hypot(dx, dz) || 1;
-  const vx = dx / dist * diff.projectileSpeed;
-  const vz = dz / dist * diff.projectileSpeed;
-
-  const mesh = new THREE.Mesh(
-    new THREE.SphereGeometry(.22, 8, 6),
-    new THREE.MeshBasicMaterial({ color: bot.team === 'blue' ? 0x44d7ff : 0xff3060 })
-  );
+  const vx = dx / dist * diff.projectileSpeed, vz = dz / dist * diff.projectileSpeed;
+  const mesh = new THREE.Mesh(new THREE.SphereGeometry(.22, 8, 6),
+    new THREE.MeshBasicMaterial({ color: bot.team === 'blue' ? 0x44d7ff : 0xff3060 }));
   mesh.position.set(tx, 1.2, tz);
+  mesh.userData.glowPhase = Math.random() * 6.28;
   scene.add(mesh);
   projectiles.push({ mesh, vx, vz, life: 4, dmg: diff.dmg, team: bot.team });
 }
 
-/* ===== RANGE TARGET FIRE ===== */
 function rangeTargetFire(target) {
   if (!alive) return;
   const tx = target.group.position.x, tz = target.group.position.z;
@@ -716,28 +868,21 @@ function rangeTargetFire(target) {
   const dx = px - tx, dz = pz - tz;
   const dist = Math.hypot(dx, dz);
   if (dist < 2 || dist > 30) return;
-
   const err = 1.8;
-  const ax = px + rand(-err, err);
-  const az = pz + rand(-err, err);
+  const ax = px + rand(-err, err), az = pz + rand(-err, err);
   const adx = ax - tx, adz = az - tz;
   const adist = Math.hypot(adx, adz) || 1;
-  const vx = adx / adist * RANGE_PROJ_SPEED;
-  const vz = adz / adist * RANGE_PROJ_SPEED;
-
-  const mesh = new THREE.Mesh(
-    new THREE.SphereGeometry(.2, 8, 6),
-    new THREE.MeshBasicMaterial({ color: 0xff3060 })
-  );
+  const vx = adx / adist * RANGE_PROJ_SPEED, vz = adz / adist * RANGE_PROJ_SPEED;
+  const mesh = new THREE.Mesh(new THREE.SphereGeometry(.2, 8, 6),
+    new THREE.MeshBasicMaterial({ color: 0xff3060 }));
   mesh.position.set(tx, 1.2, tz);
+  mesh.userData.glowPhase = Math.random() * 6.28;
   scene.add(mesh);
   projectiles.push({ mesh, vx, vz, life: 4, dmg: RANGE_DMG, team: 'red' });
 }
 
-/* ===== UPDATE BOTS ===== */
 function updateBots(dt, t) {
   const diff = DIFFICULTY[practiceDifficulty];
-
   for (const bot of bots) {
     if (!bot.alive) {
       bot.respawnTimer -= dt;
@@ -745,6 +890,12 @@ function updateBots(dt, t) {
         bot.alive = true; bot.hp = 100; bot.group.visible = true;
         bot.group.position.set(bot.baseX, 0, bot.baseZ);
         bot.carrying = null;
+        bot.group.rotation.z = 0;
+        if (bot.group.userData.anim) {
+          bot.group.userData.anim.deathTimer = 0;
+          bot.group.userData.anim.spawnTimer = 0.4;
+        }
+        bot.group.userData.materials.forEach(m => { m.opacity = 1; m.transparent = false; });
       }
       continue;
     }
@@ -756,46 +907,31 @@ function updateBots(dt, t) {
 
     let targetX = bot.group.position.x;
     let targetZ = bot.group.position.z;
-    let action = 'idle';
 
-    // Priority: retreat → run home → steal flag → chase carrier → combat
-    if (diff.retreat && bot.hp < BOT_RETREAT_HP) {
-      targetX = bot.team === 'blue' ? -21 : 21;
-      targetZ = rand(-4, 4);
-      action = 'retreat';
+    if (bot.hp < BOT_RETREAT_HP && diff.dmg > 0) {
+      targetX = bot.team === 'blue' ? -21 : 21; targetZ = rand(-4, 4);
     } else if (bot.carrying) {
-      targetX = bot.team === 'blue' ? -21 : 21;
-      targetZ = 0;
-      action = 'run_home';
+      targetX = bot.team === 'blue' ? -21 : 21; targetZ = 0;
     } else if (enemyFlag && !enemyFlag.carrier) {
-      // Go steal
-      targetX = enemyFlag.mesh.position.x;
-      targetZ = enemyFlag.mesh.position.z;
-      action = 'chase_flag';
+      targetX = enemyFlag.mesh.position.x; targetZ = enemyFlag.mesh.position.z;
     } else if (ownFlag && ownFlag.carrier && ownFlag.carrier !== bot.id) {
-      // Defend — chase flag carrier
       const carrier = findEntityById(ownFlag.carrier);
       if (carrier) {
         targetX = carrier.group ? carrier.group.position.x : carrier.position.x;
         targetZ = carrier.group ? carrier.group.position.z : carrier.position.z;
-        action = 'defend';
       }
     } else if (combat) {
-      // Combat strafe
       const dx = combat.pos.x - bot.group.position.x;
       const dz = combat.pos.z - bot.group.position.z;
       const dist = Math.hypot(dx, dz) || 1;
-      const perpX = -dz / dist;
-      const perpZ = dx / dist;
+      const perpX = -dz / dist, perpZ = dx / dist;
       const strafe = Math.sin(t * 2 + bot.strafePhase) * 3;
       targetX = combat.pos.x + perpX * strafe;
       targetZ = combat.pos.z + perpZ * strafe;
-      action = 'strafe_fire';
     }
 
     const moved = steerMove(bot, targetX, targetZ, diff.speed, dt);
 
-    // Face combat target if any, else direction of movement
     if (combat) {
       const fdx = combat.pos.x - bot.group.position.x;
       const fdz = combat.pos.z - bot.group.position.z;
@@ -807,22 +943,23 @@ function updateBots(dt, t) {
     if (bot.fireTimer <= 0) {
       botFire(bot);
       bot.fireTimer = rand(diff.fireDelay[0], diff.fireDelay[1]);
+      bot.isAiming = true;
+    } else {
+      bot.isAiming = false;
     }
 
-    // Steal check — before this frame's move has fully settled, check distance
+    // Steal
     for (const team of ['blue', 'red']) {
       const f = flags[team];
       if (f.carrier || bot.team === team) continue;
       const fdx = bot.group.position.x - f.mesh.position.x;
       const fdz = bot.group.position.z - f.mesh.position.z;
       if (fdx * fdx + fdz * fdz < STEAL_RANGE * STEAL_RANGE) {
-        f.carrier = bot.id;
-        bot.carrying = team;
-        action = 'stole_flag';
+        f.carrier = bot.id; bot.carrying = team;
       }
     }
 
-    // Treasure check
+    // Treasure
     if (bot.carrying) {
       const ownBaseX = bot.team === 'blue' ? -21 : 21;
       const bx = bot.group.position.x - ownBaseX;
@@ -840,17 +977,14 @@ function updateBots(dt, t) {
       }
     }
 
-    // Flag follows carrier
     for (const team of ['blue', 'red']) {
       if (flags[team].carrier === bot.id) flags[team].mesh.position.set(bot.group.position.x, 0, bot.group.position.z);
     }
 
-    // Debug log
-    bot.debugTimer += dt;
-    if (bot.debugTimer > 2) {
-      bot.debugTimer = 0;
-      console.log(`[BOT] ${bot.name} | ${action} | pos (${bot.group.position.x.toFixed(1)}, ${bot.group.position.z.toFixed(1)}) → target (${targetX.toFixed(1)}, ${targetZ.toFixed(1)}) | moved ${moved} | hp ${bot.hp}${bot.carrying ? ' | 🚩'+bot.carrying : ''}`);
-    }
+    // Determine movement for animation
+    const botMoved = bot.group.position.distanceTo(bot.prevPos) > 0.01;
+    bot.prevPos.copy(bot.group.position);
+    updateHumanoidAnim(bot.group, dt, botMoved, bot.isAiming);
 
     // Name tag
     if (frameCount % 3 === 0) {
@@ -860,9 +994,7 @@ function updateBots(dt, t) {
         bot.label.style.left = (sp.x * .5 + .5) * innerWidth + 'px';
         bot.label.style.top = (-sp.y * .5 + .5) * innerHeight + 'px';
         bot.label.style.display = '';
-      } else {
-        bot.label.style.display = 'none';
-      }
+      } else bot.label.style.display = 'none';
     }
   }
 }
@@ -876,15 +1008,18 @@ function findEntityById(id) {
   return null;
 }
 
-/* ===== PROJECTILE UPDATE ===== */
-function updateProjectiles(dt) {
+function updateProjectiles(dt, t) {
   for (let i = projectiles.length - 1; i >= 0; i--) {
     const p = projectiles[i];
     p.mesh.position.x += p.vx * dt;
     p.mesh.position.z += p.vz * dt;
     p.life -= dt;
 
-    // Hit local player
+    // Glow pulse
+    if (p.mesh.material) {
+      p.mesh.material.color.setHSL(0.02, 1, 0.55 + Math.sin(t * 20 + p.mesh.userData.glowPhase) * 0.15);
+    }
+
     if (p.team !== localTeam && alive && invulnT <= 0) {
       const dx = p.mesh.position.x - camera.position.x;
       const dz = p.mesh.position.z - camera.position.z;
@@ -896,18 +1031,14 @@ function updateProjectiles(dt) {
         setTimeout(() => $('damage-vignette').classList.remove('on'), 200);
         updateHud();
         if (health <= 0) {
-          if (practiceMode) {
-            alive = false; respawnTimer = RESPAWN; toast('KILLED');
-          } else {
-            die(null, false);
-          }
+          if (practiceMode) { alive = false; respawnTimer = RESPAWN; toast('KILLED'); }
+          else die(null, false);
         }
         scene.remove(p.mesh); p.mesh.geometry.dispose(); p.mesh.material.dispose();
         projectiles.splice(i, 1); continue;
       }
     }
 
-    // Hit bots
     let hitBot = false;
     for (const b of bots) {
       if (!b.alive || b.team === p.team) continue;
@@ -915,9 +1046,13 @@ function updateProjectiles(dt) {
       const dz = p.mesh.position.z - b.group.position.z;
       if (dx * dx + dz * dz < 1.2) {
         b.hp -= p.dmg;
+        triggerHitAnim(b.group);
+        spawnDamageNumber(b.group.position.x, 1.5, b.group.position.z, String(p.dmg), false);
         hitBot = true;
         if (b.hp <= 0) {
-          b.alive = false; b.group.visible = false; b.respawnTimer = RESPAWN;
+          b.alive = false; b.respawnTimer = RESPAWN;
+          triggerDeathAnim(b.group);
+          setTimeout(() => { if (b.group) b.group.visible = false; }, 500);
           b.carrying = null;
         }
         break;
@@ -930,6 +1065,7 @@ function updateProjectiles(dt) {
 
     const inWall = isBlocked(p.mesh.position.x, p.mesh.position.z, 0);
     if (p.life <= 0 || inWall) {
+      spawnImpact(p.mesh.position.x, p.mesh.position.y, p.mesh.position.z, 0xffffff);
       scene.remove(p.mesh); p.mesh.geometry.dispose(); p.mesh.material.dispose();
       projectiles.splice(i, 1);
     }
@@ -940,22 +1076,32 @@ function clearBotsAndProjectiles() {
   removeAllBots();
   for (const p of projectiles) { scene.remove(p.mesh); p.mesh.geometry.dispose(); p.mesh.material.dispose(); }
   projectiles.length = 0;
+  for (const e of effects) {
+    if (e === muzzleFlash) continue;
+    const mesh = e.mesh || e;
+    scene.remove(mesh);
+    if (mesh.geometry) mesh.geometry.dispose();
+    if (mesh.material) mesh.material.dispose();
+  }
+  effects.length = 0;
+  for (const dn of damageNumbers) {
+    scene.remove(dn.sprite);
+    if (dn.tex) dn.tex.dispose();
+    if (dn.sprite.material) dn.sprite.material.dispose();
+  }
+  damageNumbers.length = 0;
 }
 
-/* ===== AIM LOCK ===== */
+/* ===== AIM ===== */
 const losRay = new THREE.Raycaster();
 function updateAimLock(dt) {
   if (!running || paused || gameOver) { aim.locked = null; return; }
   aim.locked = null;
-
   const forward = new THREE.Vector3(0, 0, -1).applyEuler(new THREE.Euler(pitch, yaw, 0, 'YXZ'));
   let bestAngle = LOCK_CONE, bestRef = null;
-
   const checkTarget = (refId, x, z) => {
     const y = aim.lockPoint === 'head' ? 1.76 : 1.2;
-    const dx = x - camera.position.x;
-    const dz = z - camera.position.z;
-    const dy = y - camera.position.y;
+    const dx = x - camera.position.x, dz = z - camera.position.z, dy = y - camera.position.y;
     const dist = Math.hypot(dx, dy, dz);
     if (dist > LOCK_RANGE || dist < 0.5) return;
     const nx = dx / dist, ny = dy / dist, nz = dz / dist;
@@ -965,10 +1111,8 @@ function updateAimLock(dt) {
     losRay.set(camera.position, new THREE.Vector3(nx, ny, nz));
     losRay.far = dist;
     if (losRay.intersectObjects(wallMeshes, false).length > 0) return;
-    bestAngle = ang;
-    bestRef = refId;
+    bestAngle = ang; bestRef = refId;
   };
-
   if (practiceMode && practiceVariant === 'range') {
     targets.forEach((t, i) => { if (t.alive) checkTarget('t:' + i, t.group.position.x, t.group.position.z); });
   } else if (practiceMode && practiceVariant === 'botmatch') {
@@ -976,9 +1120,7 @@ function updateAimLock(dt) {
   } else {
     players.forEach(p => { if (p.team !== localTeam && p.alive) checkTarget(p.id, p.group.position.x, p.group.position.z); });
   }
-
   if (bestRef) aim.locked = bestRef;
-
   if (aim.locked) {
     let tx = 0, tz = 0;
     if (aim.locked.startsWith?.('t:')) {
@@ -995,22 +1137,17 @@ function updateAimLock(dt) {
       if (!p || !p.alive) { aim.locked = null; return; }
       tx = p.group.position.x; tz = p.group.position.z;
     }
-
     const y = aim.lockPoint === 'head' ? 1.76 : 1.2;
-    const dx = tx - camera.position.x;
-    const dz = tz - camera.position.z;
-    const dy = y - camera.position.y;
+    const dx = tx - camera.position.x, dz = tz - camera.position.z, dy = y - camera.position.y;
     const dist = Math.hypot(dx, dy, dz);
     const wantYaw = Math.atan2(-dx, -dz);
     const wantPitch = Math.asin(clamp(dy / dist, -1, 1));
     const ddy = wrapAngle(wantYaw - yaw), ddp = wantPitch - pitch;
     const drift = Math.hypot(ddy, ddp);
     const flickingUp = aim.upAccum > 30;
-
     losRay.set(camera.position, new THREE.Vector3(dx / dist, dy / dist, dz / dist));
     losRay.far = dist;
     const blocked = losRay.intersectObjects(wallMeshes, false).length > 0;
-
     if ((drift > DRIFT_BREAK && !flickingUp) || blocked) {
       aim.locked = null; aim.lockPoint = 'chest';
     } else {
@@ -1021,13 +1158,11 @@ function updateAimLock(dt) {
   } else {
     aim.lockPoint = 'chest';
   }
-
   if (aim.headCd > 0) aim.headCd -= dt;
   if (aim.upWin > 0) { aim.upWin -= dt; if (aim.upWin <= 0) aim.upAccum = 0; }
   if (aim.locked && aim.lockPoint === 'chest' && aim.headCd <= 0 && aim.upAccum > HEAD_ACCUM) {
     aim.lockPoint = 'head'; aim.headCd = HEAD_CD; aim.upAccum = 0;
   }
-
   const ch = $('crosshair');
   if (ch) {
     ch.classList.toggle('locked', !!aim.locked);
@@ -1036,7 +1171,7 @@ function updateAimLock(dt) {
   }
 }
 
-/* ===== HOST FLAG LOGIC ===== */
+/* ===== HOST FLAG ===== */
 let flagTick = 0;
 function hostFlagLogic(dt) {
   if (!isHost || practiceMode || !running) return;
@@ -1074,10 +1209,8 @@ function endMatch(winner) {
 
 function leaveMatch() {
   running = false; gameOver = true; paused = false;
-  if (practiceMode) {
-    clearBotsAndProjectiles();
-    clearTargets();
-  } else {
+  if (practiceMode) { clearBotsAndProjectiles(); clearTargets(); }
+  else {
     net.cleanup().catch(() => {});
     for (const id of Array.from(players.keys())) removePlayer(id);
   }
@@ -1102,41 +1235,28 @@ function doSteal() {
   const enemyTeam = localTeam === 'blue' ? 'red' : 'blue';
   const f = flags[enemyTeam];
   if (!f || f.carrier) return;
-  const dx = camera.position.x - f.mesh.position.x;
-  const dz = camera.position.z - f.mesh.position.z;
+  const dx = camera.position.x - f.mesh.position.x, dz = camera.position.z - f.mesh.position.z;
   if (dx * dx + dz * dz > STEAL_RANGE * STEAL_RANGE) return;
-  if (practiceMode) {
-    f.carrier = localId;
-    toast('FLAG STOLEN');
-  } else {
-    net.broadcastMatch('flag', { type: 'steal', team: enemyTeam, stealer: localId });
-    toast('STEALING');
-  }
+  if (practiceMode) { f.carrier = localId; toast('FLAG STOLEN'); }
+  else { net.broadcastMatch('flag', { type: 'steal', team: enemyTeam, stealer: localId }); toast('STEALING'); }
 }
 function doTreasure() {
   const enemyTeam = localTeam === 'blue' ? 'red' : 'blue';
   const f = flags[enemyTeam];
   if (!f || f.carrier !== localId) return;
   const baseX = localTeam === 'blue' ? -21 : 21;
-  const dx = camera.position.x - baseX;
-  const dz = camera.position.z;
+  const dx = camera.position.x - baseX, dz = camera.position.z;
   if (dx * dx + dz * dz > TREASURE_RANGE * TREASURE_RANGE) return;
   if (practiceMode) {
     if (localTeam === 'blue') scoreBlue++; else scoreRed++;
-    f.carrier = null;
-    f.mesh.position.copy(f.basePos);
-    captures++;
-    toast('TREASURED');
-    updateHud();
-    if (scoreBlue >= CAPTURES_TO_WIN || scoreRed >= CAPTURES_TO_WIN) {
-      endMatch(scoreBlue >= CAPTURES_TO_WIN ? 'blue' : 'red');
-    }
+    f.carrier = null; f.mesh.position.copy(f.basePos);
+    captures++; toast('TREASURED'); updateHud();
+    if (scoreBlue >= CAPTURES_TO_WIN || scoreRed >= CAPTURES_TO_WIN) endMatch(scoreBlue >= CAPTURES_TO_WIN ? 'blue' : 'red');
   } else {
     net.broadcastMatch('flag', { type: 'capture', team: enemyTeam, carrier: localId });
     toast('TREASURING');
   }
 }
-
 function updateFlagButtons() {
   if (!running || paused || gameOver) {
     $('steal-btn').classList.add('hidden');
@@ -1147,14 +1267,12 @@ function updateFlagButtons() {
   const ef = flags[enemyTeam];
   let showSteal = false, showTreasure = false;
   if (ef && !ef.carrier && alive) {
-    const dx = camera.position.x - ef.mesh.position.x;
-    const dz = camera.position.z - ef.mesh.position.z;
+    const dx = camera.position.x - ef.mesh.position.x, dz = camera.position.z - ef.mesh.position.z;
     if (dx * dx + dz * dz <= STEAL_RANGE * STEAL_RANGE) showSteal = true;
   }
   if (ef && ef.carrier === localId && alive) {
     const baseX = localTeam === 'blue' ? -21 : 21;
-    const dx = camera.position.x - baseX;
-    const dz = camera.position.z;
+    const dx = camera.position.x - baseX, dz = camera.position.z;
     if (dx * dx + dz * dz <= TREASURE_RANGE * TREASURE_RANGE) showTreasure = true;
   }
   $('steal-btn').classList.toggle('hidden', !showSteal);
@@ -1166,13 +1284,26 @@ function updateHud() {
   $('health').textContent = Math.ceil(health);
   $('healthbar').style.width = health + '%';
   $('ammo').innerHTML = ammo + ' <em>/ 12</em>';
+
+  // Score pulse
+  if (scoreBlue !== lastScoreBlue || scoreRed !== lastScoreRed) {
+    const el = $('score-blue');
+    const el2 = $('score-red');
+    el.style.transform = 'scale(1.4)'; el.style.transition = 'none';
+    el2.style.transform = 'scale(1.4)'; el2.style.transition = 'none';
+    requestAnimationFrame(() => {
+      el.style.transition = 'transform 0.3s ease'; el.style.transform = 'scale(1)';
+      el2.style.transition = 'transform 0.3s ease'; el2.style.transform = 'scale(1)';
+    });
+    lastScoreBlue = scoreBlue;
+    lastScoreRed = scoreRed;
+  }
   $('score-blue').textContent = scoreBlue;
   $('score-red').textContent = scoreRed;
+
   const timerEl = $('timer');
-  if (practiceMode) {
-    timerEl.textContent = '∞';
-    timerEl.classList.remove('low');
-  } else {
+  if (practiceMode) { timerEl.textContent = '∞'; timerEl.classList.remove('low'); }
+  else {
     const m = Math.floor(Math.max(0, roundTime) / 60);
     const s = Math.floor(Math.max(0, roundTime) % 60).toString().padStart(2, '0');
     timerEl.textContent = `${m}:${s}`;
@@ -1311,17 +1442,17 @@ function update(dt, t) {
   );
   lastPlayerPos.copy(camera.position);
 
-  if (!alive) {
-    respawnTimer -= dt;
-    if (respawnTimer <= 0) respawn();
-  }
+  if (!alive) { respawnTimer -= dt; if (respawnTimer <= 0) respawn(); }
 
+  let movedThisFrame = false;
   if (alive) {
     let f = (keys.KeyW || keys.ArrowUp ? 1 : 0) - (keys.KeyS || keys.ArrowDown ? 1 : 0) - my;
     let s = (keys.KeyD || keys.ArrowRight ? 1 : 0) - (keys.KeyA || keys.ArrowLeft ? 1 : 0) + mx;
     const len = Math.hypot(f, s) || 1;
     f /= Math.max(1, len); s /= Math.max(1, len);
     const hitWall = (x, z) => isBlocked(x, z, .38);
+
+    const px0 = camera.position.x, pz0 = camera.position.z;
 
     if (dashT > 0) {
       dashT -= dt;
@@ -1337,11 +1468,16 @@ function update(dt, t) {
     }
     if (dashCd > 0) dashCd -= dt;
 
+    movedThisFrame = Math.hypot(camera.position.x - px0, camera.position.z - pz0) > 0.005;
+
     if (jump && onGround) { vy = 6.5; onGround = false; }
     jump = false;
     vy -= 18 * dt;
     camera.position.y += vy * dt;
-    if (camera.position.y <= H) { camera.position.y = H; vy = 0; onGround = true; }
+    if (camera.position.y <= H) {
+      if (!onGround && vy < -3) landingDip = 0.15;
+      camera.position.y = H; vy = 0; onGround = true;
+    }
   }
 
   if (recoil > 0) recoil = Math.max(0, recoil - dt * .4);
@@ -1354,18 +1490,64 @@ function update(dt, t) {
     shakeX = (Math.random() - .5) * cameraShake * .04;
     shakeY = (Math.random() - .5) * cameraShake * .04;
   } else { shakeX = shakeY = 0; }
+
+  // Camera bob
+  if (movedThisFrame) walkBob += dt * 12;
+  const bobY = movedThisFrame ? Math.sin(walkBob) * 0.04 : 0;
+  if (landingDip > 0) { landingDip -= dt * 0.8; }
+  const landY = landingDip > 0 ? -landingDip * 0.4 : 0;
+  if (dashWhoosh > 0) { dashWhoosh -= dt; }
+  const dashZ = dashWhoosh > 0 ? dashWhoosh * 0.5 : 0;
+
   camera.rotation.set(pitch + recoil + shakeY, yaw + shakeX, 0, 'YXZ');
 
+  // Gun animation
   if (gunGroup) {
     let kick = gunGroup.userData.kick || 0;
     if (kick > 0) { kick -= dt * 1.2; gunGroup.userData.kick = Math.max(0, kick); }
-    const moving = Math.hypot(mx, my) > .15 || keys.KeyW || keys.KeyA || keys.KeyS || keys.KeyD;
-    const swayX = Math.sin(t * 8) * 0.005 * (moving ? 1 : 0.3);
-    const swayY = Math.cos(t * 10) * 0.003 * (moving ? 1 : 0.3);
+    const swayX = Math.sin(t * 8) * 0.005 * (movedThisFrame ? 1 : 0.3);
+    const swayY = Math.cos(t * 10) * 0.003 * (movedThisFrame ? 1 : 0.3);
     gunGroup.position.x = .28 + swayX;
-    gunGroup.position.y = -.26 + swayY + (kick * 0.15);
-    gunGroup.position.z = -.55 + (kick * 0.1);
+    gunGroup.position.y = -.26 + swayY + (kick * 0.15) + bobY * 0.5 + landY;
+    gunGroup.position.z = -.55 + (kick * 0.1) + dashZ;
     gunGroup.rotation.x = -kick * 0.6;
+  }
+
+  // Muzzle flash fade
+  if (muzzleFlash && muzzleFlash.material.opacity > 0) {
+    muzzleFlash.material.opacity = Math.max(0, muzzleFlash.material.opacity - dt * 20);
+  }
+
+  // Update effects
+  for (let i = effects.length - 1; i >= 0; i--) {
+    const e = effects[i];
+    if (e === muzzleFlash) { effects.splice(i, 1); continue; }
+    if (e.isImpact) {
+      e.life -= dt;
+      const s = 1 + (1 - e.life / e.maxLife) * 3;
+      e.mesh.scale.setScalar(s);
+      e.mesh.material.opacity = e.life / e.maxLife;
+      if (e.life <= 0) {
+        scene.remove(e.mesh);
+        e.mesh.geometry.dispose();
+        e.mesh.material.dispose();
+        effects.splice(i, 1);
+      }
+    }
+  }
+
+  // Update damage numbers
+  for (let i = damageNumbers.length - 1; i >= 0; i--) {
+    const dn = damageNumbers[i];
+    dn.life -= dt;
+    dn.sprite.position.y += dt * 1.5;
+    dn.sprite.material.opacity = dn.life / dn.maxLife;
+    if (dn.life <= 0) {
+      scene.remove(dn.sprite);
+      dn.tex.dispose();
+      dn.sprite.material.dispose();
+      damageNumbers.splice(i, 1);
+    }
   }
 
   if (fire && alive) shoot();
@@ -1375,9 +1557,14 @@ function update(dt, t) {
     if (reloadT <= 0) { ammo = 12; updateHud(); toast('RELOADED'); }
   }
 
+  // Remote players — animate
   for (const p of players.values()) {
+    p.prevPos = p.prevPos || new THREE.Vector3().copy(p.group.position);
     p.group.position.lerp(p.targetPos, Math.min(1, dt * 10));
     p.group.rotation.y = p.yaw;
+    const moved = p.group.position.distanceTo(p.prevPos) > 0.01;
+    p.prevPos.copy(p.group.position);
+    updateHumanoidAnim(p.group, dt, moved, false);
     if (frameCount % 3 === 0) {
       const wp = new THREE.Vector3(p.group.position.x, 2.3, p.group.position.z);
       const sp = wp.clone().project(camera);
@@ -1397,8 +1584,13 @@ function update(dt, t) {
         if (!target.alive) {
           target.respawnTimer -= dt;
           if (target.respawnTimer <= 0) {
-            target.alive = true;
-            target.group.visible = true;
+            target.alive = true; target.group.visible = true;
+            target.group.rotation.z = 0;
+            if (target.group.userData.anim) {
+              target.group.userData.anim.deathTimer = 0;
+              target.group.userData.anim.spawnTimer = 0.4;
+            }
+            target.group.userData.materials.forEach(m => { m.opacity = 1; m.transparent = false; });
             const angle = Math.random() * Math.PI * 2;
             const radius = rand(8, 15);
             target.baseX = Math.cos(angle) * radius;
@@ -1410,17 +1602,20 @@ function update(dt, t) {
         target.group.position.x = target.baseX + Math.sin(t * target.speed + target.phase) * 1.5;
         target.group.position.z = target.baseZ + Math.cos(t * target.speed * .7 + target.phase) * 0.8;
         target.group.rotation.y = Math.sin(t + target.phase) * .15;
-        // Range targets fire at player
+
+        // Animate range target (walk cycle active since they sway)
+        updateHumanoidAnim(target.group, dt, true, false);
+
         target.fireTimer -= dt;
         if (target.fireTimer <= 0) {
           rangeTargetFire(target);
           target.fireTimer = rand(RANGE_FIRE_DELAY[0], RANGE_FIRE_DELAY[1]);
         }
       }
-      updateProjectiles(dt);
+      updateProjectiles(dt, t);
     } else if (practiceVariant === 'botmatch') {
       updateBots(dt, t);
-      updateProjectiles(dt);
+      updateProjectiles(dt, t);
     }
     for (const team of ['blue', 'red']) {
       if (flags[team].carrier === localId) flags[team].mesh.position.set(camera.position.x, 0, camera.position.z);
@@ -1444,8 +1639,7 @@ function update(dt, t) {
     }
   }
 
-  const moving = Math.hypot(mx, my) > .15 || keys.KeyW || keys.KeyA || keys.KeyS || keys.KeyD;
-  const gap = 3 + (moving ? 3 : 1) + recoil * 40;
+  const gap = 3 + (movedThisFrame ? 3 : 1) + recoil * 40;
   document.documentElement.style.setProperty('--cross-gap', gap.toFixed(1) + 'px');
 
   updateFlagButtons();
@@ -1507,16 +1701,14 @@ function enterPractice(variant) {
   matchId = null;
   localTeam = 'blue';
   scoreBlue = scoreRed = 0;
+  lastScoreBlue = 0; lastScoreRed = 0;
   kills = deaths = captures = headshots = 0;
-
   $('lobby').classList.add('hidden');
   $('room').classList.add('hidden');
   $('hud').classList.remove('hidden');
   if (touch) $('mobile').classList.remove('hidden');
-
   clearBotsAndProjectiles();
   clearTargets();
-
   if (variant === 'range') {
     for (let i = 0; i < 6; i++) addRangeTarget();
   } else {
@@ -1526,11 +1718,9 @@ function enterPractice(variant) {
     addBot('Red 2', 'red');
     addBot('Red 3', 'red');
   }
-
   flags.blue.mesh.position.copy(flags.blue.basePos);
   flags.red.mesh.position.copy(flags.red.basePos);
   flags.blue.carrier = flags.red.carrier = null;
-
   camera.position.set(-20, H, 0);
   lastPlayerPos.copy(camera.position);
   yaw = -Math.PI / 2; pitch = 0;
