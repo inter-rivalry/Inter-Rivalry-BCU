@@ -6,6 +6,20 @@ const touch = matchMedia('(pointer:coarse)').matches || ('ontouchstart' in windo
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 const wrapAngle = a => Math.atan2(Math.sin(a), Math.cos(a));
 
+/* ===== LANDSCAPE LOCK ===== */
+async function lockLandscape() {
+  try {
+    const el = document.documentElement;
+    if (!document.fullscreenElement) {
+      if (el.requestFullscreen) await el.requestFullscreen({ navigationUI: 'hide' });
+      else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
+    }
+  } catch (_) {}
+  try {
+    if (screen.orientation?.lock) await screen.orientation.lock('landscape');
+  } catch (_) {}
+}
+
 /* ===== CONSTANTS ===== */
 const H = 1.7, SPEED = 7.5, DASH_SPEED = 22, DASH_DUR = .15, DASH_CD = 1.5;
 const INVULN = .6, RESPAWN = 3;
@@ -55,8 +69,8 @@ let gameMode = 'practice';
 let playerColorKey = (localStorage.getItem('rivals-color') || 'azure');
 let lobbyPreview = null;
 
-const players = new Map();  // remote players
-const practiceTargets = []; // dummies
+const players = new Map();
+const practiceTargets = [];
 const flags = { blue: null, red: null };
 const covers = [], wallMeshes = [];
 const keys = {};
@@ -382,7 +396,6 @@ function shoot() {
   const from = camera.position.clone();
   const dir = new THREE.Vector3(0, 0, -1).applyEuler(new THREE.Euler(pitch, yaw, 0, 'YXZ'));
 
-  // Raycast against everything hittable
   const candidates = [];
   if (practiceMode) {
     practiceTargets.forEach(t => {
@@ -834,7 +847,6 @@ function update(dt, t) {
     if (reloadT <= 0) { ammo = 12; updateHud(); toast('RELOADED'); }
   }
 
-  // Remote players
   for (const p of players.values()) {
     p.group.position.lerp(p.targetPos, Math.min(1, dt * 10));
     p.group.rotation.y = p.yaw;
@@ -853,7 +865,6 @@ function update(dt, t) {
     if (flags.red?.carrier === p.id) flags.red.mesh.position.set(p.group.position.x, 0, p.group.position.z);
   }
 
-  // Practice targets
   if (practiceMode) {
     for (const target of practiceTargets) {
       if (!target.alive) continue;
@@ -865,7 +876,6 @@ function update(dt, t) {
     hostFlagLogic(dt);
   }
 
-  // Broadcast
   if (!practiceMode) {
     stateBroadcastTimer += dt;
     if (stateBroadcastTimer > 1 / BROADCAST_HZ) {
@@ -897,6 +907,7 @@ function loop() {
 
 /* ===== MATCH START ===== */
 function enterMatch(match, allPlayers) {
+  lockLandscape();
   matchId = match.id;
   matchMode = match.mode || 'standard';
   currentMatchTime = MODES[matchMode].matchTime;
@@ -950,6 +961,7 @@ function enterMatch(match, allPlayers) {
 }
 
 function enterPractice() {
+  lockLandscape();
   practiceMode = true;
   gameOver = false; running = true; paused = false;
   matchId = null;
