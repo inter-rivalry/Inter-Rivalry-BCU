@@ -37,10 +37,14 @@ const MODES = {
 };
 
 const DIFFICULTY = {
-  easy:   { fireDelay: [1.5, 3.0], accuracy: 0.55, speed: 6.5, projectileSpeed: 16, dmg: 8, leadAim: false, retreat: false },
-  medium: { fireDelay: [1.0, 2.0], accuracy: 0.70, speed: 7.0, projectileSpeed: 20, dmg: 10, leadAim: true, retreat: true },
-  hard:   { fireDelay: [0.7, 1.4], accuracy: 0.85, speed: 7.5, projectileSpeed: 24, dmg: 14, leadAim: true, retreat: true },
+  easy:   { fireDelay: [1.8, 3.2], accuracy: 0.55, speed: 6.5, projectileSpeed: 16, dmg: 8,  leadAim: false, retreat: false },
+  medium: { fireDelay: [1.2, 2.2], accuracy: 0.70, speed: 7.0, projectileSpeed: 20, dmg: 10, leadAim: true,  retreat: true },
+  hard:   { fireDelay: [0.8, 1.5], accuracy: 0.85, speed: 7.5, projectileSpeed: 24, dmg: 14, leadAim: true,  retreat: true },
 };
+
+const RANGE_FIRE_DELAY = [1.5, 2.5]; // range dummies fire speed
+const RANGE_PROJ_SPEED = 16;
+const RANGE_DMG = 8;
 
 const COLORS = {
   azure: { hex: 0x44d7ff, name: 'AZURE' },
@@ -69,8 +73,8 @@ let kills = 0, deaths = 0, captures = 0, headshots = 0;
 let stateBroadcastTimer = 0, gameOver = false, matchMode = 'practice';
 let practiceDifficulty = 'medium';
 let frameCount = 0;
-let lastPlayerPos = new THREE.Vector3();
-let playerVel = new THREE.Vector3();
+const lastPlayerPos = new THREE.Vector3();
+const playerVel = new THREE.Vector3();
 
 const aim = {
   sensitivity: +(localStorage.getItem('rivals-sens') || (touch ? 1.4 : 1.0)),
@@ -92,10 +96,10 @@ const keys = {};
 let gunGroup = null;
 
 /* ===== UTILS ===== */
-function box(w, h, d, mat, x, y, z, receive = true) {
+function box(w, h, d, mat, x, y, z) {
   const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mat);
   m.position.set(x, y, z);
-  m.receiveShadow = receive;
+  m.receiveShadow = false;
   scene.add(m);
   return m;
 }
@@ -110,7 +114,7 @@ function isBlocked(x, z, margin = 0.5) {
     Math.abs(x - c.x) < c.w / 2 + margin && Math.abs(z - c.z) < c.d / 2 + margin);
 }
 
-/* ===== STEERING MOVE (the core fix) ===== */
+/* ===== STEERING MOVE ===== */
 function steerMove(entity, targetX, targetZ, speed, dt) {
   const px = entity.group.position.x;
   const pz = entity.group.position.z;
@@ -120,21 +124,47 @@ function steerMove(entity, targetX, targetZ, speed, dt) {
   if (dist < 0.3) return false;
 
   const step = Math.min(speed * dt, dist);
-
-  // Try 8 directions, ordered by preference (straight first, then off-axis)
   const angle0 = Math.atan2(dz, dx);
-  const tryAngles = [0, 0.5, -0.5, 1.0, -1.0, 1.5, -1.5, 2.0, -2.0, 2.6, -2.6, Math.PI];
+  const tryAngles = [0, 0.4, -0.4, 0.9, -0.9, 1.4, -1.4, 2.0, -2.0, 2.6, -2.6, Math.PI];
+
+  let bestFallback = null;
+  let bestFallbackScore = -Infinity;
 
   for (const off of tryAngles) {
     const a = angle0 + off;
-    const nx = px + Math.cos(a) * step;
-    const nz = pz + Math.sin(a) * step;
-    // Clamp to arena
-    const cx = clamp(nx, -24, 24);
-    const cz = clamp(nz, -24, 24);
-    if (!isBlocked(cx, cz)) {
-      entity.group.position.x = cx;
-      entity.group.position.z = cz;
+    const nx = clamp(px + Math.cos(a) * step, -24, 24);
+    const nz = clamp(pz + Math.sin(a) * step, -24, 24);
+    if (!isBlocked(nx, nz)) {
+      entity.group.position.x = nx;
+      entity.group.position.z = nz;
+      return true;
+    }
+    // fallback scoring — how much closer to target this attempt gets
+    const newDist = Math.hypot(targetX - nx, targetZ - nz);
+    const score = -newDist - Math.abs(off) * 0.5;
+    if (score > bestFallbackScore) {
+      bestFallbackScore = score;
+      bestFallback = { nx, nz };
+    }
+  }
+  // Best-effort fallback — move partway even if final spot is blocked
+  if (bestFallback) {
+    const stepHalf = step * 0.5;
+    const a = angle0;
+    const nx = clamp(px + Math.cos(a) * stepHalf, -24, 24);
+    const nz = clamp(pz + Math.sin(a) * stepHalf, -24, 24);
+    if (!isBlocked(nx, nz, 0.3)) {
+      entity.group.position.x = nx;
+      entity.group.position.z = nz;
+      return true;
+    }
+    // last resort — move sideways slightly
+    const sideA = angle0 + 1.5;
+    const sx = clamp(px + Math.cos(sideA) * stepHalf, -24, 24);
+    const sz = clamp(pz + Math.sin(sideA) * stepHalf, -24, 24);
+    if (!isBlocked(sx, sz, 0.3)) {
+      entity.group.position.x = sx;
+      entity.group.position.z = sz;
       return true;
     }
   }
@@ -186,7 +216,6 @@ function buildFlag(color) {
   return g;
 }
 
-/* ===== FIRST-PERSON GUN ===== */
 function buildGun() {
   const g = new THREE.Group();
   const dark = new THREE.MeshStandardMaterial({ color: 0x1a1a24, roughness: .6, metalness: .7 });
@@ -208,7 +237,7 @@ function buildGun() {
   return g;
 }
 
-/* ===== LOBBY 3D PREVIEW ===== */
+/* ===== LOBBY PREVIEW ===== */
 class LobbyPreview {
   constructor(canvas) {
     this.canvas = canvas;
@@ -376,7 +405,6 @@ function addBot(name, team) {
     respawnTimer: 0,
     carrying: null,
     strafePhase: rand(0, 6.28),
-    lastTargetX: 0, lastTargetZ: 0,
     debugTimer: 0,
   };
   bots.push(bot);
@@ -390,7 +418,7 @@ function removeAllBots() {
   bots.length = 0;
 }
 
-/* ===== SHOOTING RANGE TARGETS ===== */
+/* ===== RANGE TARGETS ===== */
 function addRangeTarget() {
   const color = Math.random() < .5 ? 0xff3e69 : 0xff7aa0;
   const { group, hitParts } = buildHumanoid(color);
@@ -407,6 +435,7 @@ function addRangeTarget() {
     speed: rand(.5, 1.0),
     alive: true,
     respawnTimer: 0,
+    fireTimer: rand(RANGE_FIRE_DELAY[0], RANGE_FIRE_DELAY[1]),
   });
 }
 function clearTargets() {
@@ -610,18 +639,40 @@ function tryDash() {
   dashT = DASH_DUR; dashCd = DASH_CD;
 }
 
-/* ===== BOT AI ===== */
+/* ===== BOT COMBAT ===== */
+// Find nearest enemy from ALL sources (players + bots + local)
 function findBotTarget(bot) {
   let nearest = null, bestDist = 30;
+
+  // Real remote players
   for (const p of players.values()) {
     if (p.team === bot.team || !p.alive) continue;
     const d = p.group.position.distanceTo(bot.group.position);
-    if (d < bestDist) { bestDist = d; nearest = { pos: p.group.position, vel: new THREE.Vector3(), isLocal: false }; }
+    if (d < bestDist) {
+      bestDist = d;
+      nearest = { pos: p.group.position, vel: new THREE.Vector3(), isLocal: false, ref: p };
+    }
   }
+
+  // Other bots on opposite team
+  for (const other of bots) {
+    if (other === bot || other.team === bot.team || !other.alive) continue;
+    const d = other.group.position.distanceTo(bot.group.position);
+    if (d < bestDist) {
+      bestDist = d;
+      nearest = { pos: other.group.position, vel: new THREE.Vector3(), isLocal: false, ref: other };
+    }
+  }
+
+  // Local player
   if (alive && localTeam !== bot.team) {
     const d = Math.hypot(camera.position.x - bot.group.position.x, camera.position.z - bot.group.position.z);
-    if (d < bestDist) { bestDist = d; nearest = { pos: camera.position, vel: playerVel, isLocal: true }; }
+    if (d < bestDist) {
+      bestDist = d;
+      nearest = { pos: camera.position, vel: playerVel, isLocal: true, ref: null };
+    }
   }
+
   return nearest;
 }
 
@@ -633,15 +684,13 @@ function botFire(bot) {
   const tx = bot.group.position.x, tz = bot.group.position.z;
   let px = target.pos.x, pz = target.pos.z;
 
-  // Lead aim: predict where target will be when projectile arrives
-  if (diff.leadAim) {
+  if (diff.leadAim && target.vel.lengthSq() > 0.5) {
     const dist = Math.hypot(px - tx, pz - tz);
     const flightTime = dist / diff.projectileSpeed;
     px += target.vel.x * flightTime * 0.7;
     pz += target.vel.z * flightTime * 0.7;
   }
 
-  // Accuracy jitter
   const err = (1 - diff.accuracy) * 1.5;
   const ax = px + rand(-err, err);
   const az = pz + rand(-err, err);
@@ -659,6 +708,33 @@ function botFire(bot) {
   projectiles.push({ mesh, vx, vz, life: 4, dmg: diff.dmg, team: bot.team });
 }
 
+/* ===== RANGE TARGET FIRE ===== */
+function rangeTargetFire(target) {
+  if (!alive) return;
+  const tx = target.group.position.x, tz = target.group.position.z;
+  const px = camera.position.x, pz = camera.position.z;
+  const dx = px - tx, dz = pz - tz;
+  const dist = Math.hypot(dx, dz);
+  if (dist < 2 || dist > 30) return;
+
+  const err = 1.8;
+  const ax = px + rand(-err, err);
+  const az = pz + rand(-err, err);
+  const adx = ax - tx, adz = az - tz;
+  const adist = Math.hypot(adx, adz) || 1;
+  const vx = adx / adist * RANGE_PROJ_SPEED;
+  const vz = adz / adist * RANGE_PROJ_SPEED;
+
+  const mesh = new THREE.Mesh(
+    new THREE.SphereGeometry(.2, 8, 6),
+    new THREE.MeshBasicMaterial({ color: 0xff3060 })
+  );
+  mesh.position.set(tx, 1.2, tz);
+  scene.add(mesh);
+  projectiles.push({ mesh, vx, vz, life: 4, dmg: RANGE_DMG, team: 'red' });
+}
+
+/* ===== UPDATE BOTS ===== */
 function updateBots(dt, t) {
   const diff = DIFFICULTY[practiceDifficulty];
 
@@ -673,83 +749,67 @@ function updateBots(dt, t) {
       continue;
     }
 
-    const target = findBotTarget(bot);
+    const combat = findBotTarget(bot);
     const enemyTeam = bot.team === 'blue' ? 'red' : 'blue';
-    const ownTeam = bot.team;
     const enemyFlag = flags[enemyTeam];
-    const ownFlag = flags[ownTeam];
+    const ownFlag = flags[bot.team];
 
-    // Decide what to do
     let targetX = bot.group.position.x;
     let targetZ = bot.group.position.z;
     let action = 'idle';
 
-    // 1. Retreat if low HP
+    // Priority: retreat → run home → steal flag → chase carrier → combat
     if (diff.retreat && bot.hp < BOT_RETREAT_HP) {
       targetX = bot.team === 'blue' ? -21 : 21;
       targetZ = rand(-4, 4);
       action = 'retreat';
-    }
-    // 2. If carrying enemy flag — run home
-    else if (bot.carrying) {
+    } else if (bot.carrying) {
       targetX = bot.team === 'blue' ? -21 : 21;
       targetZ = 0;
       action = 'run_home';
-    }
-    // 3. Chase enemy flag if it's unclaimed and we're closer than teammates
-    else if (enemyFlag && !enemyFlag.carrier) {
+    } else if (enemyFlag && !enemyFlag.carrier) {
+      // Go steal
       targetX = enemyFlag.mesh.position.x;
       targetZ = enemyFlag.mesh.position.z;
       action = 'chase_flag';
-    }
-    // 4. Own flag stolen — chase the carrier
-    else if (ownFlag && ownFlag.carrier && ownFlag.carrier !== bot.id) {
-      const carrier = findBotTargetById(ownFlag.carrier);
+    } else if (ownFlag && ownFlag.carrier && ownFlag.carrier !== bot.id) {
+      // Defend — chase flag carrier
+      const carrier = findEntityById(ownFlag.carrier);
       if (carrier) {
-        targetX = carrier.group.position.x;
-        targetZ = carrier.group.position.z;
+        targetX = carrier.group ? carrier.group.position.x : carrier.position.x;
+        targetZ = carrier.group ? carrier.group.position.z : carrier.position.z;
         action = 'defend';
       }
-    }
-    // 5. Have a combat target — move toward them + strafe
-    else if (target) {
-      // Strafe: perpendicular to target direction
-      const dx = target.pos.x - bot.group.position.x;
-      const dz = target.pos.z - bot.group.position.z;
+    } else if (combat) {
+      // Combat strafe
+      const dx = combat.pos.x - bot.group.position.x;
+      const dz = combat.pos.z - bot.group.position.z;
       const dist = Math.hypot(dx, dz) || 1;
       const perpX = -dz / dist;
       const perpZ = dx / dist;
       const strafe = Math.sin(t * 2 + bot.strafePhase) * 3;
-      // Move toward target but offset sideways
-      targetX = target.pos.x + perpX * strafe;
-      targetZ = target.pos.z + perpZ * strafe;
+      targetX = combat.pos.x + perpX * strafe;
+      targetZ = combat.pos.z + perpZ * strafe;
       action = 'strafe_fire';
     }
 
-    // Move using steering
     const moved = steerMove(bot, targetX, targetZ, diff.speed, dt);
 
-    // Face the combat target if any, else face movement direction
-    if (target) {
-      const fdx = target.pos.x - bot.group.position.x;
-      const fdz = target.pos.z - bot.group.position.z;
+    // Face combat target if any, else direction of movement
+    if (combat) {
+      const fdx = combat.pos.x - bot.group.position.x;
+      const fdz = combat.pos.z - bot.group.position.z;
       bot.group.rotation.y = Math.atan2(-fdx, -fdz);
-    } else if (moved) {
-      const mdx = targetX - bot.group.position.x;
-      const mdz = targetZ - bot.group.position.z;
-      if (Math.abs(mdx) + Math.abs(mdz) > 0.1) {
-        bot.group.rotation.y = Math.atan2(-mdx, -mdz);
-      }
     }
 
-    // Fire at player/enemies
+    // Fire
     bot.fireTimer -= dt;
     if (bot.fireTimer <= 0) {
       botFire(bot);
       bot.fireTimer = rand(diff.fireDelay[0], diff.fireDelay[1]);
     }
 
-    // Steal flag if close to enemy flag
+    // Steal check — before this frame's move has fully settled, check distance
     for (const team of ['blue', 'red']) {
       const f = flags[team];
       if (f.carrier || bot.team === team) continue;
@@ -762,7 +822,7 @@ function updateBots(dt, t) {
       }
     }
 
-    // Treasure if carrying + at base
+    // Treasure check
     if (bot.carrying) {
       const ownBaseX = bot.team === 'blue' ? -21 : 21;
       const bx = bot.group.position.x - ownBaseX;
@@ -785,14 +845,14 @@ function updateBots(dt, t) {
       if (flags[team].carrier === bot.id) flags[team].mesh.position.set(bot.group.position.x, 0, bot.group.position.z);
     }
 
-    // Debug log every 2s
+    // Debug log
     bot.debugTimer += dt;
     if (bot.debugTimer > 2) {
       bot.debugTimer = 0;
-      console.log(`[BOT] ${bot.name} | action: ${action} | pos: (${bot.group.position.x.toFixed(1)}, ${bot.group.position.z.toFixed(1)}) → target: (${targetX.toFixed(1)}, ${targetZ.toFixed(1)}) | moved: ${moved} | hp: ${bot.hp}`);
+      console.log(`[BOT] ${bot.name} | ${action} | pos (${bot.group.position.x.toFixed(1)}, ${bot.group.position.z.toFixed(1)}) → target (${targetX.toFixed(1)}, ${targetZ.toFixed(1)}) | moved ${moved} | hp ${bot.hp}${bot.carrying ? ' | 🚩'+bot.carrying : ''}`);
     }
 
-    // Update name tag
+    // Name tag
     if (frameCount % 3 === 0) {
       const wp = new THREE.Vector3(bot.group.position.x, 2.3, bot.group.position.z);
       const sp = wp.clone().project(camera);
@@ -807,8 +867,8 @@ function updateBots(dt, t) {
   }
 }
 
-function findBotTargetById(id) {
-  if (id === localId) return { group: { position: camera.position }, isLocal: true };
+function findEntityById(id) {
+  if (id === localId) return { position: camera.position, isLocal: true, team: localTeam, alive };
   const p = players.get(id);
   if (p) return p;
   const b = bots.find(b => b.id === id);
@@ -816,6 +876,7 @@ function findBotTargetById(id) {
   return null;
 }
 
+/* ===== PROJECTILE UPDATE ===== */
 function updateProjectiles(dt) {
   for (let i = projectiles.length - 1; i >= 0; i--) {
     const p = projectiles[i];
@@ -823,6 +884,7 @@ function updateProjectiles(dt) {
     p.mesh.position.z += p.vz * dt;
     p.life -= dt;
 
+    // Hit local player
     if (p.team !== localTeam && alive && invulnT <= 0) {
       const dx = p.mesh.position.x - camera.position.x;
       const dz = p.mesh.position.z - camera.position.z;
@@ -833,12 +895,19 @@ function updateProjectiles(dt) {
         $('damage-vignette').classList.add('on');
         setTimeout(() => $('damage-vignette').classList.remove('on'), 200);
         updateHud();
-        if (health <= 0) { alive = false; respawnTimer = RESPAWN; toast('KILLED'); }
+        if (health <= 0) {
+          if (practiceMode) {
+            alive = false; respawnTimer = RESPAWN; toast('KILLED');
+          } else {
+            die(null, false);
+          }
+        }
         scene.remove(p.mesh); p.mesh.geometry.dispose(); p.mesh.material.dispose();
         projectiles.splice(i, 1); continue;
       }
     }
 
+    // Hit bots
     let hitBot = false;
     for (const b of bots) {
       if (!b.alive || b.team === p.team) continue;
@@ -847,7 +916,10 @@ function updateProjectiles(dt) {
       if (dx * dx + dz * dz < 1.2) {
         b.hp -= p.dmg;
         hitBot = true;
-        if (b.hp <= 0) { b.alive = false; b.group.visible = false; b.respawnTimer = RESPAWN; b.carrying = null; }
+        if (b.hp <= 0) {
+          b.alive = false; b.group.visible = false; b.respawnTimer = RESPAWN;
+          b.carrying = null;
+        }
         break;
       }
     }
@@ -1232,7 +1304,6 @@ function update(dt, t) {
     if (roundTime <= 0) { roundTime = 0; endMatch(scoreBlue > scoreRed ? 'blue' : 'red'); return; }
   }
 
-  // Track player velocity for bot lead-aim
   playerVel.set(
     (camera.position.x - lastPlayerPos.x) / Math.max(dt, 0.001),
     0,
@@ -1339,7 +1410,14 @@ function update(dt, t) {
         target.group.position.x = target.baseX + Math.sin(t * target.speed + target.phase) * 1.5;
         target.group.position.z = target.baseZ + Math.cos(t * target.speed * .7 + target.phase) * 0.8;
         target.group.rotation.y = Math.sin(t + target.phase) * .15;
+        // Range targets fire at player
+        target.fireTimer -= dt;
+        if (target.fireTimer <= 0) {
+          rangeTargetFire(target);
+          target.fireTimer = rand(RANGE_FIRE_DELAY[0], RANGE_FIRE_DELAY[1]);
+        }
       }
+      updateProjectiles(dt);
     } else if (practiceVariant === 'botmatch') {
       updateBots(dt, t);
       updateProjectiles(dt);
