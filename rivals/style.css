@@ -54,4 +54,47 @@ header{display:flex;align-items:center;gap:clamp(8px,2vw,22px);padding:12px clam
 .actions button{width:76px;height:76px;border-radius:50%;color:white;background:#ff4c7340;border:1px solid #ff708e}
 .actions #jump-btn{width:60px;height:60px;background:#41d2ff30;border-color:#41d2ff}
 #hint{position:absolute;bottom:16px;left:50%;transform:translateX(-50%);white-space:nowrap;font:700 9px Orbitron;color:#ecf1ff99;letter-spacing:.1em}
-@media(max-width:600px){header{padding:9px;gap:8px}.brand>b{padding:7px}.brand{font-size:11px}.stat{min-width:48px;font-size:8px}.stat strong{font-size:17px}.meter{width:55px}.score{top:68px;font-size:9px}#hint{display:none}.panel p{font-size:16px}.controls span{font-size:14px}}
+@media(max-width:600px){
+ header{padding:9px;gap:8px}
+ .brand>b{padding:7px}
+ .brand{font-size:11px}
+ .stat{min-width:48px;font-size:8px}
+ .stat strong{font-size:17px}
+ .meter{width:55px}
+ .score{top:68px;font-size:9px}
+ #hint{display:none}
+ .panel p{font-size:16px}
+ .controls span{font-size:14px}
+}
+/* Mobile FPS landscape layout */
+@media (orientation:landscape) and (max-height:600px){
+ .overlay{padding:8px}
+ .panel{width:min(760px,96vw);max-height:96dvh;overflow:auto;padding:clamp(12px,2.4vh,22px) clamp(18px,3vw,34px)}
+ h1{font-size:clamp(28px,6vh,46px);margin:5px 0}
+ h1 span{font-size:13px;margin-top:4px}
+ .subtitle{font-size:10px}
+ .panel p{font-size:clamp(12px,2.6vh,16px);margin:8px 0}
+ .controls{grid-template-columns:1fr 1fr;gap:8px;margin:10px 0}
+ .controls div{padding:7px}
+ .controls span{font-size:clamp(11px,2.3vh,14px)}
+ .primary,.secondary{padding:10px;min-height:40px}
+ .panel small{margin-top:7px;font-size:10px}
+ header{padding:7px 18px;gap:18px}
+ .brand>b{padding:6px}
+ .brand{font-size:12px}
+ .brand small{font-size:7px}
+ .stat{min-width:58px}
+ .stat strong{font-size:17px}
+ .meter{width:65px}
+ .score{top:58px;padding:5px 10px}
+ #mobile{height:56%}
+ #joy-base{width:94px;height:94px;left:22px;bottom:14px}
+ #joy-knob{width:42px;height:42px}
+ .actions{right:20px;bottom:14px;gap:10px}
+ .actions button{width:66px;height:66px}
+ .actions #jump-btn{width:52px;height:52px}
+ #hint{bottom:8px;font-size:8px}
+}
+@media (orientation:portrait) and (max-width:900px){#rotate-notice{display:flex}}
+#rotate-notice{display:none;position:fixed;inset:0;z-index:100;background:#070b18;color:#f5f7ff;align-items:center;justify-content:center;text-align:center;padding:28px;font:700 16px Orbitron;letter-spacing:.04em}
+#rotate-notice span{display:block;font:600 13px Rajdhani;color:#b8c8ee;margin-top:12px}
