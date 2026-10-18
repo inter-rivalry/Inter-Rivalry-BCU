@@ -1,109 +1,696 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<meta name="theme-color" content="#080b16">
+<meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0,
+               user-scalable=no, viewport-fit=cover">
+
+<meta name="theme-color" content="#080b17">
+<meta name="description" content="INTER RIVALRY: RIVALS - FPS Arena">
+
 <title>INTER RIVALRY: RIVALS</title>
-<link rel="stylesheet" href="style.css">
+
+<style>
+:root {
+    --bg: #080b17;
+    --panel: rgba(10, 16, 34, 0.94);
+    --blue: #27aaff;
+    --red: #ff2348;
+    --white: #f5f8ff;
+}
+
+* {
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+}
+
+html,
+body {
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    background: var(--bg);
+    color: var(--white);
+    font-family: Arial, Helvetica, sans-serif;
+    overscroll-behavior: none;
+}
+
+body {
+    position: fixed;
+    inset: 0;
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: none;
+}
+
+button {
+    font: inherit;
+    color: white;
+    border: 1px solid rgba(255,255,255,0.22);
+    cursor: pointer;
+    touch-action: none;
+}
+
+/* MAIN GAME AREA */
+
+#game-root {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background:
+        radial-gradient(ellipse at center,
+        #17152c 0%,
+        #090d1a 65%,
+        #060812 100%);
+    isolation: isolate;
+}
+
+#game-root canvas {
+    position: absolute;
+    inset: 0;
+    display: block;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+    outline: none;
+}
+
+/* ROTATE PHONE NOTICE */
+
+#rotate-notice {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 15px;
+    padding: 24px;
+    text-align: center;
+    background: #080b17;
+}
+
+#rotate-notice .rotate-icon {
+    font-size: 52px;
+}
+
+#rotate-notice h2 {
+    margin: 0;
+    color: var(--blue);
+    font-size: 24px;
+    letter-spacing: 3px;
+}
+
+#rotate-notice p {
+    max-width: 290px;
+    color: #c8d2e8;
+    line-height: 1.6;
+}
+
+/*
+  Do not rotate the game elements with CSS.
+  Rotate the physical phone to landscape instead.
+*/
+
+@media (orientation: portrait) {
+    #rotate-notice {
+        display: flex;
+    }
+}
+
+/* START SCREEN */
+
+#start {
+    position: absolute;
+    inset: 0;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 18px;
+    overflow-y: auto;
+    background:
+        radial-gradient(ellipse at 50% 45%,
+        rgba(47, 35, 86, 0.88),
+        rgba(5, 9, 23, 0.97) 72%);
+}
+
+.start-card {
+    width: min(680px, 100%);
+    max-height: 100%;
+    overflow-y: auto;
+    padding: clamp(16px, 3vw, 30px);
+    border: 1px solid rgba(39,170,255,0.42);
+    border-radius: 12px;
+    background: rgba(8, 13, 30, 0.96);
+    box-shadow:
+        0 0 35px rgba(0, 106, 255, 0.13),
+        inset 0 0 25px rgba(0, 80, 255, 0.04);
+    text-align: center;
+}
+
+.brand {
+    margin: 0 0 8px;
+    color: var(--blue);
+    font-size: clamp(12px, 2vw, 16px);
+    font-weight: 900;
+    letter-spacing: 5px;
+}
+
+#start h1 {
+    margin: 4px 0;
+    font-size: clamp(36px, 7vw, 76px);
+    font-weight: 1000;
+    font-style: italic;
+    line-height: 1;
+    letter-spacing: 2px;
+}
+
+#start h1 span {
+    color: var(--blue);
+}
+
+.phase {
+    margin: 12px 0;
+    color: var(--blue);
+    font-size: 12px;
+    font-weight: 900;
+    letter-spacing: 5px;
+}
+
+.start-description {
+    margin: 12px 0 18px;
+    color: #c5cee2;
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+.control-info {
+    margin: 12px auto 20px;
+    padding: 13px;
+    border: 1px solid rgba(255,255,255,0.14);
+    background: rgba(255,255,255,0.035);
+    color: #d6e1f7;
+    font-size: 12px;
+    line-height: 1.9;
+    text-align: left;
+}
+
+.control-info strong {
+    color: var(--blue);
+    letter-spacing: 1px;
+}
+
+.primary-button {
+    min-width: 160px;
+    padding: 15px 26px;
+    border: 0;
+    border-radius: 3px;
+    background: linear-gradient(100deg, #138dff, #36d4ff);
+    color: #06101e;
+    font-size: 16px;
+    font-weight: 1000;
+    letter-spacing: 3px;
+    box-shadow: 0 0 20px rgba(39,170,255,0.2);
+}
+
+.primary-button:active {
+    transform: scale(0.97);
+}
+
+.small-note {
+    margin: 14px 0 0;
+    color: #8493b0;
+    font-size: 11px;
+}
+
+/* GAME HUD */
+
+#hud {
+    position: absolute;
+    inset: 0;
+    z-index: 20;
+    pointer-events: none;
+}
+
+.hud-top {
+    position: absolute;
+    top: max(10px, env(safe-area-inset-top));
+    left: max(10px, env(safe-area-inset-left));
+    right: max(10px, env(safe-area-inset-right));
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+.hud-box {
+    min-width: 80px;
+    padding: 9px 12px;
+    border: 1px solid rgba(39,170,255,0.45);
+    border-radius: 4px;
+    background: rgba(5,10,24,0.84);
+    box-shadow: 0 3px 14px rgba(0,0,0,0.22);
+}
+
+.hud-label {
+    display: block;
+    margin-bottom: 4px;
+    color: #91b9e5;
+    font-size: 9px;
+    font-weight: 900;
+    letter-spacing: 2px;
+}
+
+.hud-value {
+    color: white;
+    font-size: 17px;
+    font-weight: 900;
+}
+
+#health {
+    color: #52ffac;
+}
+
+#ammo {
+    color: #ffd85b;
+}
+
+.health-track {
+    width: 100px;
+    height: 5px;
+    margin-top: 5px;
+    overflow: hidden;
+    background: #29344b;
+}
+
+#healthbar {
+    width: 100%;
+    height: 100%;
+    background: #36ef9a;
+    transition: width 0.15s;
+}
+
+.hud-buttons {
+    display: flex;
+    gap: 7px;
+    pointer-events: auto;
+}
+
+.hud-button {
+    min-width: 58px;
+    min-height: 40px;
+    padding: 8px 10px;
+    border-radius: 4px;
+    background: rgba(6,13,30,0.9);
+    font-size: 11px;
+    font-weight: 900;
+}
+
+.hud-button:active {
+    background: #164a7a;
+}
+
+#crosshair {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 18px;
+    height: 18px;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+}
+
+#crosshair::before,
+#crosshair::after {
+    position: absolute;
+    content: "";
+    background: rgba(255,255,255,0.95);
+    box-shadow: 0 0 3px #000;
+}
+
+#crosshair::before {
+    width: 2px;
+    height: 18px;
+    left: 8px;
+    top: 0;
+}
+
+#crosshair::after {
+    width: 18px;
+    height: 2px;
+    left: 0;
+    top: 8px;
+}
+
+#hit {
+    display: none;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 27px;
+    height: 27px;
+    border: 3px solid var(--red);
+    transform: translate(-50%, -50%) rotate(45deg);
+    pointer-events: none;
+}
+
+#toast {
+    display: none;
+    position: absolute;
+    top: 23%;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 9px 15px;
+    border: 1px solid rgba(39,170,255,0.6);
+    border-radius: 3px;
+    background: rgba(5,10,24,0.92);
+    color: white;
+    font-size: 12px;
+    font-weight: 900;
+    letter-spacing: 2px;
+    text-align: center;
+    white-space: nowrap;
+}
+
+/* MOBILE CONTROLS */
+
+#mobile {
+    display: block;
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+}
+
+#joy-zone {
+    position: absolute;
+    left: max(18px, env(safe-area-inset-left));
+    bottom: max(20px, env(safe-area-inset-bottom));
+    width: 130px;
+    height: 130px;
+    border-radius: 50%;
+    pointer-events: auto;
+    touch-action: none;
+}
+
+#joy-base {
+    position: absolute;
+    inset: 8px;
+    border: 2px solid rgba(112,191,255,0.65);
+    border-radius: 50%;
+    background: rgba(8,35,70,0.34);
+    box-shadow: inset 0 0 20px rgba(39,170,255,0.12);
+}
+
+#joy-knob {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 49px;
+    height: 49px;
+    margin-left: -24.5px;
+    margin-top: -24.5px;
+    border: 2px solid rgba(255,255,255,0.7);
+    border-radius: 50%;
+    background: rgba(39,170,255,0.62);
+    box-shadow: 0 0 12px rgba(39,170,255,0.25);
+    pointer-events: none;
+}
+
+#actions {
+    position: absolute;
+    right: max(15px, env(safe-area-inset-right));
+    bottom: max(15px, env(safe-area-inset-bottom));
+    display: flex;
+    align-items: flex-end;
+    gap: 10px;
+    pointer-events: auto;
+}
+
+.action-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: clamp(54px, 9vw, 76px);
+    height: clamp(54px, 9vw, 76px);
+    border-radius: 50%;
+    background: rgba(10,18,38,0.86);
+    font-size: 10px;
+    font-weight: 1000;
+    letter-spacing: 1px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+    touch-action: none;
+}
+
+#fire-btn {
+    width: clamp(70px, 11vw, 92px);
+    height: clamp(70px, 11vw, 92px);
+    border: 2px solid #ff526d;
+    background: rgba(190,18,49,0.8);
+    color: white;
+    font-size: 13px;
+}
+
+#jump-btn {
+    border-color: rgba(39,170,255,0.8);
+}
+
+#reload-btn {
+    border-color: rgba(255,216,91,0.85);
+    color: #ffe28b;
+}
+
+.action-button:active {
+    filter: brightness(1.4);
+    transform: scale(0.95);
+}
+
+/* PAUSE SCREEN */
+
+#pause {
+    display: none;
+    position: absolute;
+    inset: 0;
+    z-index: 200;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    background: rgba(3,6,17,0.83);
+}
+
+.pause-card {
+    width: min(350px, 100%);
+    padding: 25px;
+    border: 1px solid rgba(39,170,255,0.5);
+    background: var(--panel);
+    text-align: center;
+}
+
+#pause h2 {
+    margin: 0 0 15px;
+    color: var(--blue);
+    letter-spacing: 4px;
+}
+
+#pause-score {
+    margin-bottom: 18px;
+    color: #d4dced;
+}
+
+.pause-card button {
+    width: 100%;
+    margin-top: 10px;
+}
+
+/* SHORT LANDSCAPE SCREENS */
+
+@media (orientation: landscape) and (max-height: 430px) {
+    .start-card {
+        width: min(720px, 94%);
+        padding: 12px 20px;
+    }
+
+    #start h1 {
+        font-size: clamp(32px, 7vh, 55px);
+    }
+
+    .brand {
+        margin-bottom: 4px;
+    }
+
+    .phase {
+        margin: 6px 0;
+    }
+
+    .start-description {
+        margin: 6px 0 10px;
+    }
+
+    .control-info {
+        margin: 7px auto 10px;
+        padding: 7px 10px;
+        line-height: 1.55;
+    }
+
+    .primary-button {
+        padding: 10px 22px;
+    }
+
+    .small-note {
+        margin-top: 7px;
+    }
+
+    #joy-zone {
+        width: 110px;
+        height: 110px;
+    }
+
+    .hud-box {
+        padding: 6px 9px;
+    }
+
+    .hud-value {
+        font-size: 14px;
+    }
+}
+</style>
 </head>
+
 <body>
-<div id="game-root"></div>
 
+<div id="game-root">
+
+    <!-- START MENU -->
+    <section id="start">
+        <div class="start-card">
+
+            <p class="brand">INTER RIVALRY</p>
+
+            <h1>RIVALS <span>FPS</span></h1>
+
+            <p class="phase">// PHASE 1 — COLOUR CLASH ARENA</p>
+
+            <p class="start-description">
+                Enter the arena. Move through cover, find your enemies
+                and fight for victory.
+            </p>
+
+            <div class="control-info">
+                <strong>PC CONTROLS</strong><br>
+                WASD: Move · Mouse: Aim<br>
+                Click: Shoot · Space: Jump<br>
+                R: Reload · V: FP/SP · Esc: Pause
+                <br><br>
+                <strong>MOBILE CONTROLS</strong><br>
+                Left joystick: Move<br>
+                Drag the right side: Aim<br>
+                FIRE: Shoot · JUMP: Jump<br>
+                RELOAD: Reload · FP/SP: Change view
+            </div>
+
+            <button id="start-btn" class="primary-button">
+                ENTER ARENA
+            </button>
+
+            <p class="small-note">
+                PRACTICE MODE · LOCAL ENEMIES · PHASE 1
+            </p>
+
+        </div>
+    </section>
+
+    <!-- HUD -->
+    <div id="hud">
+
+        <div class="hud-top">
+
+            <div class="hud-box">
+                <span class="hud-label">HEALTH</span>
+                <span class="hud-value" id="health">100</span>
+                <div class="health-track">
+                    <div id="healthbar"></div>
+                </div>
+            </div>
+
+            <div class="hud-box">
+                <span class="hud-label">AMMO</span>
+                <span class="hud-value" id="ammo">30 / 30</span>
+            </div>
+
+            <div class="hud-box">
+                <span class="hud-label">ELIMINATIONS</span>
+                <span class="hud-value" id="score">0</span>
+            </div>
+
+            <div class="hud-box">
+                <span class="hud-label">ENEMIES</span>
+                <span class="hud-value" id="count">8</span>
+            </div>
+
+            <div class="hud-buttons">
+                <button id="view-btn" class="hud-button">FP / SP</button>
+                <button id="pause-btn" class="hud-button">PAUSE</button>
+            </div>
+
+        </div>
+
+        <div id="crosshair"></div>
+        <div id="hit"></div>
+        <div id="toast"></div>
+
+    </div>
+
+    <!-- MOBILE CONTROLS -->
+    <div id="mobile">
+
+        <div id="joy-zone">
+            <div id="joy-base"></div>
+            <div id="joy-knob"></div>
+        </div>
+
+        <div id="actions">
+            <button id="reload-btn" class="action-button">RELOAD</button>
+            <button id="jump-btn" class="action-button">JUMP</button>
+            <button id="fire-btn" class="action-button">FIRE</button>
+        </div>
+
+    </div>
+
+    <!-- PAUSE MENU -->
+    <section id="pause">
+        <div class="pause-card">
+            <h2>PAUSED</h2>
+            <p id="pause-score">Take a breath, fighter.</p>
+
+            <button id="resume-btn" class="primary-button">
+                RESUME
+            </button>
+
+            <button id="restart-btn" class="primary-button">
+                RESTART
+            </button>
+        </div>
+    </section>
+
+</div>
+
+<!-- PORTRAIT NOTICE -->
 <div id="rotate-notice">
-  <div>
-    ↻ ROTATE YOUR PHONE
-    <span>INTER RIVALRY: RIVALS is designed for landscape gameplay.</span>
-  </div>
+    <div class="rotate-icon">📱 ↻</div>
+    <h2>ROTATE YOUR PHONE</h2>
+    <p>
+        INTER RIVALRY: RIVALS is designed for landscape mode.
+        Turn your phone sideways to enter the arena.
+    </p>
 </div>
 
-<section id="start" class="overlay">
-  <div class="panel">
-    <div class="eyebrow">INTER RIVALRY PRESENTS</div>
-    <h1>RIVALS <span>// PHASE 1</span></h1>
-    <p class="subtitle">COLOUR CLASH — PRACTICE ARENA</p>
-    <p>Enter the arena, move around the battlefield, aim, and shoot the targets.</p>
+<script type="module" src="./game.js"></script>
 
-    <div class="controls">
-      <div>
-        <b>PC CONTROLS</b>
-        <span>WASD: Move · Mouse: Aim · Click: Shoot · Space: Jump · R: Reload</span>
-      </div>
-      <div>
-        <b>MOBILE CONTROLS</b>
-        <span>Joystick: Move · Drag: Aim · FIRE · JUMP · RELOAD</span>
-      </div>
-    </div>
-
-    <button id="start-btn" class="primary">ENTER THE ARENA</button>
-    <small>INTER RIVALRY · RIVALS</small>
-  </div>
-</section>
-
-<div id="hud" class="hidden">
-  <header>
-    <div class="brand">
-      <b>IR</b>
-      <span>RIVALS<small>COLOUR CLASH</small></span>
-    </div>
-
-    <div class="stat">
-      HEALTH
-      <strong id="health">100</strong>
-      <div class="meter"><i id="healthbar"></i></div>
-    </div>
-
-    <div class="stat">
-      AMMO
-      <strong id="ammo">12 <em>/ 12</em></strong>
-    </div>
-
-    <button id="view-btn" aria-label="Switch camera view">FP</button>
-    <button id="pause-btn" aria-label="Pause game">Ⅱ</button>
-  </header>
-
-  <div class="score">
-    🔵 BLUE <b id="score">0</b>
-    &nbsp;|&nbsp;
-    🔴 TARGETS <b id="count">8</b>
-  </div>
-
-  <div id="crosshair">
-    <i></i><i></i><i></i><i></i><b></b>
-  </div>
-
-  <div id="hit">✕</div>
-  <div id="toast"></div>
-
-  <div id="mobile" class="hidden">
-    <div id="joy-zone">
-      <div id="joy-base">
-        <div id="joy-knob"></div>
-      </div>
-    </div>
-
-    <div class="actions">
-      <button id="reload-btn" aria-label="Reload ammunition">RELOAD</button>
-      <button id="jump-btn">JUMP</button>
-      <button id="fire-btn">FIRE</button>
-    </div>
-  </div>
-
-  <div id="hint">
-    WASD MOVE · MOUSE AIM · CLICK SHOOT · R RELOAD
-  </div>
-</div>
-
-<section id="pause" class="overlay hidden">
-  <div class="panel compact">
-    <div class="eyebrow">MATCH PAUSED</div>
-    <h2>TAKE A BREATHER</h2>
-    <p>Targets hit: <b id="pause-score">0</b></p>
-    <button id="resume-btn" class="primary">RESUME</button>
-    <button id="restart-btn" class="secondary">RESTART PRACTICE</button>
-  </div>
-</section>
-
-<script type="module" src="game.js"></script>
 </body>
 </html>
