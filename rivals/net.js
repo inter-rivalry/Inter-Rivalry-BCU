@@ -1,6 +1,6 @@
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
 
-const SUPABASE_URL = 'https://qfkxvflyzucvkeyucbzn.supabase.co/rest/v1/';
+const SUPABASE_URL = 'https://qfkxvflyzucvkeyucbzn.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFma3h2Zmx5enVjdmtleXVjYnpuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODgxODY2NTYsImV4cCI6MjEwMzc2MjY1Nn0.1bhOccN9aVzQKOm8VPctaBHZZznXpdTLh7Xzac9JOwU';
 
 export class Net {
