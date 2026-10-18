@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+  <meta name="theme-color" content="#080b16">
+  <title>INTER RIVALRY: RIVALS — Phase 1</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <div id="game-root"></div>
+
+  <!-- START SCREEN -->
+  <section id="start" class="overlay">
+    <div class="panel">
+      <div class="eyebrow">INTER RIVALRY PRESENTS</div>
+      <h1>RIVALS <span>// PHASE 1</span></h1>
+      <p class="subtitle">COLOUR CLASH — PRACTICE ARENA</p>
+      <p>Move through the arena, aim, and hit the glowing targets. This is the first single-player prototype.</p>
+      <div class="controls">
+        <div>
+          <b>PC</b>
+          <span>WASD move · Mouse aim · Click shoot · Space jump · R reload · Esc pause</span>
+        </div>
+        <div>
+          <b>ANDROID</b>
+          <span>Left joystick move · Drag right side to aim · FIRE and JUMP buttons</span>
+        </div>
+      </div>
+      <button id="start-btn" class="primary">ENTER THE ARENA</button>
+      <small>Phase 1 prototype · Online multiplayer is not enabled yet</small>
+    </div>
+  </section>
+
+  <!-- HUD -->
+  <div id="hud" class="hidden">
+    <header>
+      <div class="brand">
+        <b>IR</b>
+        <span>RIVALS<small>COLOUR CLASH</small></span>
+      </div>
+      <div class="stat">
+        HEALTH
+        <strong id="health">100</strong>
+        <div class="meter"><i id="healthbar"></i></div>
+      </div>
+      <div class="stat">
+        AMMO
+        <strong id="ammo">12 <em>/ 12</em></strong>
+      </div>
+      <button id="pause-btn">Ⅱ</button>
+    </header>
+
+    <div class="score">
+      🔵 BLUE <b id="score">0</b>　|　🔴 TARGETS <b id="count">8</b>
+    </div>
+
+    <div id="crosshair">
+      <i></i><i></i><i></i><i></i><b></b>
+    </div>
+
+    <div id="hit">✕</div>
+    <div id="toast"></div>
+
+    <div id="mobile" class="hidden">
+      <div id="joy-zone">
+        <div id="joy-base">
+          <div id="joy-knob"></div>
+        </div>
+      </div>
+      <div class="actions">
+        <button id="jump-btn">JUMP</button>
+        <button id="fire-btn">FIRE</button>
+      </div>
+    </div>
+
+    <div id="hint">WASD MOVE　•　MOUSE AIM　•　CLICK SHOOT　•　R RELOAD</div>
+  </div>
+
+  <!-- PAUSE SCREEN -->
+  <section id="pause" class="overlay hidden">
+    <div class="panel compact">
+      <div class="eyebrow">MATCH PAUSED</div>
+      <h2>TAKE A BREATHER</h2>
+      <p>Targets hit: <b id="pause-score">0</b></p>
+      <button id="resume-btn" class="primary">RESUME</button>
+      <button id="restart-btn" class="secondary">RESTART PRACTICE</button>
+    </div>
+  </section>
+
+  <script type="module" src="game.js"></script>
+</body>
+</html>
