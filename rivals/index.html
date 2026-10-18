@@ -2,121 +2,108 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta
-    name="viewport"
-    content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover"
-  />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
   <meta name="theme-color" content="#080b16" />
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="RIVALS" />
-  <meta name="description" content="INTER RIVALRY: RIVALS — Phase 1 practice arena. Move, aim, and take down humanoid targets in a colour-clash arena." />
+  <meta name="description" content="INTER RIVALRY: RIVALS — Phase 1 practice arena." />
   <title>INTER RIVALRY: RIVALS — Phase 1</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
 
-  <!-- Three.js canvas mounts here -->
   <div id="game-root"></div>
 
-  <!-- Portrait warning (mobile) -->
-  <div id="rotate-notice" role="alert" aria-live="polite">
-    <div>
-      ↻ ROTATE YOUR PHONE
-      <span>INTER RIVALRY: RIVALS is designed for landscape gameplay.</span>
-    </div>
-  </div>
-
-  <!-- ================= START SCREEN ================= -->
+  <!-- START -->
   <section id="start" class="overlay" aria-label="Start screen">
     <div class="panel">
       <div class="eyebrow">INTER RIVALRY PRESENTS</div>
       <h1>RIVALS <span>// PHASE 1</span></h1>
       <p class="subtitle">COLOUR CLASH — PRACTICE ARENA</p>
-      <p>
-        Move through the arena, aim, and take down the glowing humanoid targets.
-        This is the first single-player prototype.
-      </p>
+      <p>Move, aim, dodge incoming fire. Headshots score double. Kills build your combo.</p>
 
       <div class="controls">
-        <div>
-          <b>PC</b>
-          <span>WASD move · Mouse aim · Click shoot · Space jump · R reload · Esc pause</span>
-        </div>
-        <div>
-          <b>ANDROID</b>
-          <span>Left joystick move · Drag right side to aim · FIRE, JUMP and ↻ buttons</span>
-        </div>
+        <div><b>PC</b><span>WASD move · Mouse aim · Click shoot · Space jump · Shift dash · R reload · Esc pause</span></div>
+        <div><b>ANDROID</b><span>Left joystick move · Drag right to aim · FIRE / JUMP / DASH / ↻ buttons</span></div>
       </div>
 
       <button id="start-btn" class="primary" type="button">ENTER THE ARENA</button>
-      <small>Phase 1 prototype · Online multiplayer is not enabled yet</small>
+      <p class="best">BEST: <b id="best-start">0</b></p>
+      <small>Phase 1 prototype · 120-second round</small>
     </div>
   </section>
 
-  <!-- ================= IN-GAME HUD ================= -->
+  <!-- HUD -->
   <div id="hud" class="hidden" aria-live="polite">
-
     <header>
       <div class="brand">
         <b>IR</b>
-        <span>
-          RIVALS
-          <small>COLOUR CLASH</small>
-        </span>
+        <span>RIVALS<small>COLOUR CLASH</small></span>
       </div>
-
-      <div class="stat">
-        HEALTH
-        <strong id="health">100</strong>
-        <div class="meter"><i id="healthbar"></i></div>
-      </div>
-
-      <div class="stat">
-        AMMO
-        <strong id="ammo">12 <em>/ 12</em></strong>
-      </div>
-
+      <div class="stat">HEALTH<strong id="health">100</strong><div class="meter"><i id="healthbar"></i></div></div>
+      <div class="stat">AMMO<strong id="ammo">12 <em>/ 12</em></strong></div>
       <button id="pause-btn" type="button" aria-label="Pause game">Ⅱ</button>
     </header>
 
     <div class="score">
-      🔵 BLUE <b id="score">0</b>　|　🔴 TARGETS <b id="count">8</b>
+      ⏱ <b id="timer">2:00</b>　|　🔵 <b id="score">0</b>　|　🔴 <b id="count">8</b>
     </div>
 
-    <div id="crosshair" aria-hidden="true">
-      <i></i><i></i><i></i><i></i><b></b>
-    </div>
+    <div id="combo" class="hidden">×2</div>
+    <div id="killfeed"></div>
 
+    <div id="crosshair" aria-hidden="true"><i></i><i></i><i></i><i></i><b></b></div>
     <div id="hit" aria-hidden="true">✕</div>
     <div id="toast" role="status" aria-live="polite"></div>
 
-    <!-- Mobile controls -->
+    <div id="damage-vignette"></div>
+    <div id="damage-ring">
+      <div class="diag top"></div>
+      <div class="diag right"></div>
+      <div class="diag bottom"></div>
+      <div class="diag left"></div>
+    </div>
+
     <div id="mobile" class="hidden">
-      <div id="joy-zone">
-        <div id="joy-base">
-          <div id="joy-knob"></div>
-        </div>
-      </div>
+      <div id="joy-zone"><div id="joy-base"><div id="joy-knob"></div></div></div>
       <div class="actions">
-        <button id="reload-btn" type="button" aria-label="Reload">↻</button>
+        <div class="actions-col">
+          <button id="dash-btn" type="button" aria-label="Dash">DASH</button>
+          <button id="reload-btn" type="button" aria-label="Reload">↻</button>
+        </div>
         <button id="jump-btn" type="button" aria-label="Jump">JUMP</button>
         <button id="fire-btn" type="button" aria-label="Fire">FIRE</button>
       </div>
     </div>
 
-    <div id="hint">WASD MOVE　•　MOUSE AIM　•　CLICK SHOOT　•　R RELOAD</div>
+    <div id="hint">WASD MOVE　•　MOUSE AIM　•　CLICK SHOOT　•　SHIFT DASH　•　R RELOAD</div>
   </div>
 
-  <!-- ================= PAUSE SCREEN ================= -->
+  <!-- PAUSE -->
   <section id="pause" class="overlay hidden" aria-label="Paused">
     <div class="panel compact">
       <div class="eyebrow">MATCH PAUSED</div>
       <h2>TAKE A BREATHER</h2>
-      <p>Targets hit: <b id="pause-score">0</b></p>
+      <p>Score so far: <b id="pause-score">0</b></p>
       <button id="resume-btn" class="primary" type="button">RESUME</button>
-      <button id="restart-btn" class="secondary" type="button">RESTART PRACTICE</button>
+      <button id="restart-btn" class="secondary" type="button">RESTART</button>
+    </div>
+  </section>
+
+  <!-- GAME OVER -->
+  <section id="gameover" class="overlay hidden" aria-label="Game over">
+    <div class="panel compact">
+      <div class="eyebrow" id="go-eyebrow">ROUND COMPLETE</div>
+      <h2 id="go-title" class="win">TIME'S UP</h2>
+      <div class="go-stats">
+        <div><span>SCORE</span><b id="go-score">0</b></div>
+        <div><span>ACCURACY</span><b id="go-accuracy">0%</b></div>
+        <div><span>HEADSHOTS</span><b id="go-headshots">0</b></div>
+        <div><span>BEST</span><b id="go-best">0</b></div>
+      </div>
+      <button id="go-retry" class="primary" type="button">PLAY AGAIN</button>
     </div>
   </section>
 
