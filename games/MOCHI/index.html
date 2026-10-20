@@ -13,13 +13,31 @@
   <div id="loading" class="loading">🍡 Building the MOCHI arena…</div>
   <canvas id="game"></canvas>
 
+  <!-- NOT LOGGED IN -->
+  <div id="loginScreen" class="screen hidden">
+    <div class="menu-card">
+      <div class="menu-logo">
+        <span class="brand-icon big">🍡</span>
+        <h1>MOCHI</h1>
+      </div>
+      <h2 class="screen-title" style="text-align:center">LOG IN FIRST</h2>
+      <p class="menu-sub" style="text-align:center;margin-bottom:22px">
+        Play MOCHI from your INTER RIVALRY account.
+      </p>
+      <a id="loginLink" class="primary-button big" href="/login" style="text-align:center;text-decoration:none;display:block">
+        GO TO LOGIN
+      </a>
+    </div>
+  </div>
+
   <!-- MAIN MENU -->
-  <div id="mainMenu" class="screen">
+  <div id="mainMenu" class="screen hidden">
     <div class="menu-card">
       <div class="menu-logo">
         <span class="brand-icon big">🍡</span>
         <h1>MOCHI</h1>
         <p class="tagline">Two players. One little world. Endless chaos.</p>
+        <div class="ir-badge" id="irBadge">…</div>
       </div>
       <div class="menu-actions">
         <button id="playBtn" class="primary-button big">PLAY</button>
@@ -28,8 +46,9 @@
           <button id="settingsBtn" class="ghost-button">⚙ SETTINGS</button>
           <button id="helpMenuBtn" class="ghost-button">? HOW TO PLAY</button>
         </div>
+        <button id="historyBtn" class="ghost-button" style="width:100%">📜 MATCH HISTORY</button>
       </div>
-      <div class="menu-footer">v0.4 · Phase C</div>
+      <div class="menu-footer">v0.6 · Phase C</div>
     </div>
   </div>
 
@@ -37,18 +56,13 @@
   <div id="characterScreen" class="screen hidden">
     <div class="menu-card">
       <button class="back-button" data-back="mainMenu">← BACK</button>
-      <h2 class="screen-title">WHO ARE YOU?</h2>
-      <label class="field">
-        <span>Your name</span>
-        <input id="nameInput" maxlength="16" placeholder="Player" autocomplete="off" />
-      </label>
+      <h2 class="screen-title">PICK YOUR MOCHI</h2>
       <div class="char-grid" id="charGrid"></div>
       <button id="charContinueBtn" class="primary-button big">CONTINUE</button>
-      <div id="charError" class="lobby-error hidden"></div>
     </div>
   </div>
 
-  <!-- CREATE ROOM -->
+  <!-- CREATE -->
   <div id="createScreen" class="screen hidden">
     <div class="menu-card">
       <button class="back-button" data-back="characterScreen">← BACK</button>
@@ -60,7 +74,7 @@
     </div>
   </div>
 
-  <!-- JOIN ROOM -->
+  <!-- JOIN -->
   <div id="joinScreen" class="screen hidden">
     <div class="menu-card">
       <button class="back-button" data-back="mainMenu">← BACK</button>
@@ -73,7 +87,7 @@
     </div>
   </div>
 
-  <!-- ROOM LOBBY -->
+  <!-- ROOM -->
   <div id="roomScreen" class="screen hidden">
     <div class="room-card">
       <div class="room-header">
@@ -107,47 +121,57 @@
     </div>
   </div>
 
-  <!-- SETTINGS SCREEN -->
+  <!-- SETTINGS -->
   <div id="settingsScreen" class="screen hidden">
     <div class="menu-card settings-card">
       <button class="back-button" id="settingsBackBtn">← BACK</button>
       <h2 class="screen-title">SETTINGS</h2>
 
       <div class="settings-section">
-        <div class="section-title">SOUND & EFFECTS</div>
-        <label class="toggle-row">
-          <span>Sound effects</span>
-          <input type="checkbox" id="soundToggle" checked />
-        </label>
-        <label class="toggle-row">
-          <span>Screen shake</span>
-          <input type="checkbox" id="shakeToggle" checked />
-        </label>
+        <div class="section-title">ON-SCREEN BUTTONS</div>
+        <div class="settings-note" style="margin-top:0">Move your thumb controls where they're comfortable.</div>
+        <button id="openLayoutBtn" class="primary-button" style="width:100%;margin-top:10px">🎛 EDIT CONTROL LAYOUT</button>
+        <button id="resetLayoutBtn" class="ghost-button full-width" style="margin-top:10px">RESET TO DEFAULT</button>
+      </div>
+
+      <div class="settings-section">
+        <div class="section-title">BUTTON SIZE</div>
+        <label class="slider-row"><span>Joystick & jump size</span><input type="range" id="sizeSlider" min="70" max="150" value="100" /><b id="sizeVal">100%</b></label>
+        <label class="slider-row"><span>Button opacity</span><input type="range" id="opacitySlider" min="30" max="100" value="70" /><b id="opacityVal">70%</b></label>
       </div>
 
       <div class="settings-section">
         <div class="section-title">CAMERA</div>
-        <label class="slider-row">
-          <span>Mouse / drag sensitivity</span>
-          <input type="range" id="sensSlider" min="1" max="20" value="10" />
-          <b id="sensVal">10</b>
-        </label>
-        <label class="slider-row">
-          <span>Camera distance</span>
-          <input type="range" id="distSlider" min="5" max="12" value="9" />
-          <b id="distVal">9</b>
-        </label>
+        <label class="slider-row"><span>Drag sensitivity</span><input type="range" id="sensSlider" min="1" max="20" value="10" /><b id="sensVal">10</b></label>
+        <label class="slider-row"><span>Camera distance</span><input type="range" id="distSlider" min="5" max="12" value="9" /><b id="distVal">9</b></label>
       </div>
 
       <div class="settings-section">
-        <div class="section-title">CONTROLS</div>
-        <p class="menu-sub">Click a key, then press the new key to rebind it.</p>
+        <div class="section-title">KEYBOARD CONTROLS</div>
         <div class="control-list" id="controlList"></div>
-        <button id="resetControlsBtn" class="ghost-button full-width">RESET TO DEFAULT</button>
+        <button id="resetControlsBtn" class="ghost-button full-width">RESET KEYS</button>
       </div>
+    </div>
+  </div>
 
-      <div class="settings-note">
-        Settings save automatically. Mobile always uses the joystick + buttons.
+  <!-- LAYOUT EDITOR -->
+  <div id="layoutEditor" class="layout-editor hidden">
+    <div class="layout-editor-top">
+      <div>
+        <strong>EDIT CONTROL LAYOUT</strong>
+        <div class="layout-editor-hint">Drag the joystick and jump button. Tap DONE when finished.</div>
+      </div>
+      <button id="layoutDoneBtn" class="primary-button">DONE</button>
+    </div>
+    <div class="layout-editor-stage" id="layoutStage">
+      <div class="layout-grid"></div>
+      <div class="draggable-control" id="editJoystick">
+        <div class="draggable-knob"></div>
+        <div class="draggable-label">JOYSTICK</div>
+      </div>
+      <div class="draggable-control" id="editJump">
+        <div class="draggable-jump">⬆</div>
+        <div class="draggable-label">JUMP</div>
       </div>
     </div>
   </div>
@@ -157,11 +181,20 @@
     <div class="menu-card">
       <button class="back-button" data-back="mainMenu">← BACK</button>
       <h2 class="screen-title">HOW TO PLAY</h2>
-      <p><b>Move:</b> your configured keys, or the on-screen joystick</p>
-      <p><b>Jump:</b> your configured jump key, or the JUMP button</p>
-      <p><b>Look around:</b> drag on the arena (or touch and drag)</p>
-      <p><b>Multiplayer:</b> Create a room, share the 5-letter code, both press READY.</p>
-      <p class="note">Chaos Button events arrive in Phase D.</p>
+      <p><b>Move:</b> drag the joystick (mobile) or use your configured keys</p>
+      <p><b>Jump:</b> tap JUMP or your configured key</p>
+      <p><b>Camera:</b> drag anywhere on the arena</p>
+      <p><b>Multiplayer:</b> Create a room, share the 5-letter code, both press READY</p>
+    </div>
+  </div>
+
+  <!-- MATCH HISTORY -->
+  <div id="historyScreen" class="screen hidden">
+    <div class="menu-card">
+      <button class="back-button" data-back="mainMenu">← BACK</button>
+      <h2 class="screen-title">MATCH HISTORY</h2>
+      <div id="histList" class="hist-list"></div>
+      <div id="histEmpty" class="hist-empty">No matches yet. Go play! 🍡</div>
     </div>
   </div>
 
@@ -177,31 +210,18 @@
       <div><strong>MOCHI</strong><small>CHAOS BUTTON</small></div>
     </div>
     <div class="score-hud">
-      <div class="score-pill" id="scorePill0">
-        <span class="dot-pink"></span>
-        <span id="scoreName0">P1</span>
-        <b id="scoreVal0">0</b>
-      </div>
-      <div class="score-pill" id="scorePill1">
-        <span class="dot-mint"></span>
-        <span id="scoreName1">P2</span>
-        <b id="scoreVal1">0</b>
-      </div>
+      <div class="score-pill"><span class="dot-pink"></span><span id="scoreName0">P1</span><b id="scoreVal0">0</b></div>
+      <div class="score-pill"><span class="dot-mint"></span><span id="scoreName1">P2</span><b id="scoreVal1">0</b></div>
     </div>
     <button id="helpBtn" class="icon-button">?</button>
   </header>
 
   <div class="bottom-hud hidden" id="gameBottomHud">
-    <div class="move-hint">
-      <span class="key">W</span><span class="key">A</span><span class="key">S</span><span class="key">D</span>
-      <span class="hint-label">MOVE</span>
-    </div>
     <div class="center-hud">
       <span class="hud-emoji" id="hudEmoji">✨</span>
       <div><strong id="hudLabel">NET</strong><div class="meter"><i></i></div></div>
       <span class="meter-count" id="hudCount">--</span>
     </div>
-    <button id="jumpBtn" class="jump-button">⬆ JUMP</button>
   </div>
 
   <div id="helpModal" class="modal hidden">
@@ -209,7 +229,8 @@
       <button id="closeHelp" class="close-button">×</button>
       <div class="modal-emoji">🎮</div>
       <h2>Quick help</h2>
-      <p><b>Move:</b> configured keys / joystick · <b>Jump:</b> configured key</p>
+      <p><b>Move:</b> joystick or configured keys</p>
+      <p><b>Jump:</b> JUMP button or jump key</p>
       <p><b>Camera:</b> drag on the arena</p>
       <button id="gotIt" class="primary-button">GOT IT</button>
     </div>
