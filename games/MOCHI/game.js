@@ -58,9 +58,9 @@ async function boot() {
    ============================================================ */
 const DEFAULTS = {
   sensitivity: 10, cameraDistance: 9,
-  joystickX: 15, joystickY: 78,
-  jumpX: 85, jumpY: 78,
-  buttonSize: 100, buttonOpacity: 70,
+  joystickX: 20, joystickY: 20, // 20% from left, 20% from bottom
+  jumpX: 20, jumpY: 20,         // 20% from right, 20% from bottom
+  buttonSize: 100, buttonOpacity: 80,
   keys: { up: 'w', down: 's', left: 'a', right: 'd', jump: ' ' }
 };
 let settings = structuredClone(DEFAULTS);
@@ -78,14 +78,14 @@ function saveSettings() {
 }
 
 /* ============================================================
-   CHARACTERS — ONLY TWO
+   CHARACTERS
    ============================================================ */
 const CHAR_BLUE = { id: 'blue', name: 'BLUE', body: '#6ec6ff', accent: '#a99aff', emoji: '💙' };
 const CHAR_PINK = { id: 'pink', name: 'PINK', body: '#ff8cc8', accent: '#a99aff', emoji: '🌸' };
 const CHARACTERS = [CHAR_BLUE, CHAR_PINK];
 
-let myCharacter = CHAR_BLUE;      // default; overwritten by selection
-let chosenForHost = CHAR_BLUE;    // what the host picked in character select
+let myCharacter = CHAR_BLUE;
+let chosenForHost = CHAR_BLUE;
 
 function oppositeOf(ch) {
   return ch.id === 'blue' ? CHAR_PINK : CHAR_BLUE;
@@ -110,7 +110,6 @@ let peerReady = false;
 let meReady = false;
 let inMatch = false;
 let lastMoveSent = 0;
-let currentMatchId = null;
 
 /* ============================================================
    DOM REFS
@@ -168,6 +167,10 @@ const hudCount        = document.querySelector('#hudCount');
 const histList        = document.querySelector('#histList');
 const histEmpty       = document.querySelector('#histEmpty');
 
+const joystickEl = document.querySelector('#joystickZone');
+const joystickKnob = document.querySelector('#joystickKnob');
+const jumpBtnEl = document.querySelector('#jumpBtnZone');
+
 const slotEls = [
   { el: document.querySelector('#slot0'), avatar: document.querySelector('#slotAvatar0'), name: document.querySelector('#slotName0'), ready: document.querySelector('#slotReady0') },
   { el: document.querySelector('#slot1'), avatar: document.querySelector('#slotAvatar1'), name: document.querySelector('#slotName1'), ready: document.querySelector('#slotReady1') }
@@ -176,8 +179,8 @@ const slotEls = [
 /* ============================================================
    NAV
    ============================================================ */
-playBtn.onclick         = () => showScreen('characterScreen');   // CREATE flow: pick color first
-joinMenuBtn.onclick     = () => showScreen('joinScreen');        // JOIN flow: no color pick
+playBtn.onclick         = () => showScreen('characterScreen');
+joinMenuBtn.onclick     = () => showScreen('joinScreen');
 settingsBtn.onclick     = () => { openSettings(); showScreen('settingsScreen'); };
 helpMenuBtn.onclick     = () => showScreen('helpMenuScreen');
 historyBtn.onclick      = () => { loadHistory(); showScreen('historyScreen'); };
@@ -185,7 +188,7 @@ roomSettingsBtn.onclick = () => { openSettings(); showScreen('settingsScreen'); 
 settingsBackBtn.onclick = () => showScreen(roomCode && !inMatch ? 'roomScreen' : 'mainMenu');
 
 /* ============================================================
-   CHARACTER SELECT (host only)
+   CHARACTER SELECT
    ============================================================ */
 function buildCharGrid() {
   charGrid.innerHTML = '';
@@ -213,69 +216,17 @@ charContinueBtn.onclick = () => {
 /* ============================================================
    SETTINGS UI
    ============================================================ */
-const KEY_LABELS = { up: 'Move up', down: 'Move down', left: 'Move left', right: 'Move right', jump: 'Jump' };
-let listeningFor = null;
-
-function prettyKey(k) {
-  if (k === ' ') return 'SPACE';
-  if (k === 'arrowup') return '↑';
-  if (k === 'arrowdown') return '↓';
-  if (k === 'arrowleft') return '←';
-  if (k === 'arrowright') return '→';
-  return k.toUpperCase();
-}
-
-function renderControls() {
-  controlList.innerHTML = '';
-  for (const action of Object.keys(KEY_LABELS)) {
-    const row = document.createElement('div');
-    row.className = 'control-row';
-    row.innerHTML = `<span class="control-label">${KEY_LABELS[action]}</span>`;
-    const keyBtn = document.createElement('button');
-    keyBtn.className = 'control-key';
-    keyBtn.dataset.action = action;
-    keyBtn.textContent = prettyKey(settings.keys[action]);
-    keyBtn.onclick = () => {
-      if (listeningFor) return;
-      listeningFor = action;
-      keyBtn.classList.add('listening');
-      keyBtn.textContent = '...';
-    };
-    row.appendChild(keyBtn);
-    controlList.appendChild(row);
-  }
-}
-
-window.addEventListener('keydown', e => {
-  if (!listeningFor) return;
-  e.preventDefault(); e.stopPropagation();
-  let key = e.key.toLowerCase();
-  if (e.code === 'Space') key = ' ';
-  const conflict = Object.entries(settings.keys).find(([a, k]) => a !== listeningFor && k === key);
-  if (conflict) { toast(`Already used for ${KEY_LABELS[conflict[0]]}`); return; }
-  settings.keys[listeningFor] = key;
-  saveSettings();
-  const action = listeningFor;
-  listeningFor = null;
-  document.querySelectorAll('.control-key').forEach(b => {
-    b.classList.remove('listening');
-    if (b.dataset.action === action) b.textContent = prettyKey(settings.keys[action]);
-  });
-});
-
 function openSettings() {
   sensSlider.value = settings.sensitivity; sensVal.textContent = settings.sensitivity;
   distSlider.value = settings.cameraDistance; distVal.textContent = settings.cameraDistance;
   sizeSlider.value = settings.buttonSize; sizeVal.textContent = settings.buttonSize + '%';
   opacitySlider.value = settings.buttonOpacity; opacityVal.textContent = settings.buttonOpacity + '%';
-  renderControls();
 }
 
 sensSlider.oninput    = () => { settings.sensitivity = +sensSlider.value; sensVal.textContent = sensSlider.value; saveSettings(); };
 distSlider.oninput    = () => { settings.cameraDistance = +distSlider.value; distVal.textContent = distSlider.value; saveSettings(); };
 sizeSlider.oninput    = () => { settings.buttonSize = +sizeSlider.value; sizeVal.textContent = sizeSlider.value + '%'; saveSettings(); applyButtonLayout(); };
 opacitySlider.oninput = () => { settings.buttonOpacity = +opacitySlider.value; opacityVal.textContent = opacitySlider.value + '%'; saveSettings(); applyButtonLayout(); };
-resetControlsBtn.onclick = () => { settings.keys = structuredClone(DEFAULTS.keys); saveSettings(); renderControls(); toast('Keys reset'); };
 
 /* ============================================================
    LAYOUT EDITOR
@@ -285,8 +236,8 @@ function closeLayoutEditor() { layoutEditor.classList.add('hidden'); applyButton
 openLayoutBtn.onclick  = openLayoutEditor;
 layoutDoneBtn.onclick  = closeLayoutEditor;
 resetLayoutBtn.onclick = () => {
-  settings.joystickX = DEFAULTS.joystickX; settings.joystickY = DEFAULTS.joystickY;
-  settings.jumpX = DEFAULTS.jumpX; settings.jumpY = DEFAULTS.jumpY;
+  settings.joystickX = 20; settings.joystickY = 20; // reset to 20% from left, 20% from bottom
+  settings.jumpX = 20; settings.jumpY = 20;         // reset to 20% from right, 20% from bottom
   saveSettings(); applyButtonLayout();
   if (!layoutEditor.classList.contains('hidden')) positionEditHandles();
   toast('Layout reset');
@@ -294,17 +245,17 @@ resetLayoutBtn.onclick = () => {
 
 function positionEditHandles() {
   editJoystick.style.left = `${settings.joystickX}%`;
-  editJoystick.style.top  = `${settings.joystickY}%`;
+  editJoystick.style.top  = `${100 - settings.joystickY}%`; // in layout editor we go top-down
   editJoystick.style.transform = 'translate(-50%,-50%)';
-  editJump.style.left = `${settings.jumpX}%`;
-  editJump.style.top  = `${settings.jumpY}%`;
+  editJump.style.left = `${100 - settings.jumpX}%`;
+  editJump.style.top  = `${100 - settings.jumpY}%`;
   editJump.style.transform = 'translate(-50%,-50%)';
 }
 
 let draggingEl = null, dragOffset = { x: 0, y: 0 };
 function setupDrag(el, keyX, keyY) {
   el.addEventListener('pointerdown', e => {
-    e.preventDefault();
+    e.preventDefault(); e.stopPropagation();
     draggingEl = el;
     const r = el.getBoundingClientRect();
     dragOffset.x = e.clientX - (r.left + r.width / 2);
@@ -313,6 +264,7 @@ function setupDrag(el, keyX, keyY) {
   });
   el.addEventListener('pointermove', e => {
     if (draggingEl !== el) return;
+    e.preventDefault(); e.stopPropagation();
     const stage = layoutStage.getBoundingClientRect();
     if (!stage.width) return;
     const cx = e.clientX - dragOffset.x;
@@ -323,8 +275,8 @@ function setupDrag(el, keyX, keyY) {
     py = Math.max(6, Math.min(94, py));
     el.style.left = `${px}%`;
     el.style.top  = `${py}%`;
-    settings[keyX] = px;
-    settings[keyY] = py;
+    settings[keyX] = keyX === 'jumpX' ? (100 - px) : px;
+    settings[keyY] = keyY === 'jumpY' ? (100 - py) : (100 - py); // Invert Y
   });
   el.addEventListener('pointerup', () => { draggingEl = null; saveSettings(); });
   el.addEventListener('pointercancel', () => { draggingEl = null; saveSettings(); });
@@ -333,42 +285,38 @@ setupDrag(editJoystick, 'joystickX', 'joystickY');
 setupDrag(editJump, 'jumpX', 'jumpY');
 
 /* ============================================================
-   ON-SCREEN CONTROLS
+   ON-SCREEN CONTROLS LOGIC
    ============================================================ */
-const joystickEl = document.createElement('div');
-joystickEl.className = 'game-joystick';
-joystickEl.id = 'gameJoystick';
-joystickEl.innerHTML = '<div class="game-joystick-knob"></div>';
-root.appendChild(joystickEl);
-const joystickKnob = joystickEl.querySelector('.game-joystick-knob');
-
-const jumpBtnEl = document.createElement('button');
-jumpBtnEl.className = 'game-jump-btn';
-jumpBtnEl.id = 'gameJumpBtn';
-jumpBtnEl.type = 'button';
-jumpBtnEl.innerHTML = '<span class="jump-arrow">⬆</span><span class="jump-text">JUMP</span>';
-root.appendChild(jumpBtnEl);
-
-function showControls() { joystickEl.style.display = 'flex'; jumpBtnEl.style.display = 'flex'; }
-function hideControls() { joystickEl.style.display = 'none'; jumpBtnEl.style.display = 'none'; }
+function showControls() { 
+  joystickEl.style.display = 'flex'; 
+  jumpBtnEl.style.display = 'flex'; 
+}
+function hideControls() { 
+  joystickEl.style.display = 'none'; 
+  jumpBtnEl.style.display = 'none'; 
+}
 hideControls();
 
 function applyButtonLayout() {
   const scale = settings.buttonSize / 100;
   const op = settings.buttonOpacity / 100;
+  
+  // Joystick: left is X, bottom is Y
   joystickEl.style.left = `${settings.joystickX}%`;
-  joystickEl.style.top  = `${settings.joystickY}%`;
-  joystickEl.style.transform = `translate(-50%,-50%) scale(${scale})`;
+  joystickEl.style.bottom = `${settings.joystickY}%`;
+  joystickEl.style.transform = `translate(-50%, 50%) scale(${scale})`;
   joystickEl.style.opacity = op;
-  jumpBtnEl.style.left = `${settings.jumpX}%`;
-  jumpBtnEl.style.top  = `${settings.jumpY}%`;
-  jumpBtnEl.style.transform = `translate(-50%,-50%) scale(${scale})`;
+
+  // Jump: right is X, bottom is Y
+  jumpBtnEl.style.right = `${settings.jumpX}%`;
+  jumpBtnEl.style.bottom = `${settings.jumpY}%`;
+  jumpBtnEl.style.transform = `translate(50%, 50%) scale(${scale})`;
   jumpBtnEl.style.opacity = op;
 }
 
 let touchId = null, touchOrigin = null, touchDelta = { x: 0, y: 0 };
 joystickEl.addEventListener('pointerdown', e => {
-  e.preventDefault();
+  e.preventDefault(); e.stopPropagation();
   touchId = e.pointerId;
   const r = joystickEl.getBoundingClientRect();
   touchOrigin = { x: r.left + r.width / 2, y: r.top + r.height / 2 };
@@ -376,7 +324,10 @@ joystickEl.addEventListener('pointerdown', e => {
   joystickEl.classList.add('active');
   moveJoystick(e);
 });
-joystickEl.addEventListener('pointermove', moveJoystick);
+joystickEl.addEventListener('pointermove', e => {
+  e.preventDefault(); e.stopPropagation();
+  moveJoystick(e);
+});
 function moveJoystick(e) {
   if (touchId !== e.pointerId) return;
   const dx = e.clientX - touchOrigin.x, dy = e.clientY - touchOrigin.y;
@@ -393,7 +344,7 @@ function endJoystick(e) {
 }
 joystickEl.addEventListener('pointerup', endJoystick);
 joystickEl.addEventListener('pointercancel', endJoystick);
-jumpBtnEl.addEventListener('pointerdown', e => { e.preventDefault(); jump(); });
+jumpBtnEl.addEventListener('pointerdown', e => { e.preventDefault(); e.stopPropagation(); jump(); });
 
 /* ============================================================
    THREE SCENE
@@ -533,7 +484,6 @@ function jump() {
   local.vy = 7.2; local.grounded = false;
 }
 window.addEventListener('keydown', e => {
-  if (listeningFor) return;
   const k = e.code === 'Space' ? ' ' : e.key.toLowerCase();
   if ([settings.keys.up, settings.keys.down, settings.keys.left, settings.keys.right, ' '].includes(k)) e.preventDefault();
   keys.add(k);
@@ -544,6 +494,7 @@ window.addEventListener('keyup', e => {
   keys.delete(k);
 });
 
+// Camera Drag logic
 canvas.addEventListener('pointerdown', e => { dragging = true; lastX = e.clientX; lastY = e.clientY; canvas.setPointerCapture?.(e.pointerId); });
 canvas.addEventListener('pointermove', e => {
   if (!dragging) return;
@@ -624,41 +575,25 @@ async function attachChannel(code) {
   channel = new Net.RoomChannel(code, IR_USER.userId, selfName);
 
   channel.on('hello', () => {
-    channel.send('peer', {
-      name: selfName,
-      irId: IR_USER.irId,
-      char: myCharacter.id,
-      isHost
-    });
+    channel.send('peer', { name: selfName, irId: IR_USER.irId, char: myCharacter.id, isHost });
   });
 
   channel.on('peer', ({ name, irId, char, isHost: peerIsHost }) => {
     remoteName = name || 'Peer';
     remoteIrId = irId || '';
-
-    // COLOR RULE: host's choice wins. Peer gets opposite.
     if (peerIsHost) {
-      // We're the guest. Host picked `char`. Take the opposite.
       const hostChar = CHARACTERS.find(c => c.id === char) || CHAR_BLUE;
       myCharacter = oppositeOf(hostChar);
       applyMyCharacter();
       remoteChar = hostChar;
     } else {
-      // We're the host. Peer sent back our own choice.
       remoteChar = CHARACTERS.find(c => c.id === char) || CHAR_PINK;
     }
-
     remoteVisible = true;
     applyRemoteCharacter();
     remotePlayer.group.visible = true;
     renderRoom();
-    // Reply so a late joiner discovers us too
-    channel.send('peer', {
-      name: selfName,
-      irId: IR_USER.irId,
-      char: myCharacter.id,
-      isHost
-    });
+    channel.send('peer', { name: selfName, irId: IR_USER.irId, char: myCharacter.id, isHost });
   });
 
   channel.on('ready', ({ ready }) => { peerReady = !!ready; renderRoom(); });
@@ -701,7 +636,6 @@ async function doCreate() {
   roomCode = res.code;
   isHost = true;
   meReady = false; peerReady = false; remoteVisible = false; inMatch = false;
-  currentMatchId = null;
 
   try {
     await attachChannel(roomCode);
@@ -731,14 +665,10 @@ async function doJoin() {
   roomCode = found.code;
   isHost = false;
   meReady = false; peerReady = false; remoteVisible = false; inMatch = false;
-  currentMatchId = null;
-
-  // Guests start with the opposite-of-blue by default — updated as soon as host's peer message arrives
-  myCharacter = CHAR_PINK;
-  applyMyCharacter();
 
   try {
     await attachChannel(roomCode);
+    applyMyCharacter();
     showScreen('roomScreen');
     renderRoom();
   } catch (e) {
@@ -789,13 +719,13 @@ function beginMatch() {
     remotePlayer.group.visible = true;
   }
 
-  currentMatchId = 'mm_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6);
-
   gameTopbar.classList.remove('hidden');
   gameBottomHud.classList.remove('hidden');
 
+  // Show controls when the match begins
   applyButtonLayout();
-  showControls();
+  showControls(); 
+  requestLandscape();
 
   scoreName0.textContent = selfName;
   scoreName1.textContent = remoteName || 'P2';
@@ -803,29 +733,6 @@ function beginMatch() {
   scoreVal1.textContent = '0';
   hudEmoji.textContent = '✨';
   hudLabel.textContent = 'LIVE';
-}
-
-/* ============================================================
-   MATCH HISTORY
-   ============================================================ */
-async function loadHistory() {
-  histList.innerHTML = '';
-  histEmpty.classList.add('hidden');
-  const res = await Net.loadMatchHistory(IR_USER.irId, 10);
-  if (!res.ok || !res.matches.length) { histEmpty.classList.remove('hidden'); return; }
-  for (const m of res.matches) {
-    const item = document.createElement('div');
-    item.className = 'hist-item ' + (m.won ? 'won' : 'lost');
-    const date = new Date(m.played_at).toLocaleDateString();
-    item.innerHTML = `
-      <div class="hist-icon">${m.won ? '🏆' : '💔'}</div>
-      <div class="hist-info">
-        <div class="hist-name">vs ${m.opponent_name || 'Player'}${m.opponent_ir_id ? ' · ' + m.opponent_ir_id : ''}</div>
-        <div class="hist-score"><b>${m.score_self}</b> – <b>${m.score_opponent}</b> · ${date}</div>
-      </div>
-    `;
-    histList.appendChild(item);
-  }
 }
 
 /* ============================================================
@@ -843,8 +750,11 @@ function updateLocalPlayer(dt) {
   if (keys.has(settings.keys.down))  f -= 1;
   if (keys.has(settings.keys.right)) s += 1;
   if (keys.has(settings.keys.left))  s -= 1;
+  
+  // Apply joystick touches
   f -= touchDelta.y;
   s += touchDelta.x;
+
   const len = Math.hypot(f, s);
   if (len > 1) { f /= len; s /= len; }
 
@@ -875,9 +785,6 @@ function updateLocalPlayer(dt) {
     lastMoveSent = now;
     channel.send('move', { x: local.x, y: local.y, z: local.z, ry: local.ry });
   }
-  hudCount.textContent = remoteVisible ? '2P' : '1P';
-  const meter = document.querySelector('.meter i');
-  if (meter) meter.style.width = '100%';
 }
 
 function updateRemotePlayer(dt) {
@@ -917,6 +824,23 @@ function animate() {
 function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
 
 /* ============================================================
+   LANDSCAPE LOCK
+   ============================================================ */
+let orientationRequested = false;
+async function requestLandscape() {
+  if (orientationRequested) return; orientationRequested = true;
+  try {
+    if (screen.orientation && typeof screen.orientation.lock === 'function') {
+      if (!document.fullscreenElement && document.documentElement.requestFullscreen) {
+        try { await document.documentElement.requestFullscreen(); } catch (_) {}
+      }
+      await screen.orientation.lock('landscape');
+    }
+  } catch (_) {}
+}
+window.addEventListener('pointerdown', requestLandscape, { once: true });
+
+/* ============================================================
    BUTTON WIRING
    ============================================================ */
 createBtn.onclick    = doCreate;
@@ -944,24 +868,6 @@ copyCodeBtn.onclick = async () => {
 document.querySelector('#helpBtn').onclick   = () => document.querySelector('#helpModal').classList.remove('hidden');
 document.querySelector('#closeHelp').onclick = () => document.querySelector('#helpModal').classList.add('hidden');
 document.querySelector('#gotIt').onclick     = () => document.querySelector('#helpModal').classList.add('hidden');
-
-/* ============================================================
-   LANDSCAPE LOCK
-   ============================================================ */
-let orientationRequested = false;
-async function requestLandscape() {
-  if (orientationRequested) return; orientationRequested = true;
-  try {
-    if (screen.orientation && typeof screen.orientation.lock === 'function') {
-      if (!document.fullscreenElement && document.documentElement.requestFullscreen) {
-        try { await document.documentElement.requestFullscreen(); } catch (_) {}
-      }
-      await screen.orientation.lock('landscape');
-    }
-  } catch (_) {}
-}
-window.addEventListener('pointerdown', requestLandscape, { once: true });
-window.addEventListener('keydown',     requestLandscape, { once: true });
 
 /* ============================================================
    BOOT
