@@ -43,23 +43,12 @@ export async function createRoom(userId, irId) {
 export async function findRoom(code) {
   const { data, error } = await supabase
     .from('mochi_rooms')
-    .select('code, host_user_id, host_ir_id, guest_user_id')
+    .select('code, host_user_id, host_ir_id')
     .eq('code', String(code || '').toUpperCase().trim())
     .maybeSingle();
-    
-  if (error) return { ok: false, error: 'Network error. Please try again.' };
-  if (!data) return { ok: false, error: 'not_found' };
-  
-  return { ok: true, code: data.code, hostUserId: data.host_user_id, hostIrId: data.host_ir_id, guestUserId: data.guest_user_id };
-}
-
-export async function joinRoomInDb(code, guestUserId, guestIrId) {
-  const { error } = await supabase
-    .from('mochi_rooms')
-    .update({ guest_user_id: guestUserId, guest_ir_id: guestIrId })
-    .eq('code', code);
   if (error) return { ok: false, error: error.message };
-  return { ok: true };
+  if (!data) return { ok: false, error: 'not_found' };
+  return { ok: true, code: data.code, hostUserId: data.host_user_id, hostIrId: data.host_ir_id };
 }
 
 export async function deleteRoom(code) {
@@ -131,8 +120,7 @@ export class RoomChannel {
 
   send(type, data = {}) {
     this.ch.send({
-      type: 'broadcast',
-      event: 'msg',
+      type: 'broadcast', event: 'msg',
       payload: { type, from: this.selfId, name: this.name, ...data, ts: Date.now() }
     });
   }
