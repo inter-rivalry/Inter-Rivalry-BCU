@@ -1,12 +1,223 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover"><meta name="theme-color" content="#17152f"><title>MOCHI — Chaos Button</title><link rel="stylesheet" href="style.css"><link rel="manifest" href="manifest.json"></head><body>
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+  <meta name="theme-color" content="#17152f">
+  <title>MOCHI — Chaos Button</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="manifest" href="manifest.json">
+</head>
+<body>
 <div id="play-root">
   <div id="loading" class="loading">🍡 Building the MOCHI arena…</div>
   <canvas id="game"></canvas>
-  <header class="topbar"><div class="brand"><span class="brand-icon">🍡</span><div><strong>MOCHI</strong><small>CHAOS BUTTON</small></div></div><div class="round-pill">ARENA PREVIEW <span class="dot"></span></div><button id="helpBtn" class="icon-button">?</button></header>
-  <section class="intro-card"><span class="eyebrow">WELCOME TO THE CHAOS</span><h1>Ready, player one?</h1><p>Explore the arena. The chaos is coming.</p><div class="status-row"><span class="status-dot"></span> Arena prototype · Phase A</div></section>
-  <div class="player-tag player-one">YOU <span>●</span></div><div class="player-tag player-two">MOCHI BOT <span>●</span></div>
-  <div class="bottom-hud"><div class="move-hint"><span class="key">W</span><span class="key">A</span><span class="key">S</span><span class="key">D</span><span class="hint-label">MOVE</span></div><div class="center-hud"><span class="hud-emoji">✨</span><div><strong>CHAOS METER</strong><div class="meter"><i></i></div></div><span class="meter-count">0%</span></div><button id="jumpBtn" class="jump-button">⬆ JUMP</button></div>
-  <div id="helpModal" class="modal hidden"><div class="modal-card"><button id="closeHelp" class="close-button">×</button><div class="modal-emoji">🎮</div><h2>How to play</h2><p><b>Move:</b> WASD or arrow keys</p><p><b>Jump:</b> Space or the JUMP button</p><p><b>Look around:</b> Drag on the arena</p><p class="note">Phase A is a local arena and movement prototype. Online multiplayer and Chaos Button events come later.</p><button id="gotIt" class="primary-button">LET'S GO!</button></div></div>
+
+  <!-- MAIN MENU -->
+  <div id="mainMenu" class="screen">
+    <div class="menu-card">
+      <div class="menu-logo">
+        <span class="brand-icon big">🍡</span>
+        <h1>MOCHI</h1>
+        <p class="tagline">Two players. One little world. Endless chaos.</p>
+      </div>
+      <div class="menu-actions">
+        <button id="playBtn" class="primary-button big">PLAY</button>
+        <button id="joinMenuBtn" class="secondary-button big">JOIN ROOM</button>
+        <div class="menu-row">
+          <button id="settingsBtn" class="ghost-button">⚙ SETTINGS</button>
+          <button id="helpMenuBtn" class="ghost-button">? HOW TO PLAY</button>
+        </div>
+      </div>
+      <div class="menu-footer">v0.4 · Phase C</div>
+    </div>
+  </div>
+
+  <!-- CHARACTER SELECT -->
+  <div id="characterScreen" class="screen hidden">
+    <div class="menu-card">
+      <button class="back-button" data-back="mainMenu">← BACK</button>
+      <h2 class="screen-title">WHO ARE YOU?</h2>
+      <label class="field">
+        <span>Your name</span>
+        <input id="nameInput" maxlength="16" placeholder="Player" autocomplete="off" />
+      </label>
+      <div class="char-grid" id="charGrid"></div>
+      <button id="charContinueBtn" class="primary-button big">CONTINUE</button>
+      <div id="charError" class="lobby-error hidden"></div>
+    </div>
+  </div>
+
+  <!-- CREATE ROOM -->
+  <div id="createScreen" class="screen hidden">
+    <div class="menu-card">
+      <button class="back-button" data-back="characterScreen">← BACK</button>
+      <h2 class="screen-title">CREATE ROOM</h2>
+      <p class="menu-sub">You'll be the host. Share the code with your friend.</p>
+      <button id="createBtn" class="primary-button big">CREATE ROOM</button>
+      <div id="createError" class="lobby-error hidden"></div>
+      <div id="createStatus" class="conn-status">Ready</div>
+    </div>
+  </div>
+
+  <!-- JOIN ROOM -->
+  <div id="joinScreen" class="screen hidden">
+    <div class="menu-card">
+      <button class="back-button" data-back="mainMenu">← BACK</button>
+      <h2 class="screen-title">JOIN ROOM</h2>
+      <p class="menu-sub">Ask your friend for the 5-letter code.</p>
+      <input id="codeInput" maxlength="6" placeholder="ROOM CODE" autocomplete="off" class="code-input" />
+      <button id="joinBtn" class="primary-button big">JOIN</button>
+      <div id="joinError" class="lobby-error hidden"></div>
+      <div id="joinStatus" class="conn-status">Ready</div>
+    </div>
+  </div>
+
+  <!-- ROOM LOBBY -->
+  <div id="roomScreen" class="screen hidden">
+    <div class="room-card">
+      <div class="room-header">
+        <div>
+          <div class="eyebrow">ROOM CODE</div>
+          <div class="room-code">
+            <span id="roomCodeText">-----</span>
+            <button id="copyCodeBtn" class="icon-button small" title="Copy">⧉</button>
+          </div>
+        </div>
+        <button id="leaveRoomBtn" class="secondary-button small">LEAVE</button>
+      </div>
+      <div class="slots">
+        <div class="slot" id="slot0">
+          <div class="slot-avatar" id="slotAvatar0">🍡</div>
+          <div class="slot-name" id="slotName0">—</div>
+          <div class="slot-ready" id="slotReady0">empty</div>
+        </div>
+        <div class="slot" id="slot1">
+          <div class="slot-avatar" id="slotAvatar1">🍡</div>
+          <div class="slot-name" id="slotName1">—</div>
+          <div class="slot-ready" id="slotReady1">empty</div>
+        </div>
+      </div>
+      <div class="room-actions">
+        <button id="readyBtn" class="primary-button">READY</button>
+        <button id="startBtn" class="primary-button hidden">START MATCH</button>
+      </div>
+      <div id="roomHint" class="room-hint">Share the code with a friend.</div>
+      <button id="roomSettingsBtn" class="ghost-button room-settings-btn">⚙ CONTROLS & SETTINGS</button>
+    </div>
+  </div>
+
+  <!-- SETTINGS SCREEN -->
+  <div id="settingsScreen" class="screen hidden">
+    <div class="menu-card settings-card">
+      <button class="back-button" id="settingsBackBtn">← BACK</button>
+      <h2 class="screen-title">SETTINGS</h2>
+
+      <div class="settings-section">
+        <div class="section-title">SOUND & EFFECTS</div>
+        <label class="toggle-row">
+          <span>Sound effects</span>
+          <input type="checkbox" id="soundToggle" checked />
+        </label>
+        <label class="toggle-row">
+          <span>Screen shake</span>
+          <input type="checkbox" id="shakeToggle" checked />
+        </label>
+      </div>
+
+      <div class="settings-section">
+        <div class="section-title">CAMERA</div>
+        <label class="slider-row">
+          <span>Mouse / drag sensitivity</span>
+          <input type="range" id="sensSlider" min="1" max="20" value="10" />
+          <b id="sensVal">10</b>
+        </label>
+        <label class="slider-row">
+          <span>Camera distance</span>
+          <input type="range" id="distSlider" min="5" max="12" value="9" />
+          <b id="distVal">9</b>
+        </label>
+      </div>
+
+      <div class="settings-section">
+        <div class="section-title">CONTROLS</div>
+        <p class="menu-sub">Click a key, then press the new key to rebind it.</p>
+        <div class="control-list" id="controlList"></div>
+        <button id="resetControlsBtn" class="ghost-button full-width">RESET TO DEFAULT</button>
+      </div>
+
+      <div class="settings-note">
+        Settings save automatically. Mobile always uses the joystick + buttons.
+      </div>
+    </div>
+  </div>
+
+  <!-- HOW TO PLAY -->
+  <div id="helpMenuScreen" class="screen hidden">
+    <div class="menu-card">
+      <button class="back-button" data-back="mainMenu">← BACK</button>
+      <h2 class="screen-title">HOW TO PLAY</h2>
+      <p><b>Move:</b> your configured keys, or the on-screen joystick</p>
+      <p><b>Jump:</b> your configured jump key, or the JUMP button</p>
+      <p><b>Look around:</b> drag on the arena (or touch and drag)</p>
+      <p><b>Multiplayer:</b> Create a room, share the 5-letter code, both press READY.</p>
+      <p class="note">Chaos Button events arrive in Phase D.</p>
+    </div>
+  </div>
+
+  <!-- COUNTDOWN -->
+  <div id="countdownOverlay" class="countdown-overlay hidden">
+    <div class="countdown-number" id="countdownNumber">3</div>
+  </div>
+
+  <!-- IN-GAME HUD -->
+  <header class="topbar hidden" id="gameTopbar">
+    <div class="brand">
+      <span class="brand-icon">🍡</span>
+      <div><strong>MOCHI</strong><small>CHAOS BUTTON</small></div>
+    </div>
+    <div class="score-hud">
+      <div class="score-pill" id="scorePill0">
+        <span class="dot-pink"></span>
+        <span id="scoreName0">P1</span>
+        <b id="scoreVal0">0</b>
+      </div>
+      <div class="score-pill" id="scorePill1">
+        <span class="dot-mint"></span>
+        <span id="scoreName1">P2</span>
+        <b id="scoreVal1">0</b>
+      </div>
+    </div>
+    <button id="helpBtn" class="icon-button">?</button>
+  </header>
+
+  <div class="bottom-hud hidden" id="gameBottomHud">
+    <div class="move-hint">
+      <span class="key">W</span><span class="key">A</span><span class="key">S</span><span class="key">D</span>
+      <span class="hint-label">MOVE</span>
+    </div>
+    <div class="center-hud">
+      <span class="hud-emoji" id="hudEmoji">✨</span>
+      <div><strong id="hudLabel">NET</strong><div class="meter"><i></i></div></div>
+      <span class="meter-count" id="hudCount">--</span>
+    </div>
+    <button id="jumpBtn" class="jump-button">⬆ JUMP</button>
+  </div>
+
+  <div id="helpModal" class="modal hidden">
+    <div class="modal-card">
+      <button id="closeHelp" class="close-button">×</button>
+      <div class="modal-emoji">🎮</div>
+      <h2>Quick help</h2>
+      <p><b>Move:</b> configured keys / joystick · <b>Jump:</b> configured key</p>
+      <p><b>Camera:</b> drag on the arena</p>
+      <button id="gotIt" class="primary-button">GOT IT</button>
+    </div>
+  </div>
+
   <div id="toast" class="toast hidden"></div>
 </div>
-<script type="module" src="game.js"></script></body></html>
+
+<script type="module" src="game.js"></script>
+</body>
+</html>
