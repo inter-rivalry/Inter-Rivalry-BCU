@@ -31,8 +31,8 @@ export async function getIRUser() {
     ok: true,
     userId: user.id,
     irId,
-    name: name.slice(0, 16),
-    gender: null // will be filled later when we know the column
+    name: String(name).slice(0, 16),
+    gender: null
   };
 }
 
@@ -104,7 +104,9 @@ export async function saveMatch(entry) {
 }
 
 /* ============================================================
-   REALTIME BROADCAST CHANNEL (same pattern as your net.js)
+   REALTIME CHANNEL
+   - Both sides send hello on join (with retries).
+   - Both sides reply to hello AND to peer (handshake completes both ways).
    ============================================================ */
 export class RoomChannel {
   constructor(code, selfId, name) {
@@ -116,15 +118,18 @@ export class RoomChannel {
     });
     this.listeners = {};
   }
+
   on(event, fn) {
     (this.listeners[event] ||= []).push(fn);
     return this;
   }
+
   _emit(event, payload) {
     (this.listeners[event] || []).forEach(fn => {
       try { fn(payload); } catch (e) { console.error(e); }
     });
   }
+
   join() {
     return new Promise((resolve, reject) => {
       this.ch
@@ -134,7 +139,10 @@ export class RoomChannel {
         })
         .subscribe(status => {
           if (status === 'SUBSCRIBED') {
-            this.send('hello', { name: this.name });
+            // Announce presence now and retry a few times to catch late joiners
+            this.send('hello', {});
+            setTimeout(() => this.send('hello', {}), 800);
+            setTimeout(() => this.send('hello', {}), 2500);
             resolve();
           } else if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
             reject(new Error(status));
@@ -142,12 +150,15 @@ export class RoomChannel {
         });
     });
   }
+
   send(type, data = {}) {
     this.ch.send({
-      type: 'broadcast', event: 'msg',
+      type: 'broadcast',
+      event: 'msg',
       payload: { type, from: this.selfId, name: this.name, ...data, ts: Date.now() }
     });
   }
+
   async leave() {
     try { this.send('leave', {}); } catch (_) {}
     await supabase.removeChannel(this.ch);
