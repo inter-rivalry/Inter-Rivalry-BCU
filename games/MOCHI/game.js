@@ -58,8 +58,8 @@ async function boot() {
    ============================================================ */
 const DEFAULTS = {
   sensitivity: 10, cameraDistance: 9,
-  joystickX: 20, joystickY: 20, // 20% from left, 20% from bottom
-  jumpX: 20, jumpY: 20,         // 20% from right, 20% from bottom
+  joystickX: 20, joystickY: 20,
+  jumpX: 20, jumpY: 20,
   buttonSize: 100, buttonOpacity: 80,
   keys: { up: 'w', down: 's', left: 'a', right: 'd', jump: ' ' }
 };
@@ -92,9 +92,9 @@ function oppositeOf(ch) {
 }
 
 /* ============================================================
-   STATE
+   STATE & COLLISION TRACKING
    ============================================================ */
-const local  = { x: -3, y: 0, z: 3, ry: 0, vy: 0, grounded: true };
+const local  = { x: -3, y: 0, z: 3, ry: 0, vy: 0, grounded: true, radius: 0.6 };
 let remote   = { x: 3, y: 0, z: -3, ry: Math.PI, vy: 0, grounded: true };
 let remoteTarget = { x: 3, y: 0, z: -3, ry: Math.PI };
 let remoteVisible = false;
@@ -110,6 +110,8 @@ let peerReady = false;
 let meReady = false;
 let inMatch = false;
 let lastMoveSent = 0;
+
+const colliders = []; // Array to store all 3D collision boxes
 
 /* ============================================================
    DOM REFS
@@ -236,8 +238,8 @@ function closeLayoutEditor() { layoutEditor.classList.add('hidden'); applyButton
 openLayoutBtn.onclick  = openLayoutEditor;
 layoutDoneBtn.onclick  = closeLayoutEditor;
 resetLayoutBtn.onclick = () => {
-  settings.joystickX = 20; settings.joystickY = 20; // reset to 20% from left, 20% from bottom
-  settings.jumpX = 20; settings.jumpY = 20;         // reset to 20% from right, 20% from bottom
+  settings.joystickX = 20; settings.joystickY = 20;
+  settings.jumpX = 20; settings.jumpY = 20;
   saveSettings(); applyButtonLayout();
   if (!layoutEditor.classList.contains('hidden')) positionEditHandles();
   toast('Layout reset');
@@ -245,7 +247,7 @@ resetLayoutBtn.onclick = () => {
 
 function positionEditHandles() {
   editJoystick.style.left = `${settings.joystickX}%`;
-  editJoystick.style.top  = `${100 - settings.joystickY}%`; // in layout editor we go top-down
+  editJoystick.style.top  = `${100 - settings.joystickY}%`;
   editJoystick.style.transform = 'translate(-50%,-50%)';
   editJump.style.left = `${100 - settings.jumpX}%`;
   editJump.style.top  = `${100 - settings.jumpY}%`;
@@ -276,7 +278,7 @@ function setupDrag(el, keyX, keyY) {
     el.style.left = `${px}%`;
     el.style.top  = `${py}%`;
     settings[keyX] = keyX === 'jumpX' ? (100 - px) : px;
-    settings[keyY] = keyY === 'jumpY' ? (100 - py) : (100 - py); // Invert Y
+    settings[keyY] = keyY === 'jumpY' ? (100 - py) : (100 - py);
   });
   el.addEventListener('pointerup', () => { draggingEl = null; saveSettings(); });
   el.addEventListener('pointercancel', () => { draggingEl = null; saveSettings(); });
@@ -285,29 +287,21 @@ setupDrag(editJoystick, 'joystickX', 'joystickY');
 setupDrag(editJump, 'jumpX', 'jumpY');
 
 /* ============================================================
-   ON-SCREEN CONTROLS LOGIC
+   ON-SCREEN CONTROLS
    ============================================================ */
-function showControls() { 
-  joystickEl.style.display = 'flex'; 
-  jumpBtnEl.style.display = 'flex'; 
-}
-function hideControls() { 
-  joystickEl.style.display = 'none'; 
-  jumpBtnEl.style.display = 'none'; 
-}
+function showControls() { joystickEl.style.display = 'flex'; jumpBtnEl.style.display = 'flex'; }
+function hideControls() { joystickEl.style.display = 'none'; jumpBtnEl.style.display = 'none'; }
 hideControls();
 
 function applyButtonLayout() {
   const scale = settings.buttonSize / 100;
   const op = settings.buttonOpacity / 100;
   
-  // Joystick: left is X, bottom is Y
   joystickEl.style.left = `${settings.joystickX}%`;
   joystickEl.style.bottom = `${settings.joystickY}%`;
   joystickEl.style.transform = `translate(-50%, 50%) scale(${scale})`;
   joystickEl.style.opacity = op;
 
-  // Jump: right is X, bottom is Y
   jumpBtnEl.style.right = `${settings.jumpX}%`;
   jumpBtnEl.style.bottom = `${settings.jumpY}%`;
   jumpBtnEl.style.transform = `translate(50%, 50%) scale(${scale})`;
@@ -386,10 +380,21 @@ floor.position.y = -0.3; floor.receiveShadow = true; scene.add(floor);
 const grid = new THREE.GridHelper(28, 28, '#c1b4f4', '#d8d0ef');
 grid.position.y = -0.035; grid.material.transparent = true; grid.material.opacity = 0.4; scene.add(grid);
 
+// Modified box function to add collision data
 function box(w,h,d,c,x,y,z){
   const m = new THREE.Mesh(new THREE.BoxGeometry(w,h,d), mat(c));
-  m.position.set(x,y,z); m.castShadow = m.receiveShadow = true; scene.add(m); return m;
+  m.position.set(x,y,z); m.castShadow = m.receiveShadow = true; scene.add(m);
+  
+  // Push hitbox into our collision array
+  colliders.push({
+    minX: x - w/2, maxX: x + w/2,
+    minY: y - h/2, maxY: y + h/2,
+    minZ: z - d/2, maxZ: z + d/2
+  });
+  
+  return m;
 }
+
 box(28,.65,.65,'#ff85bd',0,.15,-14); box(28,.65,.65,'#78e9d2',0,.15,14);
 box(.65,.65,28,'#a99aff',-14,.15,0); box(.65,.65,28,'#ffe277',14,.15,0);
 box(7,.18,5,'#ffd8ec',0,.02,0); box(3.2,.5,3.2,'#ff7db7',0,.3,0); box(2.1,.22,2.1,'#ffe66d',0,.66,0);
@@ -405,6 +410,9 @@ for (let i = 0; i < 12; i++) {
   p.position.set(x,.55,z); p.castShadow = true; scene.add(p);
   const orb = new THREE.Mesh(new THREE.SphereGeometry(.28,16,12), mat(['#fff1a8','#ffc8e3','#b7fff0'][i%3]));
   orb.position.set(x,1.45,z); orb.castShadow = true; scene.add(orb);
+  
+  // Collision for pillars
+  colliders.push({ minX: x - .38, maxX: x + .38, minY: 0, maxY: 1.35, minZ: z - .38, maxZ: z + .38 });
 }
 for (const [x,z,c] of [[-10,-10,'#ff8cc8'],[10,-10,'#78e9d2'],[-10,10,'#ffe66d'],[10,10,'#a99aff']]) {
   const r = new THREE.Mesh(new THREE.TorusGeometry(1.05,.12,8,28), mat(c));
@@ -494,7 +502,6 @@ window.addEventListener('keyup', e => {
   keys.delete(k);
 });
 
-// Camera Drag logic
 canvas.addEventListener('pointerdown', e => { dragging = true; lastX = e.clientX; lastY = e.clientY; canvas.setPointerCapture?.(e.pointerId); });
 canvas.addEventListener('pointermove', e => {
   if (!dragging) return;
@@ -722,7 +729,6 @@ function beginMatch() {
   gameTopbar.classList.remove('hidden');
   gameBottomHud.classList.remove('hidden');
 
-  // Show controls when the match begins
   applyButtonLayout();
   showControls(); 
   requestLandscape();
@@ -736,7 +742,7 @@ function beginMatch() {
 }
 
 /* ============================================================
-   UPDATE LOOP
+   UPDATE LOOP (WITH COLLISION CHECKING)
    ============================================================ */
 function updateLocalPlayer(dt) {
   if (!inMatch) {
@@ -751,7 +757,6 @@ function updateLocalPlayer(dt) {
   if (keys.has(settings.keys.right)) s += 1;
   if (keys.has(settings.keys.left))  s -= 1;
   
-  // Apply joystick touches
   f -= touchDelta.y;
   s += touchDelta.x;
 
@@ -761,15 +766,55 @@ function updateLocalPlayer(dt) {
   const forward = new THREE.Vector3(-Math.sin(yaw), 0, -Math.cos(yaw));
   const right   = new THREE.Vector3( Math.cos(yaw), 0, -Math.sin(yaw));
   moveVec.set(0,0,0).addScaledVector(forward, f).addScaledVector(right, s);
-  if (moveVec.lengthSq() > 0.001) {
-    local.x += moveVec.x * 5.4 * dt;
-    local.z += moveVec.z * 5.4 * dt;
+  
+  let speed = 5.4;
+  let moveX = moveVec.x * speed * dt;
+  let moveZ = moveVec.z * speed * dt;
+
+  // --- COLLISION CHECKING ---
+  let nextX = THREE.MathUtils.clamp(local.x + moveX, -12.3, 12.3);
+  let nextZ = THREE.MathUtils.clamp(local.z + moveZ, -12.3, 12.3);
+
+  // Check X axis
+  for (const box of colliders) {
+    if (
+      nextX + local.radius > box.minX && nextX - local.radius < box.maxX &&
+      local.y + local.radius > box.minY && local.y + 1.5 < box.maxY && // Player height approx 1.5
+      local.z + local.radius > box.minZ && local.z - local.radius < box.maxZ
+    ) {
+      // Collision on X, stop X movement
+      if (moveX > 0) nextX = box.minX - local.radius;
+      else if (moveX < 0) nextX = box.maxX + local.radius;
+      moveX = 0;
+    }
+  }
+
+  // Check Z axis
+  for (const box of colliders) {
+    if (
+      nextX + local.radius > box.minX && nextX - local.radius < box.maxX &&
+      local.y + local.radius > box.minY && local.y + 1.5 < box.maxY &&
+      nextZ + local.radius > box.minZ && nextZ - local.radius < box.maxZ
+    ) {
+      // Collision on Z, stop Z movement
+      if (moveZ > 0) nextZ = box.minZ - local.radius;
+      else if (moveZ < 0) nextZ = box.maxZ + local.radius;
+      moveZ = 0;
+    }
+  }
+
+  local.x = nextX;
+  local.z = nextZ;
+
+  if (moveX !== 0 || moveZ !== 0) {
     local.ry = Math.atan2(moveVec.x, moveVec.z);
   }
-  local.x = THREE.MathUtils.clamp(local.x, -12.3, 12.3);
-  local.z = THREE.MathUtils.clamp(local.z, -12.3, 12.3);
+
+  // Gravity & Jumping
   local.vy -= 18 * dt;
-  local.y  += local.vy * dt;
+  local.y += local.vy * dt;
+  
+  // Ground check
   if (local.y <= 0) { local.y = 0; local.vy = 0; local.grounded = true; }
 
   localPlayer.group.position.set(local.x, local.y, local.z);
@@ -824,19 +869,22 @@ function animate() {
 function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
 
 /* ============================================================
-   LANDSCAPE LOCK
+   LANDSCAPE LOCK (SILENT, NO MSG)
    ============================================================ */
 let orientationRequested = false;
 async function requestLandscape() {
-  if (orientationRequested) return; orientationRequested = true;
+  if (orientationRequested) return; 
+  orientationRequested = true;
   try {
+    if (!document.fullscreenElement && document.documentElement.requestFullscreen) {
+      await document.documentElement.requestFullscreen();
+    }
     if (screen.orientation && typeof screen.orientation.lock === 'function') {
-      if (!document.fullscreenElement && document.documentElement.requestFullscreen) {
-        try { await document.documentElement.requestFullscreen(); } catch (_) {}
-      }
       await screen.orientation.lock('landscape');
     }
-  } catch (_) {}
+  } catch (err) {
+    // Silently fail if browser blocks it
+  }
 }
 window.addEventListener('pointerdown', requestLandscape, { once: true });
 
