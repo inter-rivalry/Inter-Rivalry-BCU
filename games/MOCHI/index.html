@@ -11,7 +11,17 @@
 <body>
 <div id="play-root">
   <div id="loading" class="loading">🍡 Building the MOCHI arena…</div>
+  
+  <!-- GAME CANVAS -->
   <canvas id="game"></canvas>
+
+  <!-- ON-SCREEN CONTROLS (Fixed to screen) -->
+  <div id="joystickZone" class="game-joystick" style="display:none;">
+    <div id="joystickKnob" class="game-joystick-knob"></div>
+  </div>
+  <button id="jumpBtnZone" class="game-jump-btn" style="display:none;">
+    <span class="jump-arrow">⬆</span><span class="jump-text">JUMP</span>
+  </button>
 
   <!-- NOT LOGGED IN -->
   <div id="loginScreen" class="screen hidden">
@@ -48,11 +58,11 @@
         </div>
         <button id="historyBtn" class="ghost-button" style="width:100%">📜 MATCH HISTORY</button>
       </div>
-      <div class="menu-footer">v0.7 · Phase C</div>
+      <div class="menu-footer">v0.8 · Phase C</div>
     </div>
   </div>
 
-  <!-- CHARACTER SELECT (host only) -->
+  <!-- CHARACTER SELECT -->
   <div id="characterScreen" class="screen hidden">
     <div class="menu-card">
       <button class="back-button" data-back="mainMenu">← BACK</button>
@@ -80,7 +90,7 @@
     <div class="menu-card">
       <button class="back-button" data-back="mainMenu">← BACK</button>
       <h2 class="screen-title">JOIN ROOM</h2>
-      <p class="menu-sub">Ask your friend for the 5-letter code. You'll get the opposite color from the host.</p>
+      <p class="menu-sub">Ask your friend for the 5-letter code. You'll get the opposite color.</p>
       <input id="codeInput" maxlength="6" placeholder="ROOM CODE" autocomplete="off" class="code-input" />
       <button id="joinBtn" class="primary-button big">JOIN</button>
       <div id="joinError" class="lobby-error hidden"></div>
@@ -138,19 +148,13 @@
       <div class="settings-section">
         <div class="section-title">BUTTON SIZE</div>
         <label class="slider-row"><span>Joystick & jump size</span><input type="range" id="sizeSlider" min="70" max="150" value="100" /><b id="sizeVal">100%</b></label>
-        <label class="slider-row"><span>Button opacity</span><input type="range" id="opacitySlider" min="30" max="100" value="70" /><b id="opacityVal">70%</b></label>
+        <label class="slider-row"><span>Button opacity</span><input type="range" id="opacitySlider" min="30" max="100" value="80" /><b id="opacityVal">80%</b></label>
       </div>
 
       <div class="settings-section">
         <div class="section-title">CAMERA</div>
         <label class="slider-row"><span>Drag sensitivity</span><input type="range" id="sensSlider" min="1" max="20" value="10" /><b id="sensVal">10</b></label>
         <label class="slider-row"><span>Camera distance</span><input type="range" id="distSlider" min="5" max="12" value="9" /><b id="distVal">9</b></label>
-      </div>
-
-      <div class="settings-section">
-        <div class="section-title">KEYBOARD CONTROLS</div>
-        <div class="control-list" id="controlList"></div>
-        <button id="resetControlsBtn" class="ghost-button full-width">RESET KEYS</button>
       </div>
     </div>
   </div>
@@ -182,10 +186,10 @@
     <div class="menu-card">
       <button class="back-button" data-back="mainMenu">← BACK</button>
       <h2 class="screen-title">HOW TO PLAY</h2>
-      <p><b>Move:</b> drag the joystick (mobile) or use your configured keys</p>
-      <p><b>Jump:</b> tap JUMP or your configured key</p>
+      <p><b>Move:</b> drag the joystick</p>
+      <p><b>Jump:</b> tap JUMP</p>
       <p><b>Camera:</b> drag anywhere on the arena</p>
-      <p><b>Colors:</b> Host picks blue or pink. The other player automatically gets the other color.</p>
+      <p><b>Colors:</b> Host picks blue or pink. The other player automatically gets the opposite color.</p>
     </div>
   </div>
 
@@ -230,8 +234,8 @@
       <button id="closeHelp" class="close-button">×</button>
       <div class="modal-emoji">🎮</div>
       <h2>Quick help</h2>
-      <p><b>Move:</b> joystick or configured keys</p>
-      <p><b>Jump:</b> JUMP button or jump key</p>
+      <p><b>Move:</b> joystick</p>
+      <p><b>Jump:</b> JUMP button</p>
       <p><b>Camera:</b> drag on the arena</p>
       <button id="gotIt" class="primary-button">GOT IT</button>
     </div>
