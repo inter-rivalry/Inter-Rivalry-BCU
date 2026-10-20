@@ -1,5 +1,5 @@
 import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js';
-import * as Net from './network.js?v=99';
+import * as Net from './network.js?v=999';
 import { LOGIN_URL } from './config.js';
 
 const root    = document.querySelector('#play-root');
@@ -80,6 +80,8 @@ let inMatch = false;
 let lastMoveSent = 0;
 
 let currentEvent = 'NONE';
+let lastEvent1 = 'NONE';
+let lastEvent2 = 'NONE';
 let eventTimeLeft = 0;
 let eventTimerInterval = null;
 let scoreLocal = 0;
@@ -92,10 +94,12 @@ let totalScoreLocal = 0;
 let totalScoreRemote = 0;
 
 const colliders = []; 
+const movingObstacles = []; // For Chaos obstacles
 const sparkles = new THREE.Group(); 
 const sparklesList = [];
 const projectiles = [];
-const ALL_EVENTS = ['MAGNETIC', 'PENGUIN', 'WOBBLY', 'INVISIBLE', 'KISS'];
+// INVISIBLE REMOVED
+const ALL_EVENTS = ['MAGNETIC', 'PENGUIN', 'WOBBLY', 'KISS'];
 
 const playBtn = document.querySelector('#playBtn');
 const joinMenuBtn = document.querySelector('#joinMenuBtn');
@@ -363,7 +367,6 @@ grid.position.y = -0.035; grid.material.transparent = true; grid.material.opacit
 function box(w,h,d,c,x,y,z){
   const m = new THREE.Mesh(new THREE.BoxGeometry(w,h,d), mat(c));
   m.position.set(x,y,z); m.castShadow = m.receiveShadow = true; scene.add(m);
-  // Using precise min/max for strict collision
   colliders.push({ 
     minX: x - w/2, maxX: x + w/2, 
     minY: y - h/2, maxY: y + h/2, 
@@ -448,6 +451,7 @@ function toast(msg) {
 
 function startMatch() {
   currentRound = 1; totalScoreLocal = 0; totalScoreRemote = 0; updateScoreUI();
+  lastEvent1 = 'NONE'; lastEvent2 = 'NONE';
   if (isHost) triggerNextRound();
 }
 
@@ -457,7 +461,14 @@ function triggerNextRound() {
     endMatch(totalScoreLocal, totalScoreRemote);
     return;
   }
-  const randomEvent = ALL_EVENTS[Math.floor(Math.random() * ALL_EVENTS.length)];
+  
+  // ANTI-SPAM LOGIC
+  let available = ALL_EVENTS.filter(e => !(e === lastEvent1 && e === lastEvent2));
+  if (available.length === 0) available = ALL_EVENTS;
+  const randomEvent = available[Math.floor(Math.random() * available.length)];
+  lastEvent2 = lastEvent1;
+  lastEvent1 = randomEvent;
+  
   channel.send('event_start', { event: randomEvent, mode: gameMode, round: currentRound });
   
   // HOST FIX: Go through countdown to hide lobby
@@ -483,7 +494,6 @@ function startRound(eventId, mode, roundNum) {
   if (eventId === 'MAGNETIC') { title = "MAGNETIC MODE 🧲"; desc = "You are pulled together!"; }
   if (eventId === 'PENGUIN') { title = "PENGUIN MODE 🐧"; desc = "Waddle waddle!"; }
   if (eventId === 'WOBBLY') { title = "WOBBLY LEGS 🫨"; desc = "Slippery when wet!"; }
-  if (eventId === 'INVISIBLE') { title = "INVISIBLE PARTNER 👻"; desc = "Someone is hiding!"; }
   if (eventId === 'KISS') { title = "FLYING KISS ATTACK 💋"; desc = "Tap the SHOOT button!"; }
   
   eventTitle.textContent = title; eventDesc.textContent = desc;
@@ -492,8 +502,26 @@ function startRound(eventId, mode, roundNum) {
 
   if (eventId === 'MAGNETIC') { localPlayer.body.material.emissive = new THREE.Color('#ff0000'); remotePlayer.body.material.emissive = new THREE.Color('#ff0000'); }
   if (eventId === 'PENGUIN') { localPlayer.group.scale.set(1, 0.6, 1); remotePlayer.group.scale.set(1, 0.6, 1); }
-  if (eventId === 'INVISIBLE') { if (isHost) localPlayer.group.visible = false; else remotePlayer.group.visible = false; }
   if (eventId === 'KISS') shootBtnEl.style.display = 'flex'; else shootBtnEl.style.display = 'none';
+
+  // --- SPAWN MOVING OBSTACLES ---
+  movingObstacles.forEach(o => scene.remove(o.mesh));
+  movingObstacles.length = 0;
+  
+  for(let i=0; i<2; i++) {
+    const geo = new THREE.BoxGeometry(4, 1.5, 4);
+    const mesh = new THREE.Mesh(geo, mat('#ffa500')); // Orange sweeper
+    mesh.castShadow = true;
+    scene.add(mesh);
+    movingObstacles.push({
+      mesh: mesh,
+      speed: 2 + Math.random() * 2,
+      range: 8,
+      centerX: (Math.random() - 0.5) * 15,
+      centerZ: (Math.random() - 0.5) * 15,
+      phase: Math.random() * Math.PI * 2
+    });
+  }
 
   projectiles.forEach(p => scene.remove(p.mesh)); projectiles.length = 0;
 
@@ -596,7 +624,9 @@ async function attachChannel(code) {
   });
   
   channel.on('ready', ({ ready }) => { peerReady = !!ready; renderRoom(); });
-  channel.on('event_start', ({ event, mode, round }) => startCountdownThenMatch(() => startRound(event, mode, round)));
+  channel.on('event_start', ({ event, mode, round }) => {
+    startCountdownThenMatch(() => startRound(event, mode, round));
+  });
   channel.on('round_end', ({ sLocal, sRemote }) => {
     if (sLocal > sRemote) totalScoreRemote++; else if (sRemote > sLocal) totalScoreLocal++;
     updateScoreUI(); toast("ROUND OVER! 🍡");
@@ -711,11 +741,12 @@ function updateLocalPlayer(dt) {
   let moveX = local.vx * dt;
   let moveZ = local.vz * dt;
 
+  // STRONGER MAGNET
   if (currentEvent === 'MAGNETIC' && remoteVisible) {
     const dx = remote.x - local.x; const dz = remote.z - local.z;
     const dist = Math.max(0.1, Math.hypot(dx, dz));
     if (dist > 2) { 
-      const pullStrength = 15.0 * dt; 
+      const pullStrength = 50.0 * dt; // Increased from 15.0
       local.vx += (dx / dist) * pullStrength; 
       local.vz += (dz / dist) * pullStrength; 
     }
@@ -796,6 +827,27 @@ function cameraFollow(dt) {
 
 function animate() {
   requestAnimationFrame(animate); const dt = Math.min(clock.getDelta(), 0.04);
+  
+  // Move Chaos Obstacles
+  const time = performance.now() * 0.001;
+  for (const obs of movingObstacles) {
+    obs.mesh.position.x = obs.centerX + Math.sin(time * obs.speed + obs.phase) * obs.range;
+    obs.mesh.position.z = obs.centerZ + Math.cos(time * obs.speed + obs.phase) * obs.range;
+    obs.mesh.rotation.y += dt * 2;
+    
+    // Check collision with obstacle (roughly)
+    if (inMatch) {
+       const dx = local.x - obs.mesh.position.x;
+       const dz = local.z - obs.mesh.position.z;
+       const dist = Math.hypot(dx, dz);
+       if (dist < 2.5) { // Hit!
+          local.vx = (dx/dist) * 15; local.vz = (dz/dist) * 15;
+          local.vy = 5; local.grounded = false;
+          SFX.hit(); toast("BONK! 💥");
+       }
+    }
+  }
+
   updateLocalPlayer(dt); updateRemotePlayer(dt); cameraFollow(dt); renderer.render(scene, camera);
 }
 function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
