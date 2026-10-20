@@ -389,3 +389,7 @@ p.note{
 .hist-score{font-size:11px;color:#8f88b8;margin-top:3px}
 .hist-score b{color:#ffe66d}
 .hist-empty{text-align:center;padding:30px 20px;color:#8f88b8;font-size:13px;font-weight:800}
+.char-grid.two-col { grid-template-columns: 1fr 1fr; gap: 14px; }
+.char-grid.two-col .char-tile { padding: 22px 10px; }
+.char-grid.two-col .char-preview { width: 68px; height: 68px; margin-bottom: 10px; }
+.char-grid.two-col .char-name { font-size: 13px; letter-spacing: 2px; }
