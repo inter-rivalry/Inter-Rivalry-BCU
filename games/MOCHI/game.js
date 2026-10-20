@@ -1,129 +1,192 @@
 import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js';
 import * as Net from './network.js';
+import { LOGIN_URL } from './config.js';
 
-/* ============ SETTINGS (persisted) ============ */
-const DEFAULTS = {
-  sound: true,
-  shake: true,
-  sensitivity: 10,
-  cameraDistance: 9,
-  keys: {
-    up: 'w',
-    down: 's',
-    left: 'a',
-    right: 'd',
-    jump: ' '
-  }
-};
-const SETTINGS_KEY = 'mochi_settings_v1';
-function loadSettings() {
-  try {
-    const raw = localStorage.getItem(SETTINGS_KEY);
-    if (!raw) return structuredClone(DEFAULTS);
-    const saved = JSON.parse(raw);
-    return { ...structuredClone(DEFAULTS), ...saved, keys: { ...DEFAULTS.keys, ...(saved.keys || {}) } };
-  } catch { return structuredClone(DEFAULTS); }
-}
-function saveSettings() {
-  try { localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings)); } catch {}
-}
-const settings = loadSettings();
-
-/* ============ CHARACTERS ============ */
-const CHARACTERS = [
-  { id: 'pink',   name: 'PINK',   body: '#ff8cc8', accent: '#a99aff', emoji: '🌸' },
-  { id: 'mint',   name: 'MINT',   body: '#78e9d2', accent: '#ffe277', emoji: '🌿' },
-  { id: 'yellow', name: 'LEMON',  body: '#ffe277', accent: '#ff8cc8', emoji: '🍋' },
-  { id: 'purple', name: 'PLUM',   body: '#a99aff', accent: '#78e9d2', emoji: '🍇' }
-];
-let myCharacter = CHARACTERS[0];
-
-/* ============ DOM ============ */
-const root = document.querySelector('#play-root');
-const canvas = document.querySelector('#game');
+/* ============================================================
+   BOOT: check login first
+   ============================================================ */
+const root    = document.querySelector('#play-root');
+const canvas  = document.querySelector('#game');
 const loading = document.querySelector('#loading');
 
 const screens = {
+  loginScreen:     document.querySelector('#loginScreen'),
   mainMenu:        document.querySelector('#mainMenu'),
   characterScreen: document.querySelector('#characterScreen'),
   createScreen:    document.querySelector('#createScreen'),
   joinScreen:      document.querySelector('#joinScreen'),
   roomScreen:      document.querySelector('#roomScreen'),
   settingsScreen:  document.querySelector('#settingsScreen'),
-  helpMenuScreen:  document.querySelector('#helpMenuScreen')
+  helpMenuScreen:  document.querySelector('#helpMenuScreen'),
+  historyScreen:   document.querySelector('#historyScreen')
 };
 
-const nameInput       = document.querySelector('#nameInput');
-const codeInput       = document.querySelector('#codeInput');
-const playBtn         = document.querySelector('#playBtn');
+function showScreen(id) {
+  for (const [key, el] of Object.entries(screens)) {
+    el.classList.toggle('hidden', key !== id);
+  }
+}
+document.querySelectorAll('[data-back]').forEach(btn => {
+  btn.onclick = () => showScreen(btn.dataset.back);
+});
+document.querySelector('#loginLink').href = LOGIN_URL;
+
+let IR_USER = null;
+
+async function boot() {
+  const user = await Net.getIRUser();
+  if (!user.ok) {
+    showScreen('loginScreen');
+    loading.classList.add('gone');
+    setTimeout(() => loading.remove(), 400);
+    return;
+  }
+  IR_USER = user;
+  document.querySelector('#irBadge').textContent = `${user.irId} · ${user.name}`;
+  document.querySelector('#irBadge').classList.add('linked');
+  showScreen('mainMenu');
+  loading.classList.add('gone');
+  setTimeout(() => loading.remove(), 400);
+}
+
+/* ============================================================
+   SETTINGS (persisted per IR user)
+   ============================================================ */
+const DEFAULTS = {
+  sensitivity: 10, cameraDistance: 9,
+  joystickX: 15, joystickY: 78,
+  jumpX: 85, jumpY: 78,
+  buttonSize: 100, buttonOpacity: 70,
+  keys: { up: 'w', down: 's', left: 'a', right: 'd', jump: ' ' }
+};
+const SETTINGS_KEY = 'mochi_settings_' + (IR_USER?.irId || 'guest');
+function loadSettings() {
+  try {
+    const raw = localStorage.getItem(SETTINGS_KEY);
+    const saved = raw ? JSON.parse(raw) : {};
+    return { ...DEFAULTS, ...saved, keys: { ...DEFAULTS.keys, ...(saved.keys || {}) } };
+  } catch { return structuredClone(DEFAULTS); }
+}
+let settings = structuredClone(DEFAULTS);
+function saveSettings() {
+  try { localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings)); } catch {}
+}
+
+/* ============================================================
+   CHARACTERS
+   ============================================================ */
+const CHARACTERS = [
+  { id: 'blue',   name: 'BLUE',   body: '#6ec6ff', accent: '#a99aff', emoji: '💙' },
+  { id: 'pink',   name: 'PINK',   body: '#ff8cc8', accent: '#a99aff', emoji: '🌸' },
+  { id: 'purple', name: 'PLUM',   body: '#a99aff', accent: '#78e9d2', emoji: '🍇' },
+  { id: 'mint',   name: 'MINT',   body: '#78e9d2', accent: '#ffe277', emoji: '🌿' }
+];
+// Gender-based default — will be enabled when you confirm the column
+function pickDefaultCharacter() {
+  // TODO: after gender column known, replace with:
+  // if (IR_USER.gender === 'male')   return CHARACTERS[0];
+  // if (IR_USER.gender === 'female') return Math.random() < 0.5 ? CHARACTERS[1] : CHARACTERS[2];
+  return CHARACTERS[0]; // default blue for now
+}
+let myCharacter = CHARACTERS[0];
+
+/* ============================================================
+   STATE
+   ============================================================ */
+const local  = { x: -3, y: 0, z: 3, ry: 0, vy: 0, grounded: true };
+let remote   = { x: 3, y: 0, z: -3, ry: Math.PI, vy: 0, grounded: true };
+let remoteTarget = { x: 3, y: 0, z: -3, ry: Math.PI };
+let remoteVisible = false;
+let remoteName = '';
+let remoteIrId = '';
+let remoteChar = CHARACTERS[1];
+
+let channel = null;
+let selfName = '';
+let roomCode = '';
+let isHost = false;
+let peerReady = false;
+let meReady = false;
+let inMatch = false;
+let lastMoveSent = 0;
+let currentMatchId = null;
+let matchSaved = false;
+
+/* ============================================================
+   DOM REFS
+   ============================================================ */
+const createBtn       = document.querySelector('#createBtn');
+const joinBtn         = document.querySelector('#joinBtn');
 const joinMenuBtn     = document.querySelector('#joinMenuBtn');
+const playBtn         = document.querySelector('#playBtn');
 const settingsBtn     = document.querySelector('#settingsBtn');
 const helpMenuBtn     = document.querySelector('#helpMenuBtn');
-const charContinueBtn = document.querySelector('#charContinueBtn');
-const charGrid        = document.querySelector('#charGrid');
-const charError       = document.querySelector('#charError');
-const createBtn       = document.querySelector('#createBtn');
+const historyBtn      = document.querySelector('#historyBtn');
+const codeInput       = document.querySelector('#codeInput');
 const createError     = document.querySelector('#createError');
 const createStatus    = document.querySelector('#createStatus');
-const joinBtn         = document.querySelector('#joinBtn');
 const joinError       = document.querySelector('#joinError');
 const joinStatus      = document.querySelector('#joinStatus');
-
-const roomCodeText   = document.querySelector('#roomCodeText');
-const copyCodeBtn    = document.querySelector('#copyCodeBtn');
-const leaveRoomBtn   = document.querySelector('#leaveRoomBtn');
-const readyBtn       = document.querySelector('#readyBtn');
-const startBtn       = document.querySelector('#startBtn');
-const roomHint       = document.querySelector('#roomHint');
-const roomSettingsBtn= document.querySelector('#roomSettingsBtn');
-const settingsBackBtn= document.querySelector('#settingsBackBtn');
-
-const soundToggle    = document.querySelector('#soundToggle');
-const shakeToggle    = document.querySelector('#shakeToggle');
-const sensSlider     = document.querySelector('#sensSlider');
-const sensVal        = document.querySelector('#sensVal');
-const distSlider     = document.querySelector('#distSlider');
-const distVal        = document.querySelector('#distVal');
-const controlList    = document.querySelector('#controlList');
-const resetControlsBtn = document.querySelector('#resetControlsBtn');
-
-const countdownOverlay = document.querySelector('#countdownOverlay');
-const countdownNumber  = document.querySelector('#countdownNumber');
-
-const gameTopbar    = document.querySelector('#gameTopbar');
-const gameBottomHud = document.querySelector('#gameBottomHud');
-const scoreName0    = document.querySelector('#scoreName0');
-const scoreName1    = document.querySelector('#scoreName1');
-const scoreVal0     = document.querySelector('#scoreVal0');
-const scoreVal1     = document.querySelector('#scoreVal1');
-const hudEmoji      = document.querySelector('#hudEmoji');
-const hudLabel      = document.querySelector('#hudLabel');
-const hudCount      = document.querySelector('#hudCount');
+const charGrid        = document.querySelector('#charGrid');
+const charContinueBtn = document.querySelector('#charContinueBtn');
+const roomCodeText    = document.querySelector('#roomCodeText');
+const copyCodeBtn     = document.querySelector('#copyCodeBtn');
+const leaveRoomBtn    = document.querySelector('#leaveRoomBtn');
+const readyBtn        = document.querySelector('#readyBtn');
+const startBtn        = document.querySelector('#startBtn');
+const roomHint        = document.querySelector('#roomHint');
+const roomSettingsBtn = document.querySelector('#roomSettingsBtn');
+const settingsBackBtn = document.querySelector('#settingsBackBtn');
+const sensSlider      = document.querySelector('#sensSlider');
+const sensVal         = document.querySelector('#sensVal');
+const distSlider      = document.querySelector('#distSlider');
+const distVal         = document.querySelector('#distVal');
+const sizeSlider      = document.querySelector('#sizeSlider');
+const sizeVal         = document.querySelector('#sizeVal');
+const opacitySlider   = document.querySelector('#opacitySlider');
+const opacityVal      = document.querySelector('#opacityVal');
+const controlList     = document.querySelector('#controlList');
+const resetControlsBtn= document.querySelector('#resetControlsBtn');
+const openLayoutBtn   = document.querySelector('#openLayoutBtn');
+const resetLayoutBtn  = document.querySelector('#resetLayoutBtn');
+const layoutEditor    = document.querySelector('#layoutEditor');
+const layoutStage     = document.querySelector('#layoutStage');
+const editJoystick    = document.querySelector('#editJoystick');
+const editJump        = document.querySelector('#editJump');
+const layoutDoneBtn   = document.querySelector('#layoutDoneBtn');
+const countdownOverlay= document.querySelector('#countdownOverlay');
+const countdownNumber = document.querySelector('#countdownNumber');
+const gameTopbar      = document.querySelector('#gameTopbar');
+const gameBottomHud   = document.querySelector('#gameBottomHud');
+const scoreName0      = document.querySelector('#scoreName0');
+const scoreName1      = document.querySelector('#scoreName1');
+const scoreVal0       = document.querySelector('#scoreVal0');
+const scoreVal1       = document.querySelector('#scoreVal1');
+const hudEmoji        = document.querySelector('#hudEmoji');
+const hudLabel        = document.querySelector('#hudLabel');
+const hudCount        = document.querySelector('#hudCount');
+const histList        = document.querySelector('#histList');
+const histEmpty       = document.querySelector('#histEmpty');
 
 const slotEls = [
   { el: document.querySelector('#slot0'), avatar: document.querySelector('#slotAvatar0'), name: document.querySelector('#slotName0'), ready: document.querySelector('#slotReady0') },
   { el: document.querySelector('#slot1'), avatar: document.querySelector('#slotAvatar1'), name: document.querySelector('#slotName1'), ready: document.querySelector('#slotReady1') }
 ];
 
-/* ============ SCREEN NAV ============ */
-let currentScreen = 'mainMenu';
-function showScreen(id) {
-  for (const [key, el] of Object.entries(screens)) {
-    if (key === id) el.classList.remove('hidden');
-    else el.classList.add('hidden');
-  }
-  currentScreen = id;
-}
-document.querySelectorAll('[data-back]').forEach(btn => {
-  btn.onclick = () => showScreen(btn.dataset.back);
-});
+/* ============================================================
+   NAV BUTTONS
+   ============================================================ */
+playBtn.onclick      = () => showScreen('characterScreen');
+joinMenuBtn.onclick  = () => showScreen('joinScreen');
+settingsBtn.onclick  = () => { openSettings(); showScreen('settingsScreen'); };
+helpMenuBtn.onclick  = () => showScreen('helpMenuScreen');
+historyBtn.onclick   = () => { loadHistory(); showScreen('historyScreen'); };
+roomSettingsBtn.onclick = () => { openSettings(); showScreen('settingsScreen'); };
+settingsBackBtn.onclick = () => showScreen(roomCode && !inMatch ? 'roomScreen' : 'mainMenu');
 
-playBtn.onclick     = () => showScreen('characterScreen');
-joinMenuBtn.onclick = () => showScreen('joinScreen');
-settingsBtn.onclick = () => { openSettings(); showScreen('settingsScreen'); };
-helpMenuBtn.onclick = () => showScreen('helpMenuScreen');
-
-/* ============ CHARACTER SELECT ============ */
+/* ============================================================
+   CHARACTER SELECT
+   ============================================================ */
 function buildCharGrid() {
   charGrid.innerHTML = '';
   for (const ch of CHARACTERS) {
@@ -137,42 +200,34 @@ function buildCharGrid() {
       myCharacter = ch;
       document.querySelectorAll('.char-tile').forEach(t => t.classList.remove('selected'));
       tile.classList.add('selected');
+      applyMyCharacter();
     };
     charGrid.appendChild(tile);
   }
 }
-buildCharGrid();
+charContinueBtn.onclick = () => showScreen('createScreen');
 
-charContinueBtn.onclick = () => {
-  const name = (nameInput.value || '').trim();
-  if (name.length < 1) {
-    charError.textContent = 'Enter a name first.';
-    charError.classList.remove('hidden');
-    return;
-  }
-  charError.classList.add('hidden');
-  selfName = name;
-  showScreen('createScreen');
-};
-
-/* ============ SETTINGS ============ */
-const KEY_LABELS = {
-  up: 'Move up',
-  down: 'Move down',
-  left: 'Move left',
-  right: 'Move right',
-  jump: 'Jump'
-};
+/* ============================================================
+   SETTINGS UI
+   ============================================================ */
+const KEY_LABELS = { up: 'Move up', down: 'Move down', left: 'Move left', right: 'Move right', jump: 'Jump' };
 let listeningFor = null;
+
+function prettyKey(k) {
+  if (k === ' ') return 'SPACE';
+  if (k === 'arrowup') return '↑';
+  if (k === 'arrowdown') return '↓';
+  if (k === 'arrowleft') return '←';
+  if (k === 'arrowright') return '→';
+  return k.toUpperCase();
+}
 
 function renderControls() {
   controlList.innerHTML = '';
   for (const action of Object.keys(KEY_LABELS)) {
     const row = document.createElement('div');
     row.className = 'control-row';
-    const label = document.createElement('span');
-    label.className = 'control-label';
-    label.textContent = KEY_LABELS[action];
+    row.innerHTML = `<span class="control-label">${KEY_LABELS[action]}</span>`;
     const keyBtn = document.createElement('button');
     keyBtn.className = 'control-key';
     keyBtn.dataset.action = action;
@@ -183,32 +238,18 @@ function renderControls() {
       keyBtn.classList.add('listening');
       keyBtn.textContent = '...';
     };
-    row.appendChild(label);
     row.appendChild(keyBtn);
     controlList.appendChild(row);
   }
 }
-function prettyKey(k) {
-  if (k === ' ') return 'SPACE';
-  if (k === 'arrowup') return '↑';
-  if (k === 'arrowdown') return '↓';
-  if (k === 'arrowleft') return '←';
-  if (k === 'arrowright') return '→';
-  return k.toUpperCase();
-}
 
 window.addEventListener('keydown', e => {
   if (!listeningFor) return;
-  e.preventDefault();
-  e.stopPropagation();
+  e.preventDefault(); e.stopPropagation();
   let key = e.key.toLowerCase();
   if (e.code === 'Space') key = ' ';
-  // prevent using a key already assigned elsewhere
   const conflict = Object.entries(settings.keys).find(([a, k]) => a !== listeningFor && k === key);
-  if (conflict) {
-    toast(`Already used for ${KEY_LABELS[conflict[0]]}`);
-    return;
-  }
+  if (conflict) { toast(`Already used for ${KEY_LABELS[conflict[0]]}`); return; }
   settings.keys[listeningFor] = key;
   saveSettings();
   const action = listeningFor;
@@ -219,53 +260,145 @@ window.addEventListener('keydown', e => {
   });
 });
 
-soundToggle.checked = settings.sound;
-shakeToggle.checked = settings.shake;
-sensSlider.value = settings.sensitivity;
-sensVal.textContent = settings.sensitivity;
-distSlider.value = settings.cameraDistance;
-distVal.textContent = settings.cameraDistance;
-
-soundToggle.onchange = () => { settings.sound = soundToggle.checked; saveSettings(); };
-shakeToggle.onchange = () => { settings.shake = shakeToggle.checked; saveSettings(); };
-sensSlider.oninput = () => {
-  settings.sensitivity = Number(sensSlider.value);
-  sensVal.textContent = settings.sensitivity;
-  saveSettings();
-};
-distSlider.oninput = () => {
-  settings.cameraDistance = Number(distSlider.value);
-  distVal.textContent = settings.cameraDistance;
-  saveSettings();
-};
-resetControlsBtn.onclick = () => {
-  settings.keys = structuredClone(DEFAULTS.keys);
-  saveSettings();
-  renderControls();
-  toast('Controls reset');
-};
-
 function openSettings() {
-  soundToggle.checked = settings.sound;
-  shakeToggle.checked = settings.shake;
-  sensSlider.value = settings.sensitivity;
-  sensVal.textContent = settings.sensitivity;
-  distSlider.value = settings.cameraDistance;
-  distVal.textContent = settings.cameraDistance;
+  sensSlider.value = settings.sensitivity; sensVal.textContent = settings.sensitivity;
+  distSlider.value = settings.cameraDistance; distVal.textContent = settings.cameraDistance;
+  sizeSlider.value = settings.buttonSize; sizeVal.textContent = settings.buttonSize + '%';
+  opacitySlider.value = settings.buttonOpacity; opacityVal.textContent = settings.buttonOpacity + '%';
   renderControls();
 }
-settingsBackBtn.onclick = () => {
-  // Return to previous screen — if we came from room, go to room; else main menu
-  if (roomCode && !inMatch) showScreen('roomScreen');
-  else showScreen('mainMenu');
-};
-roomSettingsBtn.onclick = () => { openSettings(); showScreen('settingsScreen'); };
 
-/* ============ THREE SCENE ============ */
+sensSlider.oninput = () => { settings.sensitivity = +sensSlider.value; sensVal.textContent = sensSlider.value; saveSettings(); };
+distSlider.oninput = () => { settings.cameraDistance = +distSlider.value; distVal.textContent = distSlider.value; saveSettings(); };
+sizeSlider.oninput = () => { settings.buttonSize = +sizeSlider.value; sizeVal.textContent = sizeSlider.value + '%'; saveSettings(); applyButtonLayout(); };
+opacitySlider.oninput = () => { settings.buttonOpacity = +opacitySlider.value; opacityVal.textContent = opacitySlider.value + '%'; saveSettings(); applyButtonLayout(); };
+resetControlsBtn.onclick = () => { settings.keys = structuredClone(DEFAULTS.keys); saveSettings(); renderControls(); toast('Keys reset'); };
+
+/* ============================================================
+   LAYOUT EDITOR
+   ============================================================ */
+function openLayoutEditor() {
+  layoutEditor.classList.remove('hidden');
+  positionEditHandles();
+}
+function closeLayoutEditor() {
+  layoutEditor.classList.add('hidden');
+  applyButtonLayout();
+  saveSettings();
+}
+openLayoutBtn.onclick  = openLayoutEditor;
+layoutDoneBtn.onclick  = closeLayoutEditor;
+resetLayoutBtn.onclick = () => {
+  settings.joystickX = DEFAULTS.joystickX; settings.joystickY = DEFAULTS.joystickY;
+  settings.jumpX = DEFAULTS.jumpX; settings.jumpY = DEFAULTS.jumpY;
+  saveSettings(); applyButtonLayout();
+  if (!layoutEditor.classList.contains('hidden')) positionEditHandles();
+  toast('Layout reset');
+};
+
+function positionEditHandles() {
+  editJoystick.style.left = `${settings.joystickX}%`;
+  editJoystick.style.top  = `${settings.joystickY}%`;
+  editJoystick.style.transform = 'translate(-50%,-50%)';
+  editJump.style.left = `${settings.jumpX}%`;
+  editJump.style.top  = `${settings.jumpY}%`;
+  editJump.style.transform = 'translate(-50%,-50%)';
+}
+
+let draggingEl = null, dragOffset = { x: 0, y: 0 };
+function setupDrag(el, keyX, keyY) {
+  el.addEventListener('pointerdown', e => {
+    e.preventDefault();
+    draggingEl = el;
+    const r = el.getBoundingClientRect();
+    dragOffset.x = e.clientX - (r.left + r.width / 2);
+    dragOffset.y = e.clientY - (r.top + r.height / 2);
+    el.setPointerCapture(e.pointerId);
+  });
+  el.addEventListener('pointermove', e => {
+    if (draggingEl !== el) return;
+    const stage = layoutStage.getBoundingClientRect();
+    if (!stage.width) return;
+    const cx = e.clientX - dragOffset.x;
+    const cy = e.clientY - dragOffset.y;
+    let px = ((cx - stage.left) / stage.width) * 100;
+    let py = ((cy - stage.top) / stage.height) * 100;
+    px = Math.max(6, Math.min(94, px));
+    py = Math.max(6, Math.min(94, py));
+    el.style.left = `${px}%`;
+    el.style.top  = `${py}%`;
+    settings[keyX] = px;
+    settings[keyY] = py;
+  });
+  el.addEventListener('pointerup', () => { draggingEl = null; saveSettings(); });
+  el.addEventListener('pointercancel', () => { draggingEl = null; saveSettings(); });
+}
+setupDrag(editJoystick, 'joystickX', 'joystickY');
+setupDrag(editJump, 'jumpX', 'jumpY');
+
+/* ============================================================
+   ON-SCREEN CONTROLS
+   ============================================================ */
+const joystickEl = document.createElement('div');
+joystickEl.className = 'game-joystick hidden';
+joystickEl.innerHTML = '<div class="game-joystick-knob"></div>';
+root.appendChild(joystickEl);
+const joystickKnob = joystickEl.querySelector('.game-joystick-knob');
+
+const jumpBtnEl = document.createElement('button');
+jumpBtnEl.className = 'game-jump-btn hidden';
+jumpBtnEl.innerHTML = '<span class="jump-arrow">⬆</span><span class="jump-text">JUMP</span>';
+root.appendChild(jumpBtnEl);
+
+function applyButtonLayout() {
+  const scale = settings.buttonSize / 100;
+  const op = settings.buttonOpacity / 100;
+  joystickEl.style.left = `${settings.joystickX}%`;
+  joystickEl.style.top  = `${settings.joystickY}%`;
+  joystickEl.style.transform = `translate(-50%,-50%) scale(${scale})`;
+  joystickEl.style.opacity = op;
+  jumpBtnEl.style.left = `${settings.jumpX}%`;
+  jumpBtnEl.style.top  = `${settings.jumpY}%`;
+  jumpBtnEl.style.transform = `translate(-50%,-50%) scale(${scale})`;
+  jumpBtnEl.style.opacity = op;
+}
+applyButtonLayout();
+
+let touchId = null, touchOrigin = null, touchDelta = { x: 0, y: 0 };
+joystickEl.addEventListener('pointerdown', e => {
+  e.preventDefault();
+  touchId = e.pointerId;
+  const r = joystickEl.getBoundingClientRect();
+  touchOrigin = { x: r.left + r.width / 2, y: r.top + r.height / 2 };
+  joystickEl.setPointerCapture(e.pointerId);
+  joystickEl.classList.add('active');
+  moveJoystick(e);
+});
+joystickEl.addEventListener('pointermove', moveJoystick);
+function moveJoystick(e) {
+  if (touchId !== e.pointerId) return;
+  const dx = e.clientX - touchOrigin.x, dy = e.clientY - touchOrigin.y;
+  const len = Math.max(1, Math.hypot(dx, dy)), scale = Math.min(1, len / 45);
+  touchDelta = { x: dx / len * scale, y: dy / len * scale };
+  joystickKnob.style.transform = `translate(${touchDelta.x * 30}px,${touchDelta.y * 30}px)`;
+}
+function endJoystick(e) {
+  if (touchId === e.pointerId) {
+    touchId = null; touchDelta = { x: 0, y: 0 };
+    joystickEl.classList.remove('active');
+    joystickKnob.style.transform = 'translate(0,0)';
+  }
+}
+joystickEl.addEventListener('pointerup', endJoystick);
+joystickEl.addEventListener('pointercancel', endJoystick);
+jumpBtnEl.addEventListener('pointerdown', e => { e.preventDefault(); jump(); });
+
+/* ============================================================
+   THREE SCENE
+   ============================================================ */
 const scene = new THREE.Scene();
 scene.background = new THREE.Color('#9edfff');
 scene.fog = new THREE.Fog('#9edfff', 22, 65);
-
 const camera = new THREE.PerspectiveCamera(58, 1, 0.1, 120);
 const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: 'high-performance' });
 renderer.setPixelRatio(Math.min(devicePixelRatio, 1.7));
@@ -298,21 +431,15 @@ const mat = c => new THREE.MeshStandardMaterial({ color: c, roughness: 0.72 });
 const floor = new THREE.Mesh(new THREE.BoxGeometry(28, 0.5, 28), mat('#f7f0ff'));
 floor.position.y = -0.3; floor.receiveShadow = true; scene.add(floor);
 const grid = new THREE.GridHelper(28, 28, '#c1b4f4', '#d8d0ef');
-grid.position.y = -0.035; grid.material.transparent = true; grid.material.opacity = 0.4;
-scene.add(grid);
+grid.position.y = -0.035; grid.material.transparent = true; grid.material.opacity = 0.4; scene.add(grid);
 
 function box(w,h,d,c,x,y,z){
   const m = new THREE.Mesh(new THREE.BoxGeometry(w,h,d), mat(c));
-  m.position.set(x,y,z); m.castShadow = m.receiveShadow = true;
-  scene.add(m); return m;
+  m.position.set(x,y,z); m.castShadow = m.receiveShadow = true; scene.add(m); return m;
 }
-box(28,.65,.65,'#ff85bd',0,.15,-14);
-box(28,.65,.65,'#78e9d2',0,.15,14);
-box(.65,.65,28,'#a99aff',-14,.15,0);
-box(.65,.65,28,'#ffe277',14,.15,0);
-box(7,.18,5,'#ffd8ec',0,.02,0);
-box(3.2,.5,3.2,'#ff7db7',0,.3,0);
-box(2.1,.22,2.1,'#ffe66d',0,.66,0);
+box(28,.65,.65,'#ff85bd',0,.15,-14); box(28,.65,.65,'#78e9d2',0,.15,14);
+box(.65,.65,28,'#a99aff',-14,.15,0); box(.65,.65,28,'#ffe277',14,.15,0);
+box(7,.18,5,'#ffd8ec',0,.02,0); box(3.2,.5,3.2,'#ff7db7',0,.3,0); box(2.1,.22,2.1,'#ffe66d',0,.66,0);
 for (const [x,y,z,w,h,d,c] of [
   [-6,.7,-5,2.1,1.4,1.6,'#ff8cc8'],[6,.7,-5,2.1,1.4,1.6,'#8e83ff'],
   [-6,.7,5,2.1,1.4,1.6,'#72e6ce'],[6,.7,5,2.1,1.4,1.6,'#ffd76f'],
@@ -333,24 +460,19 @@ for (const [x,z,c] of [[-10,-10,'#ff8cc8'],[10,-10,'#78e9d2'],[-10,10,'#ffe66d']
 for (const [x,y,z,s] of [[-18,9,-12,1.5],[18,10,-15,1.8],[-18,8,12,1.2],[19,9,12,1.5]]) {
   const g = new THREE.Group();
   for (const [ox,oy,oz,r] of [[0,0,0,.85],[.8,.1,0,.65],[-.7,.08,.1,.58],[.25,.35,.05,.62]]) {
-    const m = new THREE.Mesh(new THREE.SphereGeometry(r,12,10), mat('#fff'));
-    m.position.set(ox,oy,oz); g.add(m);
-  }
-  g.position.set(x,y,z); g.scale.setScalar(s); scene.add(g);
+    const m = new THREE.Mesh(new THREE.SphereGeometry(r,12,10), mat('#fff')); m.position.set(ox,oy,oz); g.add(m);
+  } g.position.set(x,y,z); g.scale.setScalar(s); scene.add(g);
 }
 
-/* ============ CHARACTER MESHES ============ */
+/* ============================================================
+   CHARACTER MESH
+   ============================================================ */
 function makePlayer(bodyColor, accentColor, x, z) {
   const g = new THREE.Group();
-
   const body = new THREE.Mesh(new THREE.SphereGeometry(.72,24,18), mat(bodyColor));
-  body.scale.set(.85,1,.72); body.position.y = .92; body.castShadow = true;
-  g.add(body);
-
+  body.scale.set(.85,1,.72); body.position.y = .92; body.castShadow = true; g.add(body);
   const belly = new THREE.Mesh(new THREE.SphereGeometry(.45,20,14), mat('#fff1e9'));
-  belly.scale.set(.9,.78,.22); belly.position.set(0,.8,.48);
-  g.add(belly);
-
+  belly.scale.set(.9,.78,.22); belly.position.set(0,.8,.48); g.add(belly);
   const faceMat = mat('#30274b');
   for (const ex of [-.22,.22]) {
     const eye = new THREE.Mesh(new THREE.SphereGeometry(.065,12,10), faceMat);
@@ -360,22 +482,18 @@ function makePlayer(bodyColor, accentColor, x, z) {
     const blush = new THREE.Mesh(new THREE.SphereGeometry(.1,12,8), mat('#ff9cbd'));
     blush.position.set(bx,.85,.61); blush.scale.set(1,.6,.3); g.add(blush);
   }
-
   const cap = new THREE.Mesh(new THREE.SphereGeometry(.28,16,12), mat(accentColor));
   cap.scale.set(1,.42,1); cap.position.set(0,1.58,0); g.add(cap);
-
   const pom = new THREE.Mesh(new THREE.SphereGeometry(.12,12,10), mat('#fff1a8'));
   pom.position.set(0,1.75,0); g.add(pom);
-
   g.position.set(x,0,z); scene.add(g);
   return { group: g, body, bobBase: 0.92 };
 }
 
-const localPlayer  = makePlayer('#ff8cc8','#a99aff', -3,  3);
-const remotePlayer = makePlayer('#78e9d2','#ffe277',  3, -3);
+const localPlayer  = makePlayer('#6ec6ff','#a99aff', -3,  3);
+const remotePlayer = makePlayer('#ff8cc8','#a99aff',  3, -3);
 remotePlayer.group.visible = false;
 
-/* sparkles */
 const sparkles = new THREE.Group(); scene.add(sparkles);
 for (let i = 0; i < 30; i++) {
   const s = new THREE.Mesh(new THREE.SphereGeometry(.045,6,6), mat(i%2?'#fff1a8':'#fff'));
@@ -383,40 +501,35 @@ for (let i = 0; i < 30; i++) {
   sparkles.add(s);
 }
 
-/* ============ STATE ============ */
-const local  = { x: -3, y: 0, z: 3, ry: 0, vy: 0, grounded: true };
-let remote   = { x: 3, y: 0, z: -3, ry: Math.PI, vy: 0, grounded: true };
-let remoteTarget = { x: 3, y: 0, z: -3, ry: Math.PI };
-let remoteVisible = false;
-let remoteName = '';
-let remoteChar = CHARACTERS[1];
+function applyMyCharacter() {
+  if (!myCharacter) return;
+  scene.remove(localPlayer.group);
+  const p = makePlayer(myCharacter.body, myCharacter.accent, local.x, local.z);
+  Object.assign(localPlayer, p);
+}
+function applyRemoteCharacter() {
+  scene.remove(remotePlayer.group);
+  const p = makePlayer(remoteChar.body, remoteChar.accent, remote.x, remote.z);
+  Object.assign(remotePlayer, p);
+  remotePlayer.group.visible = remoteVisible;
+}
 
-let channel = null;
-let selfId  = null;
-let selfName = '';
-let roomCode = '';
-let isHost = false;
-let peerReady = false;
-let meReady = false;
-let inMatch = false;
-let lastMoveSent = 0;
-
-/* ============ INPUT ============ */
+/* ============================================================
+   INPUT
+   ============================================================ */
 const keys = new Set();
 let yaw = 0, pitch = 0.26, dragging = false, lastX = 0, lastY = 0;
 const moveVec = new THREE.Vector3();
 const clock = new THREE.Clock();
 
 function jump() {
-  if (!inMatch) return;
-  if (local.grounded) { local.vy = 7.2; local.grounded = false; }
+  if (!inMatch || !local.grounded) return;
+  local.vy = 7.2; local.grounded = false;
 }
 window.addEventListener('keydown', e => {
-  if (listeningFor) return; // rebinding
+  if (listeningFor) return;
   const k = e.code === 'Space' ? ' ' : e.key.toLowerCase();
-  if ([settings.keys.up, settings.keys.down, settings.keys.left, settings.keys.right, ' '].includes(k)) {
-    e.preventDefault();
-  }
+  if ([settings.keys.up, settings.keys.down, settings.keys.left, settings.keys.right, ' '].includes(k)) e.preventDefault();
   keys.add(k);
   if (k === settings.keys.jump) jump();
 });
@@ -424,55 +537,21 @@ window.addEventListener('keyup', e => {
   const k = e.code === 'Space' ? ' ' : e.key.toLowerCase();
   keys.delete(k);
 });
-document.querySelector('#jumpBtn').addEventListener('pointerdown', e => { e.preventDefault(); jump(); });
 
-canvas.addEventListener('pointerdown', e => {
-  dragging = true; lastX = e.clientX; lastY = e.clientY;
-  canvas.setPointerCapture?.(e.pointerId);
-});
+canvas.addEventListener('pointerdown', e => { dragging = true; lastX = e.clientX; lastY = e.clientY; canvas.setPointerCapture?.(e.pointerId); });
 canvas.addEventListener('pointermove', e => {
   if (!dragging) return;
   const sens = 0.006 * (settings.sensitivity / 10);
-  yaw   -= (e.clientX - lastX) * sens;
-  pitch  = THREE.MathUtils.clamp(pitch + (e.clientY - lastY) * 0.003 * (settings.sensitivity / 10), -0.1, 0.8);
+  yaw -= (e.clientX - lastX) * sens;
+  pitch = THREE.MathUtils.clamp(pitch + (e.clientY - lastY) * 0.003 * (settings.sensitivity / 10), -0.1, 0.8);
   lastX = e.clientX; lastY = e.clientY;
 });
-canvas.addEventListener('pointerup',   () => dragging = false);
+canvas.addEventListener('pointerup', () => dragging = false);
 canvas.addEventListener('pointercancel', () => dragging = false);
 
-/* ============ MOBILE JOYSTICK ============ */
-let touchId = null, touchOrigin = null, touchDelta = { x: 0, y: 0 };
-const pad = document.createElement('div');
-pad.className = 'touch-pad';
-pad.innerHTML = '<span class="touch-knob"></span>';
-root.appendChild(pad);
-const knob = pad.querySelector('.touch-knob');
-
-function moveTouch(e) {
-  if (touchId !== e.pointerId) return;
-  const dx = e.clientX - touchOrigin.x, dy = e.clientY - touchOrigin.y;
-  const len = Math.max(1, Math.hypot(dx,dy)), scale = Math.min(1, len/45);
-  touchDelta = { x: dx/len*scale, y: dy/len*scale };
-  knob.style.transform = `translate(${touchDelta.x*30}px,${touchDelta.y*30}px)`;
-}
-pad.addEventListener('pointerdown', e => {
-  e.preventDefault(); touchId = e.pointerId;
-  touchOrigin = { x:e.clientX, y:e.clientY };
-  pad.setPointerCapture(e.pointerId);
-  pad.classList.add('active'); moveTouch(e);
-});
-pad.addEventListener('pointermove', moveTouch);
-function endTouch(e) {
-  if (touchId === e.pointerId) {
-    touchId = null; touchDelta = { x:0,y:0 };
-    pad.classList.remove('active');
-    knob.style.transform = 'translate(0,0)';
-  }
-}
-pad.addEventListener('pointerup', endTouch);
-pad.addEventListener('pointercancel', endTouch);
-
-/* ============ TOAST ============ */
+/* ============================================================
+   TOAST
+   ============================================================ */
 function toast(msg) {
   const el = document.querySelector('#toast');
   el.textContent = msg; el.classList.remove('hidden');
@@ -480,114 +559,9 @@ function toast(msg) {
   toast.timer = setTimeout(() => el.classList.add('hidden'), 1400);
 }
 
-/* ============ HELP MODAL ============ */
-const helpModal = document.querySelector('#helpModal');
-document.querySelector('#helpBtn').onclick  = () => helpModal.classList.remove('hidden');
-document.querySelector('#closeHelp').onclick = () => helpModal.classList.add('hidden');
-document.querySelector('#gotIt').onclick     = () => helpModal.classList.add('hidden');
-
-/* ============ LANDSCAPE LOCK ============ */
-let orientationRequested = false;
-async function requestLandscape() {
-  if (orientationRequested) return;
-  orientationRequested = true;
-  try {
-    if (screen.orientation && typeof screen.orientation.lock === 'function') {
-      if (!document.fullscreenElement && document.documentElement.requestFullscreen) {
-        try { await document.documentElement.requestFullscreen(); } catch (_) {}
-      }
-      await screen.orientation.lock('landscape');
-    }
-  } catch (_) {}
-}
-window.addEventListener('pointerdown', requestLandscape, { once: true });
-window.addEventListener('keydown',     requestLandscape, { once: true });
-
-/* ============ UPDATE LOCAL ============ */
-function updateLocalPlayer(dt) {
-  let f = 0, s = 0;
-  if (keys.has(settings.keys.up))    f += 1;
-  if (keys.has(settings.keys.down))  f -= 1;
-  if (keys.has(settings.keys.right)) s += 1;
-  if (keys.has(settings.keys.left))  s -= 1;
-  f -= touchDelta.y;
-  s += touchDelta.x;
-
-  const len = Math.hypot(f,s);
-  if (len > 1) { f /= len; s /= len; }
-
-  const forward = new THREE.Vector3(-Math.sin(yaw), 0, -Math.cos(yaw));
-  const right   = new THREE.Vector3( Math.cos(yaw), 0, -Math.sin(yaw));
-  moveVec.set(0,0,0).addScaledVector(forward, f).addScaledVector(right, s);
-
-  if (inMatch && moveVec.lengthSq() > 0.001) {
-    local.x += moveVec.x * 5.4 * dt;
-    local.z += moveVec.z * 5.4 * dt;
-    local.ry = Math.atan2(moveVec.x, moveVec.z);
-  }
-  local.x = THREE.MathUtils.clamp(local.x, -12.3, 12.3);
-  local.z = THREE.MathUtils.clamp(local.z, -12.3, 12.3);
-
-  local.vy -= 18 * dt;
-  local.y  += local.vy * dt;
-  if (local.y <= 0) { local.y = 0; local.vy = 0; local.grounded = true; }
-
-  localPlayer.group.position.set(local.x, local.y, local.z);
-  localPlayer.group.rotation.y = local.ry;
-
-  const moving = moveVec.lengthSq() > 0.001;
-  const bob = moving
-    ? Math.sin(performance.now() * 0.015) * 0.045
-    : Math.sin(performance.now() * 0.002) * 0.018;
-  localPlayer.body.position.y = localPlayer.bobBase + bob;
-
-  const now = performance.now();
-  if (inMatch && channel && now - lastMoveSent > 50) {
-    lastMoveSent = now;
-    channel.send('move', {
-      x: local.x, y: local.y, z: local.z,
-      ry: local.ry, vy: local.vy, grounded: local.grounded
-    });
-  }
-
-  hudCount.textContent = remoteVisible ? '2P' : '1P';
-  document.querySelector('.meter i').style.width = '100%';
-}
-
-/* ============ UPDATE REMOTE ============ */
-function updateRemotePlayer(dt) {
-  if (!remoteVisible) { remotePlayer.group.visible = false; return; }
-  remotePlayer.group.visible = true;
-
-  const k = 1 - Math.exp(-dt * 12);
-  remote.x += (remoteTarget.x - remote.x) * k;
-  remote.y += (remoteTarget.y - remote.y) * k;
-  remote.z += (remoteTarget.z - remote.z) * k;
-
-  let d = remoteTarget.ry - remote.ry;
-  while (d >  Math.PI) d -= Math.PI * 2;
-  while (d < -Math.PI) d += Math.PI * 2;
-  remote.ry += d * k;
-
-  remotePlayer.group.position.set(remote.x, remote.y, remote.z);
-  remotePlayer.group.rotation.y = remote.ry;
-}
-
-/* ============ CAMERA ============ */
-function cameraFollow(dt) {
-  const camDist = settings.cameraDistance;
-  const target = new THREE.Vector3(local.x, local.y + 1.1, local.z);
-  const h = Math.cos(pitch) * camDist;
-  const off = new THREE.Vector3(
-    Math.sin(yaw) * h,
-    Math.sin(pitch) * camDist + 2,
-    Math.cos(yaw) * h
-  );
-  camera.position.lerp(target.clone().add(off), 1 - Math.exp(-dt * 5));
-  camera.lookAt(target);
-}
-
-/* ============ LOBBY UI ============ */
+/* ============================================================
+   ROOM UI
+   ============================================================ */
 function setStatus(el, text, state) {
   el.textContent = text;
   el.className = 'conn-status' + (state ? ' ' + state : '');
@@ -595,82 +569,53 @@ function setStatus(el, text, state) {
 
 function renderRoom() {
   roomCodeText.textContent = roomCode || '-----';
-
-  const mySlot = slotEls[0];
-  const peerSlot = slotEls[1];
-
-  mySlot.avatar.textContent = myCharacter.emoji;
-  mySlot.name.textContent = selfName || 'You';
-  mySlot.ready.textContent = meReady ? 'READY' : 'not ready';
-  mySlot.el.classList.add('you');
-  mySlot.el.classList.toggle('ready', meReady);
+  const my = slotEls[0], peer = slotEls[1];
+  my.avatar.textContent = myCharacter.emoji;
+  my.name.textContent = selfName;
+  my.ready.textContent = meReady ? 'READY' : 'not ready';
+  my.el.classList.add('you');
+  my.el.classList.toggle('ready', meReady);
 
   if (remoteVisible) {
-    peerSlot.avatar.textContent = remoteChar.emoji;
-    peerSlot.name.textContent = remoteName || 'Peer';
-    peerSlot.ready.textContent = peerReady ? 'READY' : 'not ready';
-    peerSlot.el.classList.toggle('ready', peerReady);
-    peerSlot.el.style.opacity = 1;
+    peer.avatar.textContent = remoteChar.emoji;
+    peer.name.textContent = `${remoteName}${remoteIrId ? ' · ' + remoteIrId : ''}`;
+    peer.ready.textContent = peerReady ? 'READY' : 'not ready';
+    peer.el.classList.toggle('ready', peerReady);
+    peer.el.style.opacity = 1;
   } else {
-    peerSlot.avatar.textContent = '🍡';
-    peerSlot.name.textContent = '—';
-    peerSlot.ready.textContent = 'waiting…';
-    peerSlot.el.classList.remove('ready');
-    peerSlot.el.style.opacity = .6;
+    peer.avatar.textContent = '🍡';
+    peer.name.textContent = '—';
+    peer.ready.textContent = 'waiting…';
+    peer.el.classList.remove('ready');
+    peer.el.style.opacity = .6;
   }
 
   const both = remoteVisible && meReady && peerReady;
   startBtn.classList.toggle('hidden', !isHost || !both);
   readyBtn.classList.toggle('hidden', inMatch);
   readyBtn.textContent = meReady ? 'NOT READY' : 'READY';
-
-  roomHint.textContent = inMatch
-    ? 'Match in progress'
+  roomHint.textContent = inMatch ? 'Match in progress'
     : remoteVisible
       ? (both ? (isHost ? 'Press START MATCH.' : 'Waiting for host…') : 'Both players must be ready.')
       : 'Share the code with a friend.';
 }
 
-function applyMyCharacter() {
-  // Rebuild local character mesh with selected colors
-  scene.remove(localPlayer.group);
-  const c = myCharacter;
-  const newPlayer = makePlayer(c.body, c.accent, local.x, local.z);
-  newPlayer.group.position.copy(localPlayer.group.position);
-  newPlayer.group.rotation.copy(localPlayer.group.rotation);
-  // Replace reference
-  Object.assign(localPlayer, newPlayer);
-}
-
-function applyRemoteCharacter() {
-  scene.remove(remotePlayer.group);
-  const c = remoteChar;
-  const newPlayer = makePlayer(c.body, c.accent, remote.x, remote.z);
-  Object.assign(remotePlayer, newPlayer);
-  remotePlayer.group.visible = remoteVisible;
-}
-
-/* ============ ATTACH CHANNEL ============ */
-async function attachChannel(code, name) {
-  channel = new Net.RoomChannel(code, selfId, name);
-
-  channel.on('hello', () => {
-    channel.send('peer', { name: selfName, char: myCharacter.id });
-  });
-  channel.on('peer', ({ name, char }) => {
+/* ============================================================
+   CHANNEL ATTACH
+   ============================================================ */
+async function attachChannel(code) {
+  channel = new Net.RoomChannel(code, IR_USER.userId, selfName);
+  channel.on('hello', () => channel.send('peer', { name: selfName, irId: IR_USER.irId, char: myCharacter.id }));
+  channel.on('peer', ({ name, irId, char }) => {
     remoteName = name || 'Peer';
+    remoteIrId = irId || '';
     remoteChar = CHARACTERS.find(c => c.id === char) || CHARACTERS[1];
     remoteVisible = true;
     applyRemoteCharacter();
     renderRoom();
   });
-  channel.on('ready', ({ ready }) => {
-    peerReady = !!ready;
-    renderRoom();
-  });
-  channel.on('start', () => {
-    startCountdownThenMatch();
-  });
+  channel.on('ready', ({ ready }) => { peerReady = !!ready; renderRoom(); });
+  channel.on('start', () => startCountdownThenMatch());
   channel.on('move', ({ x, y, z, ry }) => {
     remoteTarget.x = Number(x) || 0;
     remoteTarget.y = Number(y) || 0;
@@ -679,38 +624,32 @@ async function attachChannel(code, name) {
     remoteVisible = true;
   });
   channel.on('leave', () => {
-    remoteVisible = false;
-    peerReady = false;
-    renderRoom();
+    remoteVisible = false; peerReady = false; renderRoom();
     toast('Peer left 👋');
   });
-
   await channel.join();
 }
 
-/* ============ ACTIONS ============ */
+/* ============================================================
+   CREATE / JOIN
+   ============================================================ */
 async function doCreate() {
   createError.classList.add('hidden');
   setStatus(createStatus, 'Creating room…');
-
-  const name = (nameInput.value || '').trim() || 'Player 1';
-  const res = await Net.createRoom(name);
+  const res = await Net.createRoom(IR_USER.userId, IR_USER.irId);
   if (!res.ok) {
     setStatus(createStatus, 'Failed', 'bad');
     createError.textContent = 'Could not create room: ' + res.error;
     createError.classList.remove('hidden');
     return;
   }
-
-  selfId = res.hostId;
-  selfName = name;
+  selfName = IR_USER.name;
   roomCode = res.code;
   isHost = true;
-  meReady = false; peerReady = false;
-  remoteVisible = false; inMatch = false;
-
+  meReady = false; peerReady = false; remoteVisible = false; inMatch = false; matchSaved = false;
+  currentMatchId = null;
   try {
-    await attachChannel(roomCode, selfName);
+    await attachChannel(roomCode);
     applyMyCharacter();
     showScreen('roomScreen');
     renderRoom();
@@ -724,14 +663,7 @@ async function doCreate() {
 async function doJoin() {
   joinError.classList.add('hidden');
   const code = (codeInput.value || '').toUpperCase().trim();
-  const name = (nameInput.value || '').trim() || 'Player 2';
-
-  if (code.length < 4) {
-    joinError.textContent = 'Enter a room code.';
-    joinError.classList.remove('hidden');
-    return;
-  }
-
+  if (code.length < 4) { joinError.textContent = 'Enter a room code.'; joinError.classList.remove('hidden'); return; }
   setStatus(joinStatus, 'Looking up room…');
   const found = await Net.findRoom(code);
   if (!found.ok) {
@@ -740,16 +672,13 @@ async function doJoin() {
     joinError.classList.remove('hidden');
     return;
   }
-
-  selfId = crypto.randomUUID();
-  selfName = name;
+  selfName = IR_USER.name;
   roomCode = found.code;
   isHost = false;
-  meReady = false; peerReady = false;
-  remoteVisible = false; inMatch = false;
-
+  meReady = false; peerReady = false; remoteVisible = false; inMatch = false; matchSaved = false;
+  currentMatchId = null;
   try {
-    await attachChannel(roomCode, selfName);
+    await attachChannel(roomCode);
     applyMyCharacter();
     showScreen('roomScreen');
     renderRoom();
@@ -768,20 +697,18 @@ async function doLeave() {
   remoteVisible = false; inMatch = false;
   gameTopbar.classList.add('hidden');
   gameBottomHud.classList.add('hidden');
+  joystickEl.classList.add('hidden');
+  jumpBtnEl.classList.add('hidden');
   showScreen('mainMenu');
 }
 
-/* ============ COUNTDOWN + MATCH ============ */
+/* ============================================================
+   COUNTDOWN + MATCH
+   ============================================================ */
 async function startCountdownThenMatch() {
-  // Hide lobby, show game
-  showScreen(null);
-  screens.mainMenu.classList.add('hidden');
   for (const el of Object.values(screens)) el.classList.add('hidden');
-
   countdownOverlay.classList.remove('hidden');
-
-  const steps = ['3','2','1','GO!'];
-  for (const n of steps) {
+  for (const n of ['3','2','1','GO!']) {
     countdownNumber.textContent = n;
     countdownNumber.style.animation = 'none';
     void countdownNumber.offsetWidth;
@@ -789,22 +716,22 @@ async function startCountdownThenMatch() {
     await sleep(n === 'GO!' ? 500 : 800);
   }
   countdownOverlay.classList.add('hidden');
-
   beginMatch();
 }
 
 function beginMatch() {
   inMatch = true;
-
-  local.x = -3; local.y = 0; local.z = 3; local.ry = 0;
-  local.vy = 0; local.grounded = true;
-
+  local.x = -3; local.y = 0; local.z = 3; local.ry = 0; local.vy = 0; local.grounded = true;
   remoteTarget.x = 3; remoteTarget.y = 0; remoteTarget.z = -3; remoteTarget.ry = Math.PI;
   remote.x = 3; remote.y = 0; remote.z = -3; remote.ry = Math.PI;
+  currentMatchId = 'mm_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6);
 
   gameTopbar.classList.remove('hidden');
   gameBottomHud.classList.remove('hidden');
-  scoreName0.textContent = selfName || 'P1';
+  joystickEl.classList.remove('hidden');
+  jumpBtnEl.classList.remove('hidden');
+
+  scoreName0.textContent = selfName;
   scoreName1.textContent = remoteName || 'P2';
   scoreVal0.textContent = '0';
   scoreVal1.textContent = '0';
@@ -812,30 +739,102 @@ function beginMatch() {
   hudLabel.textContent = 'LIVE';
 }
 
-/* ============ WIRE UP BUTTONS ============ */
-createBtn.onclick    = doCreate;
-joinBtn.onclick      = doJoin;
-leaveRoomBtn.onclick = doLeave;
+/* ============================================================
+   MATCH HISTORY
+   ============================================================ */
+async function loadHistory() {
+  histList.innerHTML = '';
+  histEmpty.classList.add('hidden');
+  const res = await Net.loadMatchHistory(IR_USER.irId, 10);
+  if (!res.ok || !res.matches.length) { histEmpty.classList.remove('hidden'); return; }
+  for (const m of res.matches) {
+    const item = document.createElement('div');
+    item.className = 'hist-item ' + (m.won ? 'won' : 'lost');
+    const date = new Date(m.played_at).toLocaleDateString();
+    item.innerHTML = `
+      <div class="hist-icon">${m.won ? '🏆' : '💔'}</div>
+      <div class="hist-info">
+        <div class="hist-name">vs ${m.opponent_name || 'Player'}${m.opponent_ir_id ? ' · ' + m.opponent_ir_id : ''}</div>
+        <div class="hist-score"><b>${m.score_self}</b> – <b>${m.score_opponent}</b> · ${date}</div>
+      </div>
+    `;
+    histList.appendChild(item);
+  }
+}
 
-readyBtn.onclick = () => {
-  meReady = !meReady;
-  channel?.send('ready', { ready: meReady });
-  renderRoom();
-};
+/* ============================================================
+   UPDATE LOOP
+   ============================================================ */
+function updateLocalPlayer(dt) {
+  if (!inMatch) {
+    localPlayer.group.position.set(local.x, local.y, local.z);
+    localPlayer.group.rotation.y = local.ry;
+    return;
+  }
+  let f = 0, s = 0;
+  if (keys.has(settings.keys.up))    f += 1;
+  if (keys.has(settings.keys.down))  f -= 1;
+  if (keys.has(settings.keys.right)) s += 1;
+  if (keys.has(settings.keys.left))  s -= 1;
+  f -= touchDelta.y;
+  s += touchDelta.x;
+  const len = Math.hypot(f, s);
+  if (len > 1) { f /= len; s /= len; }
 
-startBtn.onclick = () => {
-  if (!isHost) return;
-  channel?.send('start', {});
-  startCountdownThenMatch();
-};
+  const forward = new THREE.Vector3(-Math.sin(yaw), 0, -Math.cos(yaw));
+  const right   = new THREE.Vector3( Math.cos(yaw), 0, -Math.sin(yaw));
+  moveVec.set(0,0,0).addScaledVector(forward, f).addScaledVector(right, s);
+  if (moveVec.lengthSq() > 0.001) {
+    local.x += moveVec.x * 5.4 * dt;
+    local.z += moveVec.z * 5.4 * dt;
+    local.ry = Math.atan2(moveVec.x, moveVec.z);
+  }
+  local.x = THREE.MathUtils.clamp(local.x, -12.3, 12.3);
+  local.z = THREE.MathUtils.clamp(local.z, -12.3, 12.3);
+  local.vy -= 18 * dt;
+  local.y  += local.vy * dt;
+  if (local.y <= 0) { local.y = 0; local.vy = 0; local.grounded = true; }
 
-copyCodeBtn.onclick = async () => {
-  try { await navigator.clipboard.writeText(roomCode); toast('Code copied 📋'); }
-  catch { toast(roomCode); }
-};
+  localPlayer.group.position.set(local.x, local.y, local.z);
+  localPlayer.group.rotation.y = local.ry;
+  const moving = moveVec.lengthSq() > 0.001;
+  const bob = moving
+    ? Math.sin(performance.now() * 0.015) * 0.045
+    : Math.sin(performance.now() * 0.002) * 0.018;
+  localPlayer.body.position.y = localPlayer.bobBase + bob;
 
-/* ============ MAIN LOOP ============ */
-function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+  const now = performance.now();
+  if (channel && now - lastMoveSent > 50) {
+    lastMoveSent = now;
+    channel.send('move', { x: local.x, y: local.y, z: local.z, ry: local.ry });
+  }
+  hudCount.textContent = remoteVisible ? '2P' : '1P';
+  document.querySelector('.meter i').style.width = '100%';
+}
+
+function updateRemotePlayer(dt) {
+  if (!remoteVisible) { remotePlayer.group.visible = false; return; }
+  remotePlayer.group.visible = true;
+  const k = 1 - Math.exp(-dt * 12);
+  remote.x += (remoteTarget.x - remote.x) * k;
+  remote.y += (remoteTarget.y - remote.y) * k;
+  remote.z += (remoteTarget.z - remote.z) * k;
+  let d = remoteTarget.ry - remote.ry;
+  while (d > Math.PI) d -= Math.PI * 2;
+  while (d < -Math.PI) d += Math.PI * 2;
+  remote.ry += d * k;
+  remotePlayer.group.position.set(remote.x, remote.y, remote.z);
+  remotePlayer.group.rotation.y = remote.ry;
+}
+
+function cameraFollow(dt) {
+  const dist = settings.cameraDistance;
+  const target = new THREE.Vector3(local.x, local.y + 1.1, local.z);
+  const h = Math.cos(pitch) * dist;
+  const off = new THREE.Vector3(Math.sin(yaw) * h, Math.sin(pitch) * dist + 2, Math.cos(yaw) * h);
+  camera.position.lerp(target.clone().add(off), 1 - Math.exp(-dt * 5));
+  camera.lookAt(target);
+}
 
 function animate() {
   requestAnimationFrame(animate);
@@ -847,9 +846,58 @@ function animate() {
   renderer.render(scene, camera);
 }
 
-/* ============ INIT ============ */
-loading.classList.add('gone');
-setTimeout(() => loading.remove(), 500);
-showScreen('mainMenu');
-renderControls();
-animate();
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+/* ============================================================
+   BUTTON WIRING
+   ============================================================ */
+createBtn.onclick    = doCreate;
+joinBtn.onclick      = doJoin;
+leaveRoomBtn.onclick = doLeave;
+readyBtn.onclick = () => {
+  meReady = !meReady;
+  channel?.send('ready', { ready: meReady });
+  renderRoom();
+};
+startBtn.onclick = () => { if (!isHost) return; channel?.send('start', {}); startCountdownThenMatch(); };
+copyCodeBtn.onclick = async () => {
+  try { await navigator.clipboard.writeText(roomCode); toast('Code copied 📋'); }
+  catch { toast(roomCode); }
+};
+
+document.querySelector('#helpBtn').onclick     = () => document.querySelector('#helpModal').classList.remove('hidden');
+document.querySelector('#closeHelp').onclick   = () => document.querySelector('#helpModal').classList.add('hidden');
+document.querySelector('#gotIt').onclick       = () => document.querySelector('#helpModal').classList.add('hidden');
+
+/* ============================================================
+   LANDSCAPE LOCK
+   ============================================================ */
+let orientationRequested = false;
+async function requestLandscape() {
+  if (orientationRequested) return; orientationRequested = true;
+  try {
+    if (screen.orientation && typeof screen.orientation.lock === 'function') {
+      if (!document.fullscreenElement && document.documentElement.requestFullscreen) {
+        try { await document.documentElement.requestFullscreen(); } catch (_) {}
+      }
+      await screen.orientation.lock('landscape');
+    }
+  } catch (_) {}
+}
+window.addEventListener('pointerdown', requestLandscape, { once: true });
+window.addEventListener('keydown',     requestLandscape, { once: true });
+
+/* ============================================================
+   BOOT
+   ============================================================ */
+(async function main() {
+  await boot();
+  if (IR_USER) {
+    settings = loadSettings();
+    myCharacter = pickDefaultCharacter();
+    buildCharGrid();
+    applyMyCharacter();
+    applyButtonLayout();
+  }
+  animate();
+})();
