@@ -16,6 +16,7 @@ const screens = {
   createScreen:    document.querySelector('#createScreen'),
   joinScreen:      document.querySelector('#joinScreen'),
   roomScreen:      document.querySelector('#roomScreen'),
+  resultsScreen:   document.querySelector('#resultsScreen'),
   settingsScreen:  document.querySelector('#settingsScreen'),
   helpMenuScreen:  document.querySelector('#helpMenuScreen'),
   historyScreen:   document.querySelector('#historyScreen')
@@ -23,7 +24,7 @@ const screens = {
 
 function showScreen(id) {
   for (const [key, el] of Object.entries(screens)) {
-    el.classList.toggle('hidden', key !== id);
+    if (el) el.classList.toggle('hidden', key !== id);
   }
 }
 document.querySelectorAll('[data-back]').forEach(btn => {
@@ -109,11 +110,16 @@ let scoreLocal = 0;
 let scoreRemote = 0;
 let gameMode = 'events';
 
+// ROUND STATE
+let currentRound = 1;
+const MAX_ROUNDS = 5;
+let totalScoreLocal = 0;
+let totalScoreRemote = 0;
+
 const colliders = []; 
 const sparkles = new THREE.Group(); 
 const sparklesList = [];
 const projectiles = [];
-
 const ALL_EVENTS = ['MAGNETIC', 'PENGUIN', 'WOBBLY', 'INVISIBLE', 'KISS'];
 
 /* ============================================================
@@ -123,6 +129,7 @@ const playBtn         = document.querySelector('#playBtn');
 const joinMenuBtn     = document.querySelector('#joinMenuBtn');
 const settingsBtn     = document.querySelector('#settingsBtn');
 const helpMenuBtn     = document.querySelector('#helpMenuBtn');
+const historyBtn      = document.querySelector('#historyBtn');
 const createBtn       = document.querySelector('#createBtn');
 const joinBtn         = document.querySelector('#joinBtn');
 const codeInput       = document.querySelector('#codeInput');
@@ -164,17 +171,31 @@ const scoreName0      = document.querySelector('#scoreName0');
 const scoreName1      = document.querySelector('#scoreName1');
 const scoreVal0       = document.querySelector('#scoreVal0');
 const scoreVal1       = document.querySelector('#scoreVal1');
+const hudCount        = document.querySelector('#hudCount');
 
 const eventBanner     = document.querySelector('#eventBanner');
 const eventTitle      = document.querySelector('#eventTitle');
 const eventDesc       = document.querySelector('#eventDesc');
 const eventTimer      = document.querySelector('#eventTimer');
 
+const resultsScreen   = document.querySelector('#resultsScreen');
+const winnerAnnounce  = document.querySelector('#winnerAnnouncement');
+const resName0        = document.querySelector('#resName0');
+const resName1        = document.querySelector('#resName1');
+const resScore0       = document.querySelector('#resScore0');
+const resScore1       = document.querySelector('#resScore1');
+const resAvatar0      = document.querySelector('#resAvatar0');
+const resAvatar1      = document.querySelector('#resAvatar1');
+const rematchBtn      = document.querySelector('#rematchBtn');
+const resultsLeaveBtn = document.querySelector('#resultsLeaveBtn');
+
+const histList        = document.querySelector('#histList');
+const histEmpty       = document.querySelector('#histEmpty');
+
 const joystickEl = document.querySelector('#joystickZone');
 const joystickKnob = document.querySelector('#joystickKnob');
 const jumpBtnEl = document.querySelector('#jumpBtnZone');
 
-// CREATE THE SHOOT BUTTON DYNAMICALLY
 const shootBtnEl = document.createElement('button');
 shootBtnEl.className = 'game-shoot-btn';
 shootBtnEl.innerHTML = '💋 SHOOT';
@@ -193,6 +214,7 @@ playBtn.onclick         = () => showScreen('characterScreen');
 joinMenuBtn.onclick     = () => showScreen('joinScreen');
 settingsBtn.onclick     = () => { openSettings(); showScreen('settingsScreen'); };
 helpMenuBtn.onclick     = () => showScreen('helpMenuScreen');
+historyBtn.onclick      = () => { loadHistory(); showScreen('historyScreen'); };
 roomSettingsBtn.onclick = () => { openSettings(); showScreen('settingsScreen'); };
 settingsBackBtn.onclick = () => showScreen(roomCode && !inMatch ? 'roomScreen' : 'mainMenu');
 
@@ -303,7 +325,6 @@ function applyButtonLayout() {
   jumpBtnEl.style.transform = `translate(50%, 50%) scale(${scale})`;
   jumpBtnEl.style.opacity = op;
 
-  // Position Shoot button above jump button
   shootBtnEl.style.right = `${settings.jumpX}%`;
   shootBtnEl.style.bottom = `${settings.jumpY + 25}%`; 
   shootBtnEl.style.transform = `translate(50%, 50%) scale(${scale})`;
@@ -339,7 +360,6 @@ joystickEl.addEventListener('pointerup', endJoystick);
 joystickEl.addEventListener('pointercancel', endJoystick);
 jumpBtnEl.addEventListener('pointerdown', e => { e.preventDefault(); e.stopPropagation(); jump(); });
 
-// SHOOT BUTTON LOGIC
 shootBtnEl.addEventListener('pointerdown', e => {
   e.preventDefault(); e.stopPropagation();
   shootKiss();
@@ -347,30 +367,22 @@ shootBtnEl.addEventListener('pointerdown', e => {
 
 function shootKiss() {
   if (currentEvent !== 'KISS' || !inMatch) return;
-  
   SFX.kiss();
-  
-  // Create Heart Mesh
   const heart = new THREE.Mesh(
     new THREE.SphereGeometry(0.3, 8, 8), 
     new THREE.MeshStandardMaterial({ color: '#ff0066', emissive: '#ff0066' })
   );
-  // Flatten it to look a bit like a heart
   heart.scale.set(1, 0.8, 0.4);
   heart.position.set(local.x, local.y + 1, local.z);
   scene.add(heart);
 
   const dir = new THREE.Vector3(Math.sin(local.ry), 0, Math.cos(local.ry));
-  
   projectiles.push({
-    mesh: heart,
-    x: local.x,
-    y: local.y + 1,
-    z: local.z,
-    vx: dir.x * 15, // speed
-    vz: dir.z * 15,
-    isLocal: true
+    mesh: heart, x: local.x, y: local.y + 1, z: local.z,
+    vx: dir.x * 15, vz: dir.z * 15, isLocal: true
   });
+  
+  channel.send('shoot', { x: local.x, y: local.y + 1, z: local.z, ry: local.ry });
 }
 
 /* ============================================================
@@ -391,7 +403,8 @@ const SFX = {
   event: () => { playTone(600, 'square', 0.1); setTimeout(() => playTone(800, 'square', 0.2), 100); },
   collect: () => playTone(1200, 'sine', 0.1),
   hit: () => playTone(150, 'sawtooth', 0.3),
-  kiss: () => playTone(800, 'triangle', 0.2)
+  kiss: () => playTone(800, 'triangle', 0.2),
+  splat: () => playTone(100, 'sawtooth', 0.4)
 };
 
 /* ============================================================
@@ -491,7 +504,7 @@ function applyRemoteCharacter() {
 }
 
 /* ============================================================
-   INPUT (TOUCH-DRAG CAMERA)
+   INPUT (CAMERA DRAG)
    ============================================================ */
 const keys = new Set();
 let yaw = 0, pitch = 0.26, dragging = false, lastX = 0, lastY = 0;
@@ -527,7 +540,7 @@ canvas.addEventListener('pointerup', () => dragging = false);
 canvas.addEventListener('pointercancel', () => dragging = false);
 
 /* ============================================================
-   CHAOS EVENTS & MISSIONS
+   CHAOS EVENTS & ROUND SYSTEM
    ============================================================ */
 function toast(msg) {
   const el = document.querySelector('#toast');
@@ -536,12 +549,37 @@ function toast(msg) {
   toast.timer = setTimeout(() => el.classList.add('hidden'), 1400);
 }
 
-function startRound(eventId, mode) {
+function startMatch() {
+  currentRound = 1;
+  totalScoreLocal = 0;
+  totalScoreRemote = 0;
+  updateScoreUI();
+  
+  if (isHost) {
+    triggerNextRound();
+  }
+}
+
+function triggerNextRound() {
+  if (currentRound > MAX_ROUNDS) {
+    channel.send('match_end', { totalLocal: totalScoreLocal, totalRemote: totalScoreRemote });
+    endMatch(totalScoreLocal, totalScoreRemote);
+    return;
+  }
+  
+  const randomEvent = ALL_EVENTS[Math.floor(Math.random() * ALL_EVENTS.length)];
+  channel.send('event_start', { event: randomEvent, mode: gameMode, round: currentRound });
+  startRound(randomEvent, gameMode, currentRound);
+}
+
+function startRound(eventId, mode, roundNum) {
   inMatch = true;
   currentEvent = eventId;
   gameMode = mode;
+  currentRound = roundNum;
+  hudCount.textContent = `ROUND ${currentRound}/${MAX_ROUNDS}`;
   
-  local.x = -3; local.y = 0; local.z = 3;
+  local.x = -3; local.y = 0; local.z = 3; local.vy = 0;
   remoteTarget.x = 3; remoteTarget.y = 0; remoteTarget.z = -3;
   remote.x = 3; remote.y = 0; remote.z = -3;
   
@@ -553,6 +591,7 @@ function startRound(eventId, mode) {
 
   scoreName0.textContent = selfName;
   scoreName1.textContent = remoteName || 'P2';
+  scoreLocal = 0; scoreRemote = 0;
   
   localPlayer.body.material.emissive = new THREE.Color(0x000000);
   remotePlayer.body.material.emissive = new THREE.Color(0x000000);
@@ -575,7 +614,6 @@ function startRound(eventId, mode) {
   SFX.event();
   setTimeout(() => eventBanner.classList.add('hidden'), 2500);
 
-  // Event Setup
   if (eventId === 'MAGNETIC') {
     localPlayer.body.material.emissive = new THREE.Color('#ff0000');
     remotePlayer.body.material.emissive = new THREE.Color('#ff0000');
@@ -594,11 +632,9 @@ function startRound(eventId, mode) {
     shootBtnEl.style.display = 'none';
   }
 
-  // Clear old projectiles
   projectiles.forEach(p => scene.remove(p.mesh));
   projectiles.length = 0;
 
-  // Sparkles
   if (mode === 'missions') {
     sparkles.clear();
     sparklesList.length = 0;
@@ -608,8 +644,6 @@ function startRound(eventId, mode) {
       sparkles.add(s);
       sparklesList.push(s);
     }
-    scoreLocal = 0; scoreRemote = 0;
-    scoreVal0.textContent = '0'; scoreVal1.textContent = '0';
   }
 
   eventTimeLeft = 30;
@@ -631,23 +665,61 @@ function endRound() {
   clearInterval(eventTimerInterval);
   eventTimer.classList.add('hidden');
   shootBtnEl.style.display = 'none';
+  
   if (isHost) {
-    channel.send('event_end', {});
-    showResults();
+    // Host determines winner
+    if (scoreLocal > scoreRemote) totalScoreLocal++;
+    else if (scoreRemote > scoreLocal) totalScoreRemote++;
+    
+    channel.send('round_end', { sLocal: scoreLocal, sRemote: scoreRemote });
+    updateScoreUI();
+    
+    // Wait 3 seconds, then go to next round
+    setTimeout(() => {
+      currentRound++;
+      triggerNextRound();
+    }, 3000);
+  } else {
+    toast("Round over! Waiting for host...");
   }
 }
 
-function showResults() {
+function endMatch(finalLocal, finalRemote) {
   inMatch = false;
   hideControls();
   gameTopbar.classList.add('hidden');
   gameBottomHud.classList.add('hidden');
-  toast("ROUND OVER! 🍡");
-  setTimeout(() => {
-    showScreen('roomScreen');
-    meReady = false; peerReady = false;
-    renderRoom();
-  }, 2000);
+  currentEvent = 'NONE';
+  
+  saveMatchToHistory(finalLocal, finalRemote);
+  
+  resName0.textContent = selfName;
+  resName1.textContent = remoteName || 'P2';
+  resScore0.textContent = finalLocal;
+  resScore1.textContent = finalRemote;
+  resAvatar0.textContent = myCharacter.emoji;
+  resAvatar1.textContent = remoteChar.emoji;
+  
+  if (finalLocal > finalRemote) winnerAnnounce.textContent = `${selfName} WINS! 🏆`;
+  else if (finalRemote > finalLocal) winnerAnnounce.textContent = `${remoteName || 'P2'} WINS! 🏆`;
+  else winnerAnnounce.textContent = "IT'S A TIE! 💖";
+  
+  showScreen('resultsScreen');
+}
+
+async function saveMatchToHistory(finalLocal, finalRemote) {
+  const matchId = 'mm_' + Date.now();
+  await Net.saveMatch({
+    matchId: matchId, userId: IR_USER.userId, irId: IR_USER.irId,
+    playerName: selfName, characterId: myCharacter.id,
+    opponentIrId: remoteIrId, opponentName: remoteName,
+    scoreSelf: finalLocal, scoreOpponent: finalRemote
+  });
+}
+
+function updateScoreUI() {
+  scoreVal0.textContent = totalScoreLocal;
+  scoreVal1.textContent = totalScoreRemote;
 }
 
 /* ============================================================
@@ -701,6 +773,7 @@ async function attachChannel(code) {
 
   channel.on('peer', ({ name, irId, char, isHost: peerIsHost }) => {
     remoteName = name || 'Peer';
+    remoteIrId = irId || '';
     if (peerIsHost) {
       const hostChar = CHARACTERS.find(c => c.id === char) || CHAR_BLUE;
       myCharacter = oppositeOf(hostChar);
@@ -712,16 +785,26 @@ async function attachChannel(code) {
     remoteVisible = true;
     applyRemoteCharacter();
     renderRoom();
+    channel.send('peer', { name: selfName, irId: IR_USER.irId, char: myCharacter.id, isHost });
   });
 
   channel.on('ready', ({ ready }) => { peerReady = !!ready; renderRoom(); });
   
-  channel.on('event_start', ({ event, mode }) => {
-    startCountdownThenMatch(() => startRound(event, mode));
+  channel.on('event_start', ({ event, mode, round }) => {
+    startCountdownThenMatch(() => startRound(event, mode, round));
   });
 
-  channel.on('event_end', () => {
-    showResults();
+  channel.on('round_end', ({ sLocal, sRemote }) => {
+    // Peer is host. We are guest. So their sLocal = our sRemote.
+    if (sLocal > sRemote) totalScoreRemote++;
+    else if (sRemote > sLocal) totalScoreLocal++;
+    updateScoreUI();
+    toast("ROUND OVER! 🍡");
+  });
+
+  channel.on('match_end', ({ totalLocal, totalRemote }) => {
+    // Peer is host. We are guest.
+    endMatch(totalRemote, totalLocal);
   });
 
   channel.on('move', ({ x, y, z, ry }) => {
@@ -733,7 +816,6 @@ async function attachChannel(code) {
   });
 
   channel.on('shoot', ({ x, y, z, ry }) => {
-    // Spawn remote projectile
     const heart = new THREE.Mesh(
       new THREE.SphereGeometry(0.3, 8, 8), 
       new THREE.MeshStandardMaterial({ color: '#ff0066', emissive: '#ff0066' })
@@ -742,28 +824,21 @@ async function attachChannel(code) {
     heart.position.set(x, y, z);
     scene.add(heart);
     const dir = new THREE.Vector3(Math.sin(ry), 0, Math.cos(ry));
-    projectiles.push({
-      mesh: heart, x: x, y: y, z: z,
-      vx: dir.x * 15, vz: dir.z * 15,
-      isLocal: false
-    });
+    projectiles.push({ mesh: heart, x: x, y: y, z: z, vx: dir.x * 15, vz: dir.z * 15, isLocal: false });
     SFX.kiss();
   });
 
   channel.on('hit', () => {
-    // WE GOT HIT!
     local.vy = 5.0;
     local.x -= 3.0;
     SFX.hit();
     toast("💋 SMOOCHED!");
-    // Shake camera
     camera.position.x += (Math.random() - 0.5) * 1.0;
     camera.position.y += (Math.random() - 0.5) * 1.0;
   });
 
   channel.on('collect', () => {
     scoreRemote++;
-    scoreVal1.textContent = scoreRemote;
   });
 
   await channel.join();
@@ -784,12 +859,27 @@ async function doJoin() {
   joinError.classList.add('hidden');
   const code = (codeInput.value || '').toUpperCase().trim();
   if (code.length < 4) return;
+  
   const found = await Net.findRoom(code);
-  if (!found.ok) { joinError.textContent = 'Room not found.'; joinError.classList.remove('hidden'); return; }
-  selfName = IR_USER.name; roomCode = found.code; isHost = false;
+  if (!found.ok) { 
+    joinError.textContent = 'Room not found.'; 
+    joinError.classList.remove('hidden'); 
+    return; 
+  }
+  
+  selfName = IR_USER.name; 
+  roomCode = found.code; 
+  isHost = false; 
+  
   try {
-    await attachChannel(roomCode); applyMyCharacter(); showScreen('roomScreen'); renderRoom();
-  } catch (e) { joinError.textContent = 'Connection failed.'; joinError.classList.remove('hidden'); }
+    await attachChannel(roomCode); 
+    applyMyCharacter(); 
+    showScreen('roomScreen'); 
+    renderRoom();
+  } catch (e) { 
+    joinError.textContent = 'Connection failed.'; 
+    joinError.classList.remove('hidden'); 
+  }
 }
 
 /* ============================================================
@@ -811,9 +901,7 @@ async function startCountdownThenMatch(onComplete) {
 
 startBtn.onclick = () => {
   if (!isHost) return;
-  const randomEvent = ALL_EVENTS[Math.floor(Math.random() * ALL_EVENTS.length)];
-  channel?.send('event_start', { event: randomEvent, mode: gameMode });
-  startCountdownThenMatch(() => startRound(randomEvent, gameMode));
+  startMatch();
 };
 
 /* ============================================================
@@ -886,7 +974,6 @@ function updateLocalPlayer(dt) {
         sparkles.remove(sp);
         sparklesList.splice(i, 1);
         scoreLocal++;
-        scoreVal0.textContent = scoreLocal;
         SFX.collect();
         channel.send('collect', {}); 
       }
@@ -915,7 +1002,6 @@ function updateRemotePlayer(dt) {
 
   sparkles.children.forEach(s => { s.rotation.y += dt * 3; s.rotation.x += dt * 2; });
 
-  // Projectiles Update
   for (let i = projectiles.length - 1; i >= 0; i--) {
     const p = projectiles[i];
     p.x += p.vx * dt;
@@ -923,7 +1009,6 @@ function updateRemotePlayer(dt) {
     p.mesh.position.set(p.x, p.y, p.z);
     p.mesh.rotation.y += dt * 5;
 
-    // If local projectile, check hit against remote
     if (p.isLocal && remoteVisible) {
       const dist = Math.hypot(p.x - remote.x, p.z - remote.z);
       if (dist < 1.0) {
@@ -935,7 +1020,6 @@ function updateRemotePlayer(dt) {
       }
     }
     
-    // Remove if out of bounds
     if (Math.abs(p.x) > 15 || Math.abs(p.z) > 15) {
       scene.remove(p.mesh);
       projectiles.splice(i, 1);
@@ -977,6 +1061,37 @@ async function requestLandscape() {
 window.addEventListener('pointerdown', requestLandscape, { once: true });
 
 /* ============================================================
+   RESPAWN & HISTORY
+   ============================================================ */
+function checkRespawn() {
+  if (local.y < -5) {
+    local.x = -3; local.y = 0; local.z = 3; local.vy = 0;
+    SFX.splat();
+    toast("Whoops! Respawned! 🍡");
+  }
+}
+
+async function loadHistory() {
+  histList.innerHTML = '';
+  histEmpty.classList.add('hidden');
+  const res = await Net.loadMatchHistory(IR_USER.irId, 10);
+  if (!res.ok || !res.matches.length) { histEmpty.classList.remove('hidden'); return; }
+  for (const m of res.matches) {
+    const item = document.createElement('div');
+    item.className = 'hist-item ' + (m.won ? 'won' : 'lost');
+    const date = new Date(m.played_at).toLocaleDateString();
+    item.innerHTML = `
+      <div class="hist-icon">${m.won ? '🏆' : '💔'}</div>
+      <div class="hist-info">
+        <div class="hist-name">vs ${m.opponent_name || 'Player'}</div>
+        <div class="hist-score"><b>${m.score_self}</b> – <b>${m.score_opponent}</b> · ${date}</div>
+      </div>
+    `;
+    histList.appendChild(item);
+  }
+}
+
+/* ============================================================
    BUTTON WIRING & BOOT
    ============================================================ */
 createBtn.onclick    = doCreate;
@@ -989,6 +1104,19 @@ leaveRoomBtn.onclick = async () => {
 readyBtn.onclick = () => { meReady = !meReady; channel?.send('ready', { ready: meReady }); renderRoom(); };
 copyCodeBtn.onclick = async () => { try { await navigator.clipboard.writeText(roomCode); toast('Copied!'); } catch { toast(roomCode); } };
 
+rematchBtn.onclick = () => {
+  if (isHost) {
+    startMatch();
+  } else {
+    toast("Waiting for host to rematch...");
+  }
+};
+resultsLeaveBtn.onclick = () => {
+  showScreen('roomScreen');
+  meReady = false; peerReady = false;
+  renderRoom();
+};
+
 (async function main() {
   await boot();
   if (IR_USER) {
@@ -999,4 +1127,5 @@ copyCodeBtn.onclick = async () => { try { await navigator.clipboard.writeText(ro
     applyButtonLayout();
   }
   animate();
+  setInterval(checkRespawn, 500); 
 })();
