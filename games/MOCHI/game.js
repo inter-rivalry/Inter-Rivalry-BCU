@@ -54,12 +54,11 @@ async function boot() {
 }
 
 /* ============================================================
-   SETTINGS
+   SETTINGS & STATE
    ============================================================ */
 const DEFAULTS = {
   sensitivity: 10, cameraDistance: 9,
-  joystickX: 20, joystickY: 20,
-  jumpX: 20, jumpY: 20,
+  joystickX: 20, joystickY: 20, jumpX: 20, jumpY: 20,
   buttonSize: 100, buttonOpacity: 80,
   keys: { up: 'w', down: 's', left: 'a', right: 'd', jump: ' ' }
 };
@@ -77,25 +76,16 @@ function saveSettings() {
   try { localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings)); } catch {}
 }
 
-/* ============================================================
-   CHARACTERS
-   ============================================================ */
 const CHAR_BLUE = { id: 'blue', name: 'BLUE', body: '#6ec6ff', accent: '#a99aff', emoji: '💙' };
 const CHAR_PINK = { id: 'pink', name: 'PINK', body: '#ff8cc8', accent: '#a99aff', emoji: '🌸' };
 const CHARACTERS = [CHAR_BLUE, CHAR_PINK];
 
 let myCharacter = CHAR_BLUE;
 let chosenForHost = CHAR_BLUE;
+let selectedGameMode = 'events';
 
-function oppositeOf(ch) {
-  return ch.id === 'blue' ? CHAR_PINK : CHAR_BLUE;
-}
-
-/* ============================================================
-   STATE & COLLISION TRACKING
-   ============================================================ */
-const local  = { x: -3, y: 0, z: 3, ry: 0, vy: 0, grounded: true, radius: 0.6 };
-let remote   = { x: 3, y: 0, z: -3, ry: Math.PI, vy: 0, grounded: true };
+const local  = { x: -3, y: 0, z: 3, ry: 0, vy: 0, grounded: true, radius: 0.6, active: true };
+let remote   = { x: 3, y: 0, z: -3, ry: Math.PI, vy: 0, grounded: true, radius: 0.6 };
 let remoteTarget = { x: 3, y: 0, z: -3, ry: Math.PI };
 let remoteVisible = false;
 let remoteName = '';
@@ -111,7 +101,20 @@ let meReady = false;
 let inMatch = false;
 let lastMoveSent = 0;
 
-const colliders = []; // Array to store all 3D collision boxes
+// CHAOS STATE
+let currentEvent = 'NONE';
+let eventTimeLeft = 0;
+let eventTimerInterval = null;
+let scoreLocal = 0;
+let scoreRemote = 0;
+let gameMode = 'events';
+
+const colliders = []; 
+const sparkles = new THREE.Group(); 
+const sparklesList = [];
+const projectiles = [];
+
+const ALL_EVENTS = ['MAGNETIC', 'PENGUIN', 'WOBBLY', 'INVISIBLE', 'KISS'];
 
 /* ============================================================
    DOM REFS
@@ -120,7 +123,6 @@ const playBtn         = document.querySelector('#playBtn');
 const joinMenuBtn     = document.querySelector('#joinMenuBtn');
 const settingsBtn     = document.querySelector('#settingsBtn');
 const helpMenuBtn     = document.querySelector('#helpMenuBtn');
-const historyBtn      = document.querySelector('#historyBtn');
 const createBtn       = document.querySelector('#createBtn');
 const joinBtn         = document.querySelector('#joinBtn');
 const codeInput       = document.querySelector('#codeInput');
@@ -146,15 +148,14 @@ const sizeSlider      = document.querySelector('#sizeSlider');
 const sizeVal         = document.querySelector('#sizeVal');
 const opacitySlider   = document.querySelector('#opacitySlider');
 const opacityVal      = document.querySelector('#opacityVal');
-const controlList     = document.querySelector('#controlList');
-const resetControlsBtn= document.querySelector('#resetControlsBtn');
-const openLayoutBtn   = document.querySelector('#openLayoutBtn');
-const resetLayoutBtn  = document.querySelector('#resetLayoutBtn');
 const layoutEditor    = document.querySelector('#layoutEditor');
 const layoutStage     = document.querySelector('#layoutStage');
 const editJoystick    = document.querySelector('#editJoystick');
 const editJump        = document.querySelector('#editJump');
 const layoutDoneBtn   = document.querySelector('#layoutDoneBtn');
+const openLayoutBtn   = document.querySelector('#openLayoutBtn');
+const resetLayoutBtn  = document.querySelector('#resetLayoutBtn');
+
 const countdownOverlay= document.querySelector('#countdownOverlay');
 const countdownNumber = document.querySelector('#countdownNumber');
 const gameTopbar      = document.querySelector('#gameTopbar');
@@ -163,15 +164,22 @@ const scoreName0      = document.querySelector('#scoreName0');
 const scoreName1      = document.querySelector('#scoreName1');
 const scoreVal0       = document.querySelector('#scoreVal0');
 const scoreVal1       = document.querySelector('#scoreVal1');
-const hudEmoji        = document.querySelector('#hudEmoji');
-const hudLabel        = document.querySelector('#hudLabel');
-const hudCount        = document.querySelector('#hudCount');
-const histList        = document.querySelector('#histList');
-const histEmpty       = document.querySelector('#histEmpty');
+
+const eventBanner     = document.querySelector('#eventBanner');
+const eventTitle      = document.querySelector('#eventTitle');
+const eventDesc       = document.querySelector('#eventDesc');
+const eventTimer      = document.querySelector('#eventTimer');
 
 const joystickEl = document.querySelector('#joystickZone');
 const joystickKnob = document.querySelector('#joystickKnob');
 const jumpBtnEl = document.querySelector('#jumpBtnZone');
+
+// CREATE THE SHOOT BUTTON DYNAMICALLY
+const shootBtnEl = document.createElement('button');
+shootBtnEl.className = 'game-shoot-btn';
+shootBtnEl.innerHTML = '💋 SHOOT';
+shootBtnEl.style.display = 'none';
+root.appendChild(shootBtnEl);
 
 const slotEls = [
   { el: document.querySelector('#slot0'), avatar: document.querySelector('#slotAvatar0'), name: document.querySelector('#slotName0'), ready: document.querySelector('#slotReady0') },
@@ -179,18 +187,25 @@ const slotEls = [
 ];
 
 /* ============================================================
-   NAV
+   NAV & MODE SELECTION
    ============================================================ */
 playBtn.onclick         = () => showScreen('characterScreen');
 joinMenuBtn.onclick     = () => showScreen('joinScreen');
 settingsBtn.onclick     = () => { openSettings(); showScreen('settingsScreen'); };
 helpMenuBtn.onclick     = () => showScreen('helpMenuScreen');
-historyBtn.onclick      = () => { loadHistory(); showScreen('historyScreen'); };
 roomSettingsBtn.onclick = () => { openSettings(); showScreen('settingsScreen'); };
 settingsBackBtn.onclick = () => showScreen(roomCode && !inMatch ? 'roomScreen' : 'mainMenu');
 
+document.querySelectorAll('.mode-tile').forEach(tile => {
+  tile.onclick = () => {
+    document.querySelectorAll('.mode-tile').forEach(t => t.classList.remove('selected'));
+    tile.classList.add('selected');
+    selectedGameMode = tile.dataset.mode;
+  };
+});
+
 /* ============================================================
-   CHARACTER SELECT
+   CHARACTER SELECT & SETTINGS
    ============================================================ */
 function buildCharGrid() {
   charGrid.innerHTML = '';
@@ -215,9 +230,6 @@ charContinueBtn.onclick = () => {
   showScreen('createScreen');
 };
 
-/* ============================================================
-   SETTINGS UI
-   ============================================================ */
 function openSettings() {
   sensSlider.value = settings.sensitivity; sensVal.textContent = settings.sensitivity;
   distSlider.value = settings.cameraDistance; distVal.textContent = settings.cameraDistance;
@@ -230,21 +242,6 @@ distSlider.oninput    = () => { settings.cameraDistance = +distSlider.value; dis
 sizeSlider.oninput    = () => { settings.buttonSize = +sizeSlider.value; sizeVal.textContent = sizeSlider.value + '%'; saveSettings(); applyButtonLayout(); };
 opacitySlider.oninput = () => { settings.buttonOpacity = +opacitySlider.value; opacityVal.textContent = opacitySlider.value + '%'; saveSettings(); applyButtonLayout(); };
 
-/* ============================================================
-   LAYOUT EDITOR
-   ============================================================ */
-function openLayoutEditor() { layoutEditor.classList.remove('hidden'); positionEditHandles(); }
-function closeLayoutEditor() { layoutEditor.classList.add('hidden'); applyButtonLayout(); saveSettings(); }
-openLayoutBtn.onclick  = openLayoutEditor;
-layoutDoneBtn.onclick  = closeLayoutEditor;
-resetLayoutBtn.onclick = () => {
-  settings.joystickX = 20; settings.joystickY = 20;
-  settings.jumpX = 20; settings.jumpY = 20;
-  saveSettings(); applyButtonLayout();
-  if (!layoutEditor.classList.contains('hidden')) positionEditHandles();
-  toast('Layout reset');
-};
-
 function positionEditHandles() {
   editJoystick.style.left = `${settings.joystickX}%`;
   editJoystick.style.top  = `${100 - settings.joystickY}%`;
@@ -253,6 +250,8 @@ function positionEditHandles() {
   editJump.style.top  = `${100 - settings.jumpY}%`;
   editJump.style.transform = 'translate(-50%,-50%)';
 }
+openLayoutBtn.onclick  = () => { layoutEditor.classList.remove('hidden'); positionEditHandles(); };
+layoutDoneBtn.onclick  = () => { layoutEditor.classList.add('hidden'); applyButtonLayout(); saveSettings(); };
 
 let draggingEl = null, dragOffset = { x: 0, y: 0 };
 function setupDrag(el, keyX, keyY) {
@@ -271,10 +270,8 @@ function setupDrag(el, keyX, keyY) {
     if (!stage.width) return;
     const cx = e.clientX - dragOffset.x;
     const cy = e.clientY - dragOffset.y;
-    let px = ((cx - stage.left) / stage.width) * 100;
-    let py = ((cy - stage.top) / stage.height) * 100;
-    px = Math.max(6, Math.min(94, px));
-    py = Math.max(6, Math.min(94, py));
+    let px = Math.max(6, Math.min(94, ((cx - stage.left) / stage.width) * 100));
+    let py = Math.max(6, Math.min(94, ((cy - stage.top) / stage.height) * 100));
     el.style.left = `${px}%`;
     el.style.top  = `${py}%`;
     settings[keyX] = keyX === 'jumpX' ? (100 - px) : px;
@@ -290,13 +287,12 @@ setupDrag(editJump, 'jumpX', 'jumpY');
    ON-SCREEN CONTROLS
    ============================================================ */
 function showControls() { joystickEl.style.display = 'flex'; jumpBtnEl.style.display = 'flex'; }
-function hideControls() { joystickEl.style.display = 'none'; jumpBtnEl.style.display = 'none'; }
+function hideControls() { joystickEl.style.display = 'none'; jumpBtnEl.style.display = 'none'; shootBtnEl.style.display = 'none'; }
 hideControls();
 
 function applyButtonLayout() {
   const scale = settings.buttonSize / 100;
   const op = settings.buttonOpacity / 100;
-  
   joystickEl.style.left = `${settings.joystickX}%`;
   joystickEl.style.bottom = `${settings.joystickY}%`;
   joystickEl.style.transform = `translate(-50%, 50%) scale(${scale})`;
@@ -306,6 +302,12 @@ function applyButtonLayout() {
   jumpBtnEl.style.bottom = `${settings.jumpY}%`;
   jumpBtnEl.style.transform = `translate(50%, 50%) scale(${scale})`;
   jumpBtnEl.style.opacity = op;
+
+  // Position Shoot button above jump button
+  shootBtnEl.style.right = `${settings.jumpX}%`;
+  shootBtnEl.style.bottom = `${settings.jumpY + 25}%`; 
+  shootBtnEl.style.transform = `translate(50%, 50%) scale(${scale})`;
+  shootBtnEl.style.opacity = op;
 }
 
 let touchId = null, touchOrigin = null, touchDelta = { x: 0, y: 0 };
@@ -318,10 +320,7 @@ joystickEl.addEventListener('pointerdown', e => {
   joystickEl.classList.add('active');
   moveJoystick(e);
 });
-joystickEl.addEventListener('pointermove', e => {
-  e.preventDefault(); e.stopPropagation();
-  moveJoystick(e);
-});
+joystickEl.addEventListener('pointermove', e => { e.preventDefault(); e.stopPropagation(); moveJoystick(e); });
 function moveJoystick(e) {
   if (touchId !== e.pointerId) return;
   const dx = e.clientX - touchOrigin.x, dy = e.clientY - touchOrigin.y;
@@ -339,6 +338,61 @@ function endJoystick(e) {
 joystickEl.addEventListener('pointerup', endJoystick);
 joystickEl.addEventListener('pointercancel', endJoystick);
 jumpBtnEl.addEventListener('pointerdown', e => { e.preventDefault(); e.stopPropagation(); jump(); });
+
+// SHOOT BUTTON LOGIC
+shootBtnEl.addEventListener('pointerdown', e => {
+  e.preventDefault(); e.stopPropagation();
+  shootKiss();
+});
+
+function shootKiss() {
+  if (currentEvent !== 'KISS' || !inMatch) return;
+  
+  SFX.kiss();
+  
+  // Create Heart Mesh
+  const heart = new THREE.Mesh(
+    new THREE.SphereGeometry(0.3, 8, 8), 
+    new THREE.MeshStandardMaterial({ color: '#ff0066', emissive: '#ff0066' })
+  );
+  // Flatten it to look a bit like a heart
+  heart.scale.set(1, 0.8, 0.4);
+  heart.position.set(local.x, local.y + 1, local.z);
+  scene.add(heart);
+
+  const dir = new THREE.Vector3(Math.sin(local.ry), 0, Math.cos(local.ry));
+  
+  projectiles.push({
+    mesh: heart,
+    x: local.x,
+    y: local.y + 1,
+    z: local.z,
+    vx: dir.x * 15, // speed
+    vz: dir.z * 15,
+    isLocal: true
+  });
+}
+
+/* ============================================================
+   AUDIO
+   ============================================================ */
+const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+function playTone(freq, type, dur) {
+  if (audioCtx.state === 'suspended') audioCtx.resume();
+  const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain();
+  osc.type = type; osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+  gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+  gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + dur);
+  osc.connect(gain); gain.connect(audioCtx.destination);
+  osc.start(); osc.stop(audioCtx.currentTime + dur);
+}
+const SFX = {
+  jump: () => playTone(400, 'sine', 0.15),
+  event: () => { playTone(600, 'square', 0.1); setTimeout(() => playTone(800, 'square', 0.2), 100); },
+  collect: () => playTone(1200, 'sine', 0.1),
+  hit: () => playTone(150, 'sawtooth', 0.3),
+  kiss: () => playTone(800, 'triangle', 0.2)
+};
 
 /* ============================================================
    THREE SCENE
@@ -380,18 +434,10 @@ floor.position.y = -0.3; floor.receiveShadow = true; scene.add(floor);
 const grid = new THREE.GridHelper(28, 28, '#c1b4f4', '#d8d0ef');
 grid.position.y = -0.035; grid.material.transparent = true; grid.material.opacity = 0.4; scene.add(grid);
 
-// Modified box function to add collision data
 function box(w,h,d,c,x,y,z){
   const m = new THREE.Mesh(new THREE.BoxGeometry(w,h,d), mat(c));
   m.position.set(x,y,z); m.castShadow = m.receiveShadow = true; scene.add(m);
-  
-  // Push hitbox into our collision array
-  colliders.push({
-    minX: x - w/2, maxX: x + w/2,
-    minY: y - h/2, maxY: y + h/2,
-    minZ: z - d/2, maxZ: z + d/2
-  });
-  
+  colliders.push({ minX: x - w/2, maxX: x + w/2, minY: y - h/2, maxY: y + h/2, minZ: z - d/2, maxZ: z + d/2 });
   return m;
 }
 
@@ -404,26 +450,6 @@ for (const [x,y,z,w,h,d,c] of [
   [0,.55,-8,3,1.1,1.2,'#ffa66b'],[0,.55,8,3,1.1,1.2,'#8bd8ff'],
   [-9,.45,0,1.2,.9,3,'#b9a5ff'],[9,.45,0,1.2,.9,3,'#ff9acb']
 ]) box(w,h,d,c,x,y,z);
-for (let i = 0; i < 12; i++) {
-  const a = i*Math.PI/6, x = Math.cos(a)*11.2, z = Math.sin(a)*11.2;
-  const p = new THREE.Mesh(new THREE.CylinderGeometry(.25,.38,1.35,8), mat(['#ff8cc8','#8e83ff','#78e9d2','#ffe277'][i%4]));
-  p.position.set(x,.55,z); p.castShadow = true; scene.add(p);
-  const orb = new THREE.Mesh(new THREE.SphereGeometry(.28,16,12), mat(['#fff1a8','#ffc8e3','#b7fff0'][i%3]));
-  orb.position.set(x,1.45,z); orb.castShadow = true; scene.add(orb);
-  
-  // Collision for pillars
-  colliders.push({ minX: x - .38, maxX: x + .38, minY: 0, maxY: 1.35, minZ: z - .38, maxZ: z + .38 });
-}
-for (const [x,z,c] of [[-10,-10,'#ff8cc8'],[10,-10,'#78e9d2'],[-10,10,'#ffe66d'],[10,10,'#a99aff']]) {
-  const r = new THREE.Mesh(new THREE.TorusGeometry(1.05,.12,8,28), mat(c));
-  r.position.set(x,2.5,z); r.rotation.x = Math.PI/2.8; scene.add(r);
-}
-for (const [x,y,z,s] of [[-18,9,-12,1.5],[18,10,-15,1.8],[-18,8,12,1.2],[19,9,12,1.5]]) {
-  const g = new THREE.Group();
-  for (const [ox,oy,oz,r] of [[0,0,0,.85],[.8,.1,0,.65],[-.7,.08,.1,.58],[.25,.35,.05,.62]]) {
-    const m = new THREE.Mesh(new THREE.SphereGeometry(r,12,10), mat('#fff')); m.position.set(ox,oy,oz); g.add(m);
-  } g.position.set(x,y,z); g.scale.setScalar(s); scene.add(g);
-}
 
 /* ============================================================
    CHARACTER MESH
@@ -435,18 +461,11 @@ function makePlayer(bodyColor, accentColor, x, z) {
   const belly = new THREE.Mesh(new THREE.SphereGeometry(.45,20,14), mat('#fff1e9'));
   belly.scale.set(.9,.78,.22); belly.position.set(0,.8,.48); g.add(belly);
   const faceMat = mat('#30274b');
-  for (const ex of [-.22,.22]) {
-    const eye = new THREE.Mesh(new THREE.SphereGeometry(.065,12,10), faceMat);
-    eye.position.set(ex,1.05,.63); g.add(eye);
-  }
-  for (const bx of [-.39,.39]) {
-    const blush = new THREE.Mesh(new THREE.SphereGeometry(.1,12,8), mat('#ff9cbd'));
-    blush.position.set(bx,.85,.61); blush.scale.set(1,.6,.3); g.add(blush);
-  }
+  for (const ex of [-.22,.22]) { const eye = new THREE.Mesh(new THREE.SphereGeometry(.065,12,10), faceMat); eye.position.set(ex,1.05,.63); g.add(eye); }
+  for (const bx of [-.39,.39]) { const blush = new THREE.Mesh(new THREE.SphereGeometry(.1,12,8), mat('#ff9cbd')); blush.position.set(bx,.85,.61); blush.scale.set(1,.6,.3); g.add(blush); }
   const cap = new THREE.Mesh(new THREE.SphereGeometry(.28,16,12), mat(accentColor));
   cap.scale.set(1,.42,1); cap.position.set(0,1.58,0); g.add(cap);
-  const pom = new THREE.Mesh(new THREE.SphereGeometry(.12,12,10), mat('#fff1a8'));
-  pom.position.set(0,1.75,0); g.add(pom);
+  const pom = new THREE.Mesh(new THREE.SphereGeometry(.12,12,10), mat('#fff1a8')); pom.position.set(0,1.75,0); g.add(pom);
   g.position.set(x,0,z); scene.add(g);
   return { group: g, body, bobBase: 0.92 };
 }
@@ -455,32 +474,24 @@ const localPlayer  = makePlayer(CHAR_BLUE.body, CHAR_BLUE.accent, -3,  3);
 const remotePlayer = makePlayer(CHAR_PINK.body, CHAR_PINK.accent,  3, -3);
 remotePlayer.group.visible = false;
 
-const sparkles = new THREE.Group(); scene.add(sparkles);
-for (let i = 0; i < 30; i++) {
-  const s = new THREE.Mesh(new THREE.SphereGeometry(.045,6,6), mat(i%2?'#fff1a8':'#fff'));
-  s.position.set((Math.random()-.5)*24, .5+Math.random()*4, (Math.random()-.5)*24);
-  sparkles.add(s);
-}
+scene.add(sparkles);
 
 function applyMyCharacter() {
-  if (!myCharacter) return;
   scene.remove(localPlayer.group);
   const p = makePlayer(myCharacter.body, myCharacter.accent, local.x, local.z);
   Object.assign(localPlayer, p);
   localPlayer.group.position.set(local.x, local.y, local.z);
-  localPlayer.group.rotation.y = local.ry;
 }
 function applyRemoteCharacter() {
   scene.remove(remotePlayer.group);
   const p = makePlayer(remoteChar.body, remoteChar.accent, remote.x, remote.z);
   Object.assign(remotePlayer, p);
   remotePlayer.group.position.set(remote.x, remote.y, remote.z);
-  remotePlayer.group.rotation.y = remote.ry;
   remotePlayer.group.visible = remoteVisible;
 }
 
 /* ============================================================
-   INPUT
+   INPUT (TOUCH-DRAG CAMERA)
    ============================================================ */
 const keys = new Set();
 let yaw = 0, pitch = 0.26, dragging = false, lastX = 0, lastY = 0;
@@ -490,19 +501,21 @@ const clock = new THREE.Clock();
 function jump() {
   if (!inMatch || !local.grounded) return;
   local.vy = 7.2; local.grounded = false;
+  SFX.jump();
 }
 window.addEventListener('keydown', e => {
   const k = e.code === 'Space' ? ' ' : e.key.toLowerCase();
   if ([settings.keys.up, settings.keys.down, settings.keys.left, settings.keys.right, ' '].includes(k)) e.preventDefault();
-  keys.add(k);
-  if (k === settings.keys.jump) jump();
+  keys.add(k); if (k === settings.keys.jump) jump();
 });
-window.addEventListener('keyup', e => {
-  const k = e.code === 'Space' ? ' ' : e.key.toLowerCase();
-  keys.delete(k);
-});
+window.addEventListener('keyup', e => { keys.delete(e.code === 'Space' ? ' ' : e.key.toLowerCase()); });
 
-canvas.addEventListener('pointerdown', e => { dragging = true; lastX = e.clientX; lastY = e.clientY; canvas.setPointerCapture?.(e.pointerId); });
+canvas.addEventListener('pointerdown', e => { 
+  dragging = true; 
+  lastX = e.clientX; 
+  lastY = e.clientY; 
+  canvas.setPointerCapture?.(e.pointerId); 
+});
 canvas.addEventListener('pointermove', e => {
   if (!dragging) return;
   const sens = 0.006 * (settings.sensitivity / 10);
@@ -514,7 +527,7 @@ canvas.addEventListener('pointerup', () => dragging = false);
 canvas.addEventListener('pointercancel', () => dragging = false);
 
 /* ============================================================
-   TOAST
+   CHAOS EVENTS & MISSIONS
    ============================================================ */
 function toast(msg) {
   const el = document.querySelector('#toast');
@@ -523,14 +536,123 @@ function toast(msg) {
   toast.timer = setTimeout(() => el.classList.add('hidden'), 1400);
 }
 
-/* ============================================================
-   ROOM UI
-   ============================================================ */
-function setStatus(el, text, state) {
-  el.textContent = text;
-  el.className = 'conn-status' + (state ? ' ' + state : '');
+function startRound(eventId, mode) {
+  inMatch = true;
+  currentEvent = eventId;
+  gameMode = mode;
+  
+  local.x = -3; local.y = 0; local.z = 3;
+  remoteTarget.x = 3; remoteTarget.y = 0; remoteTarget.z = -3;
+  remote.x = 3; remote.y = 0; remote.z = -3;
+  
+  gameTopbar.classList.remove('hidden');
+  gameBottomHud.classList.remove('hidden');
+  applyButtonLayout();
+  showControls(); 
+  requestLandscape();
+
+  scoreName0.textContent = selfName;
+  scoreName1.textContent = remoteName || 'P2';
+  
+  localPlayer.body.material.emissive = new THREE.Color(0x000000);
+  remotePlayer.body.material.emissive = new THREE.Color(0x000000);
+  localPlayer.group.scale.set(1,1,1);
+  remotePlayer.group.scale.set(1,1,1);
+  localPlayer.group.visible = true;
+  remotePlayer.group.visible = remoteVisible;
+
+  let title = "", desc = "";
+  if (eventId === 'MAGNETIC') { title = "MAGNETIC MODE 🧲"; desc = "You are pulled together!"; }
+  if (eventId === 'PENGUIN') { title = "PENGUIN MODE 🐧"; desc = "Waddle waddle!"; }
+  if (eventId === 'WOBBLY') { title = "WOBBLY LEGS 🫨"; desc = "Slippery when wet!"; }
+  if (eventId === 'INVISIBLE') { title = "INVISIBLE PARTNER 👻"; desc = "Someone is hiding!"; }
+  if (eventId === 'KISS') { title = "FLYING KISS ATTACK 💋"; desc = "Tap the SHOOT button!"; }
+  
+  eventTitle.textContent = title;
+  eventDesc.textContent = desc;
+  eventBanner.classList.remove('hidden');
+  eventTimer.classList.remove('hidden');
+  SFX.event();
+  setTimeout(() => eventBanner.classList.add('hidden'), 2500);
+
+  // Event Setup
+  if (eventId === 'MAGNETIC') {
+    localPlayer.body.material.emissive = new THREE.Color('#ff0000');
+    remotePlayer.body.material.emissive = new THREE.Color('#ff0000');
+  }
+  if (eventId === 'PENGUIN') {
+    localPlayer.group.scale.set(1, 0.6, 1); 
+    remotePlayer.group.scale.set(1, 0.6, 1);
+  }
+  if (eventId === 'INVISIBLE') {
+    if (isHost) localPlayer.group.visible = false;
+    else remotePlayer.group.visible = false;
+  }
+  if (eventId === 'KISS') {
+    shootBtnEl.style.display = 'flex';
+  } else {
+    shootBtnEl.style.display = 'none';
+  }
+
+  // Clear old projectiles
+  projectiles.forEach(p => scene.remove(p.mesh));
+  projectiles.length = 0;
+
+  // Sparkles
+  if (mode === 'missions') {
+    sparkles.clear();
+    sparklesList.length = 0;
+    for (let i = 0; i < 10; i++) {
+      const s = new THREE.Mesh(new THREE.OctahedronGeometry(0.3), new THREE.MeshStandardMaterial({color: '#ff70b7', emissive: '#ff70b7'}));
+      s.position.set((Math.random() - 0.5) * 20, 1, (Math.random() - 0.5) * 20);
+      sparkles.add(s);
+      sparklesList.push(s);
+    }
+    scoreLocal = 0; scoreRemote = 0;
+    scoreVal0.textContent = '0'; scoreVal1.textContent = '0';
+  }
+
+  eventTimeLeft = 30;
+  eventTimer.textContent = eventTimeLeft;
+  eventTimer.classList.remove('warning');
+  clearInterval(eventTimerInterval);
+  eventTimerInterval = setInterval(() => {
+    eventTimeLeft--;
+    eventTimer.textContent = eventTimeLeft;
+    if (eventTimeLeft <= 5) eventTimer.classList.add('warning');
+    if (eventTimeLeft <= 0) {
+      clearInterval(eventTimerInterval);
+      endRound();
+    }
+  }, 1000);
 }
 
+function endRound() {
+  clearInterval(eventTimerInterval);
+  eventTimer.classList.add('hidden');
+  shootBtnEl.style.display = 'none';
+  if (isHost) {
+    channel.send('event_end', {});
+    showResults();
+  }
+}
+
+function showResults() {
+  inMatch = false;
+  hideControls();
+  gameTopbar.classList.add('hidden');
+  gameBottomHud.classList.add('hidden');
+  toast("ROUND OVER! 🍡");
+  setTimeout(() => {
+    showScreen('roomScreen');
+    meReady = false; peerReady = false;
+    renderRoom();
+  }, 2000);
+}
+
+/* ============================================================
+   ROOM UI & NETWORKING
+   ============================================================ */
 function renderRoom() {
   roomCodeText.textContent = roomCode || '-----';
   const my = slotEls[0], peer = slotEls[1];
@@ -543,7 +665,7 @@ function renderRoom() {
 
   if (remoteVisible) {
     peer.avatar.textContent = remoteChar.emoji;
-    peer.name.textContent = `${remoteName}${remoteIrId ? ' · ' + remoteIrId : ''}`;
+    peer.name.textContent = `${remoteName}`;
     peer.ready.textContent = peerReady ? 'READY' : 'not ready';
     peer.el.classList.toggle('ready', peerReady);
     peer.el.style.opacity = 1;
@@ -560,7 +682,6 @@ function renderRoom() {
     const canStart = remoteVisible;
     startBtn.disabled = !canStart;
     startBtn.style.opacity = canStart ? '1' : '0.5';
-    startBtn.style.pointerEvents = canStart ? 'auto' : 'none';
     startBtn.textContent = canStart ? 'START MATCH' : 'WAITING FOR PEER…';
   } else {
     startBtn.classList.add('hidden');
@@ -568,16 +689,9 @@ function renderRoom() {
 
   readyBtn.classList.toggle('hidden', inMatch);
   readyBtn.textContent = meReady ? 'NOT READY' : 'READY';
-
-  roomHint.textContent = inMatch ? 'Match in progress'
-    : remoteVisible
-      ? (meReady && peerReady ? (isHost ? 'Press START MATCH.' : 'Waiting for host…') : 'Both players must be ready.')
-      : 'Waiting for friend to join…';
+  roomHint.textContent = inMatch ? 'Match in progress' : remoteVisible ? 'Press START MATCH.' : 'Waiting for friend to join…';
 }
 
-/* ============================================================
-   CHANNEL ATTACH
-   ============================================================ */
 async function attachChannel(code) {
   channel = new Net.RoomChannel(code, IR_USER.userId, selfName);
 
@@ -587,7 +701,6 @@ async function attachChannel(code) {
 
   channel.on('peer', ({ name, irId, char, isHost: peerIsHost }) => {
     remoteName = name || 'Peer';
-    remoteIrId = irId || '';
     if (peerIsHost) {
       const hostChar = CHARACTERS.find(c => c.id === char) || CHAR_BLUE;
       myCharacter = oppositeOf(hostChar);
@@ -598,109 +711,91 @@ async function attachChannel(code) {
     }
     remoteVisible = true;
     applyRemoteCharacter();
-    remotePlayer.group.visible = true;
     renderRoom();
-    channel.send('peer', { name: selfName, irId: IR_USER.irId, char: myCharacter.id, isHost });
   });
 
   channel.on('ready', ({ ready }) => { peerReady = !!ready; renderRoom(); });
-  channel.on('start', () => startCountdownThenMatch());
+  
+  channel.on('event_start', ({ event, mode }) => {
+    startCountdownThenMatch(() => startRound(event, mode));
+  });
+
+  channel.on('event_end', () => {
+    showResults();
+  });
 
   channel.on('move', ({ x, y, z, ry }) => {
     remoteTarget.x = Number(x) || 0;
     remoteTarget.y = Number(y) || 0;
     remoteTarget.z = Number(z) || 0;
     remoteTarget.ry = Number(ry) || 0;
-    if (!remoteVisible) {
-      remoteVisible = true;
-      remotePlayer.group.visible = true;
-      renderRoom();
-    }
+    if (!remoteVisible) { remoteVisible = true; remotePlayer.group.visible = true; renderRoom(); }
   });
 
-  channel.on('leave', () => {
-    remoteVisible = false; peerReady = false; renderRoom();
-    toast('Peer left 👋');
+  channel.on('shoot', ({ x, y, z, ry }) => {
+    // Spawn remote projectile
+    const heart = new THREE.Mesh(
+      new THREE.SphereGeometry(0.3, 8, 8), 
+      new THREE.MeshStandardMaterial({ color: '#ff0066', emissive: '#ff0066' })
+    );
+    heart.scale.set(1, 0.8, 0.4);
+    heart.position.set(x, y, z);
+    scene.add(heart);
+    const dir = new THREE.Vector3(Math.sin(ry), 0, Math.cos(ry));
+    projectiles.push({
+      mesh: heart, x: x, y: y, z: z,
+      vx: dir.x * 15, vz: dir.z * 15,
+      isLocal: false
+    });
+    SFX.kiss();
+  });
+
+  channel.on('hit', () => {
+    // WE GOT HIT!
+    local.vy = 5.0;
+    local.x -= 3.0;
+    SFX.hit();
+    toast("💋 SMOOCHED!");
+    // Shake camera
+    camera.position.x += (Math.random() - 0.5) * 1.0;
+    camera.position.y += (Math.random() - 0.5) * 1.0;
+  });
+
+  channel.on('collect', () => {
+    scoreRemote++;
+    scoreVal1.textContent = scoreRemote;
   });
 
   await channel.join();
 }
 
-/* ============================================================
-   CREATE / JOIN / LEAVE
-   ============================================================ */
 async function doCreate() {
   createError.classList.add('hidden');
-  setStatus(createStatus, 'Creating room…');
   const res = await Net.createRoom(IR_USER.userId, IR_USER.irId);
-  if (!res.ok) {
-    setStatus(createStatus, 'Failed', 'bad');
-    createError.textContent = 'Could not create room: ' + res.error;
-    createError.classList.remove('hidden');
-    return;
-  }
-  selfName = IR_USER.name;
-  roomCode = res.code;
-  isHost = true;
-  meReady = false; peerReady = false; remoteVisible = false; inMatch = false;
-
+  if (!res.ok) return;
+  selfName = IR_USER.name; roomCode = res.code; isHost = true;
+  gameMode = selectedGameMode;
   try {
-    await attachChannel(roomCode);
-    applyMyCharacter();
-    showScreen('roomScreen');
-    renderRoom();
-  } catch (e) {
-    setStatus(createStatus, 'Realtime failed', 'bad');
-    createError.textContent = 'Could not open realtime channel.';
-    createError.classList.remove('hidden');
-  }
+    await attachChannel(roomCode); applyMyCharacter(); showScreen('roomScreen'); renderRoom();
+  } catch (e) { createError.textContent = 'Connection failed.'; createError.classList.remove('hidden'); }
 }
 
 async function doJoin() {
   joinError.classList.add('hidden');
   const code = (codeInput.value || '').toUpperCase().trim();
-  if (code.length < 4) { joinError.textContent = 'Enter a room code.'; joinError.classList.remove('hidden'); return; }
-  setStatus(joinStatus, 'Looking up room…');
+  if (code.length < 4) return;
   const found = await Net.findRoom(code);
-  if (!found.ok) {
-    setStatus(joinStatus, 'Not found', 'bad');
-    joinError.textContent = found.error === 'not_found' ? 'Room not found.' : found.error;
-    joinError.classList.remove('hidden');
-    return;
-  }
-  selfName = IR_USER.name;
-  roomCode = found.code;
-  isHost = false;
-  meReady = false; peerReady = false; remoteVisible = false; inMatch = false;
-
+  if (!found.ok) { joinError.textContent = 'Room not found.'; joinError.classList.remove('hidden'); return; }
+  selfName = IR_USER.name; roomCode = found.code; isHost = false;
   try {
-    await attachChannel(roomCode);
-    applyMyCharacter();
-    showScreen('roomScreen');
-    renderRoom();
-  } catch (e) {
-    setStatus(joinStatus, 'Realtime failed', 'bad');
-    joinError.textContent = 'Could not open realtime channel.';
-    joinError.classList.remove('hidden');
-  }
-}
-
-async function doLeave() {
-  if (channel) { await channel.leave(); channel = null; }
-  if (isHost && roomCode) Net.deleteRoom(roomCode);
-  roomCode = ''; isHost = false;
-  meReady = false; peerReady = false;
-  remoteVisible = false; inMatch = false;
-  gameTopbar.classList.add('hidden');
-  gameBottomHud.classList.add('hidden');
-  hideControls();
-  showScreen('mainMenu');
+    await attachChannel(roomCode); applyMyCharacter(); showScreen('roomScreen'); renderRoom();
+  } catch (e) { joinError.textContent = 'Connection failed.'; joinError.classList.remove('hidden'); }
 }
 
 /* ============================================================
-   COUNTDOWN + MATCH
+   START MATCH
    ============================================================ */
-async function startCountdownThenMatch() {
+async function startCountdownThenMatch(onComplete) {
   for (const el of Object.values(screens)) el.classList.add('hidden');
   countdownOverlay.classList.remove('hidden');
   for (const n of ['3','2','1','GO!']) {
@@ -711,140 +806,141 @@ async function startCountdownThenMatch() {
     await sleep(n === 'GO!' ? 500 : 800);
   }
   countdownOverlay.classList.add('hidden');
-  beginMatch();
+  onComplete();
 }
 
-function beginMatch() {
-  inMatch = true;
-
-  local.x = -3; local.y = 0; local.z = 3; local.ry = 0; local.vy = 0; local.grounded = true;
-
-  if (remoteVisible) {
-    remoteTarget.x = 3; remoteTarget.y = 0; remoteTarget.z = -3; remoteTarget.ry = Math.PI;
-    remote.x = 3; remote.y = 0; remote.z = -3; remote.ry = Math.PI;
-    remotePlayer.group.position.set(3, 0, -3);
-    remotePlayer.group.visible = true;
-  }
-
-  gameTopbar.classList.remove('hidden');
-  gameBottomHud.classList.remove('hidden');
-
-  applyButtonLayout();
-  showControls(); 
-  requestLandscape();
-
-  scoreName0.textContent = selfName;
-  scoreName1.textContent = remoteName || 'P2';
-  scoreVal0.textContent = '0';
-  scoreVal1.textContent = '0';
-  hudEmoji.textContent = '✨';
-  hudLabel.textContent = 'LIVE';
-}
+startBtn.onclick = () => {
+  if (!isHost) return;
+  const randomEvent = ALL_EVENTS[Math.floor(Math.random() * ALL_EVENTS.length)];
+  channel?.send('event_start', { event: randomEvent, mode: gameMode });
+  startCountdownThenMatch(() => startRound(randomEvent, gameMode));
+};
 
 /* ============================================================
-   UPDATE LOOP (WITH COLLISION CHECKING)
+   UPDATE LOOP
    ============================================================ */
 function updateLocalPlayer(dt) {
-  if (!inMatch) {
-    localPlayer.group.position.set(local.x, local.y, local.z);
-    localPlayer.group.rotation.y = local.ry;
-    return;
-  }
+  if (!inMatch) return;
 
   let f = 0, s = 0;
-  if (keys.has(settings.keys.up))    f += 1;
-  if (keys.has(settings.keys.down))  f -= 1;
+  if (keys.has(settings.keys.up)) f += 1;
+  if (keys.has(settings.keys.down)) f -= 1;
   if (keys.has(settings.keys.right)) s += 1;
-  if (keys.has(settings.keys.left))  s -= 1;
-  
-  f -= touchDelta.y;
-  s += touchDelta.x;
-
-  const len = Math.hypot(f, s);
-  if (len > 1) { f /= len; s /= len; }
+  if (keys.has(settings.keys.left)) s -= 1;
+  f -= touchDelta.y; s += touchDelta.x;
+  const len = Math.hypot(f, s); if (len > 1) { f /= len; s /= len; }
 
   const forward = new THREE.Vector3(-Math.sin(yaw), 0, -Math.cos(yaw));
   const right   = new THREE.Vector3( Math.cos(yaw), 0, -Math.sin(yaw));
   moveVec.set(0,0,0).addScaledVector(forward, f).addScaledVector(right, s);
   
   let speed = 5.4;
+  if (currentEvent === 'PENGUIN') speed = 3.0; 
+  if (currentEvent === 'WOBBLY') speed = 6.5;  
+
   let moveX = moveVec.x * speed * dt;
   let moveZ = moveVec.z * speed * dt;
 
-  // --- COLLISION CHECKING ---
+  if (currentEvent === 'MAGNETIC' && remoteVisible) {
+    const dx = remote.x - local.x;
+    const dz = remote.z - local.z;
+    const dist = Math.max(0.1, Math.hypot(dx, dz));
+    if (dist > 2) { 
+      const pullStrength = 8.0 * dt; 
+      moveX += (dx / dist) * pullStrength;
+      moveZ += (dz / dist) * pullStrength;
+    }
+  }
+
   let nextX = THREE.MathUtils.clamp(local.x + moveX, -12.3, 12.3);
   let nextZ = THREE.MathUtils.clamp(local.z + moveZ, -12.3, 12.3);
 
-  // Check X axis
   for (const box of colliders) {
-    if (
-      nextX + local.radius > box.minX && nextX - local.radius < box.maxX &&
-      local.y + local.radius > box.minY && local.y + 1.5 < box.maxY && // Player height approx 1.5
-      local.z + local.radius > box.minZ && local.z - local.radius < box.maxZ
-    ) {
-      // Collision on X, stop X movement
-      if (moveX > 0) nextX = box.minX - local.radius;
-      else if (moveX < 0) nextX = box.maxX + local.radius;
-      moveX = 0;
+    if (nextX + local.radius > box.minX && nextX - local.radius < box.maxX && local.y + local.radius > box.minY && local.y + 1.5 < box.maxY && local.z + local.radius > box.minZ && local.z - local.radius < box.maxZ) {
+      if (moveX > 0) nextX = box.minX - local.radius; else if (moveX < 0) nextX = box.maxX + local.radius;
+    }
+    if (nextX + local.radius > box.minX && nextX - local.radius < box.maxX && local.y + local.radius > box.minY && local.y + 1.5 < box.maxY && nextZ + local.radius > box.minZ && nextZ - local.radius < box.maxZ) {
+      if (moveZ > 0) nextZ = box.minZ - local.radius; else if (moveZ < 0) nextZ = box.maxZ + local.radius;
     }
   }
 
-  // Check Z axis
-  for (const box of colliders) {
-    if (
-      nextX + local.radius > box.minX && nextX - local.radius < box.maxX &&
-      local.y + local.radius > box.minY && local.y + 1.5 < box.maxY &&
-      nextZ + local.radius > box.minZ && nextZ - local.radius < box.maxZ
-    ) {
-      // Collision on Z, stop Z movement
-      if (moveZ > 0) nextZ = box.minZ - local.radius;
-      else if (moveZ < 0) nextZ = box.maxZ + local.radius;
-      moveZ = 0;
-    }
-  }
+  local.x = nextX; local.z = nextZ;
+  if (moveX !== 0 || moveZ !== 0) local.ry = Math.atan2(moveX, moveZ);
 
-  local.x = nextX;
-  local.z = nextZ;
-
-  if (moveX !== 0 || moveZ !== 0) {
-    local.ry = Math.atan2(moveVec.x, moveVec.z);
-  }
-
-  // Gravity & Jumping
-  local.vy -= 18 * dt;
-  local.y += local.vy * dt;
-  
-  // Ground check
+  local.vy -= 18 * dt; local.y += local.vy * dt;
   if (local.y <= 0) { local.y = 0; local.vy = 0; local.grounded = true; }
 
   localPlayer.group.position.set(local.x, local.y, local.z);
   localPlayer.group.rotation.y = local.ry;
-  const moving = moveVec.lengthSq() > 0.001;
-  const bob = moving
-    ? Math.sin(performance.now() * 0.015) * 0.045
-    : Math.sin(performance.now() * 0.002) * 0.018;
-  localPlayer.body.position.y = localPlayer.bobBase + bob;
 
-  const now = performance.now();
-  if (channel && now - lastMoveSent > 50) {
-    lastMoveSent = now;
+  if (currentEvent === 'PENGUIN') {
+    localPlayer.group.rotation.z = Math.sin(performance.now() * 0.01) * 0.2;
+  } else {
+    localPlayer.group.rotation.z = 0;
+  }
+
+  if (gameMode === 'missions') {
+    for (let i = sparklesList.length - 1; i >= 0; i--) {
+      const sp = sparklesList[i];
+      if (local.x > sp.position.x - 1 && local.x < sp.position.x + 1 && local.z > sp.position.z - 1 && local.z < sp.position.z + 1) {
+        sparkles.remove(sp);
+        sparklesList.splice(i, 1);
+        scoreLocal++;
+        scoreVal0.textContent = scoreLocal;
+        SFX.collect();
+        channel.send('collect', {}); 
+      }
+    }
+  }
+
+  if (channel && performance.now() - lastMoveSent > 50) {
+    lastMoveSent = performance.now();
     channel.send('move', { x: local.x, y: local.y, z: local.z, ry: local.ry });
   }
 }
 
 function updateRemotePlayer(dt) {
-  if (!remoteVisible) { remotePlayer.group.visible = false; return; }
-  remotePlayer.group.visible = true;
+  if (!remoteVisible) return;
   const k = 1 - Math.exp(-dt * 12);
   remote.x += (remoteTarget.x - remote.x) * k;
-  remote.y += (remoteTarget.y - remote.y) * k;
   remote.z += (remoteTarget.z - remote.z) * k;
-  let d = remoteTarget.ry - remote.ry;
-  while (d > Math.PI) d -= Math.PI * 2;
-  while (d < -Math.PI) d += Math.PI * 2;
-  remote.ry += d * k;
-  remotePlayer.group.position.set(remote.x, remote.y, remote.z);
-  remotePlayer.group.rotation.y = remote.ry;
+  remotePlayer.group.position.set(remote.x, remoteTarget.y, remote.z);
+  remotePlayer.group.rotation.y = remoteTarget.ry;
+  
+  if (currentEvent === 'PENGUIN') {
+    remotePlayer.group.rotation.z = Math.sin(performance.now() * 0.01) * 0.2;
+  } else {
+    remotePlayer.group.rotation.z = 0;
+  }
+
+  sparkles.children.forEach(s => { s.rotation.y += dt * 3; s.rotation.x += dt * 2; });
+
+  // Projectiles Update
+  for (let i = projectiles.length - 1; i >= 0; i--) {
+    const p = projectiles[i];
+    p.x += p.vx * dt;
+    p.z += p.vz * dt;
+    p.mesh.position.set(p.x, p.y, p.z);
+    p.mesh.rotation.y += dt * 5;
+
+    // If local projectile, check hit against remote
+    if (p.isLocal && remoteVisible) {
+      const dist = Math.hypot(p.x - remote.x, p.z - remote.z);
+      if (dist < 1.0) {
+        scene.remove(p.mesh);
+        projectiles.splice(i, 1);
+        channel.send('hit', {});
+        toast("HIT! 💋");
+        continue;
+      }
+    }
+    
+    // Remove if out of bounds
+    if (Math.abs(p.x) > 15 || Math.abs(p.z) > 15) {
+      scene.remove(p.mesh);
+      projectiles.splice(i, 1);
+    }
+  }
 }
 
 function cameraFollow(dt) {
@@ -862,64 +958,37 @@ function animate() {
   updateLocalPlayer(dt);
   updateRemotePlayer(dt);
   cameraFollow(dt);
-  sparkles.rotation.y += dt * 0.03;
   renderer.render(scene, camera);
 }
 
 function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
 
 /* ============================================================
-   LANDSCAPE LOCK (SILENT, NO MSG)
+   LANDSCAPE LOCK
    ============================================================ */
 let orientationRequested = false;
 async function requestLandscape() {
-  if (orientationRequested) return; 
-  orientationRequested = true;
+  if (orientationRequested) return; orientationRequested = true;
   try {
-    if (!document.fullscreenElement && document.documentElement.requestFullscreen) {
-      await document.documentElement.requestFullscreen();
-    }
-    if (screen.orientation && typeof screen.orientation.lock === 'function') {
-      await screen.orientation.lock('landscape');
-    }
-  } catch (err) {
-    // Silently fail if browser blocks it
-  }
+    if (!document.fullscreenElement && document.documentElement.requestFullscreen) await document.documentElement.requestFullscreen();
+    if (screen.orientation && typeof screen.orientation.lock === 'function') await screen.orientation.lock('landscape');
+  } catch (err) {}
 }
 window.addEventListener('pointerdown', requestLandscape, { once: true });
 
 /* ============================================================
-   BUTTON WIRING
+   BUTTON WIRING & BOOT
    ============================================================ */
 createBtn.onclick    = doCreate;
 joinBtn.onclick      = doJoin;
-leaveRoomBtn.onclick = doLeave;
-
-readyBtn.onclick = () => {
-  meReady = !meReady;
-  channel?.send('ready', { ready: meReady });
-  renderRoom();
+leaveRoomBtn.onclick = async () => {
+  if (channel) { await channel.leave(); channel = null; }
+  if (isHost && roomCode) Net.deleteRoom(roomCode);
+  roomCode = ''; isHost = false; inMatch = false; hideControls(); showScreen('mainMenu');
 };
+readyBtn.onclick = () => { meReady = !meReady; channel?.send('ready', { ready: meReady }); renderRoom(); };
+copyCodeBtn.onclick = async () => { try { await navigator.clipboard.writeText(roomCode); toast('Copied!'); } catch { toast(roomCode); } };
 
-startBtn.onclick = () => {
-  if (!isHost) return;
-  if (!remoteVisible) { toast('Waiting for peer…'); return; }
-  channel?.send('start', {});
-  startCountdownThenMatch();
-};
-
-copyCodeBtn.onclick = async () => {
-  try { await navigator.clipboard.writeText(roomCode); toast('Code copied 📋'); }
-  catch { toast(roomCode); }
-};
-
-document.querySelector('#helpBtn').onclick   = () => document.querySelector('#helpModal').classList.remove('hidden');
-document.querySelector('#closeHelp').onclick = () => document.querySelector('#helpModal').classList.add('hidden');
-document.querySelector('#gotIt').onclick     = () => document.querySelector('#helpModal').classList.add('hidden');
-
-/* ============================================================
-   BOOT
-   ============================================================ */
 (async function main() {
   await boot();
   if (IR_USER) {
