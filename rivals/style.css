@@ -69,7 +69,6 @@ button:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
 }
 .lobby-head { text-align: center; margin-bottom: 18px; }
 .lobby-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; }
-
 .lobby-left { display: flex; flex-direction: column; align-items: center; gap: 12px; }
 #lobby-canvas {
   width: 100%; max-width: 320px; height: 260px;
@@ -134,34 +133,19 @@ input[type=range]::-moz-range-thumb {
   width: 16px; height: 16px; border-radius: 50%;
   background: var(--blue); cursor: pointer; border: none;
 }
-.best-row {
-  font: 700 11px Orbitron; color: var(--gold);
-  letter-spacing: .15em; text-align: center;
-  padding: 8px; border: 1px dashed #ffe38b50; border-radius: 3px;
-}
-.best-row b { font-size: 18px; color: white; margin-left: 6px; }
+
 .lobby-name { text-align: center; font-size: 12px; color: var(--text-dim); margin: 4px 0 0; }
 .lobby-name b { color: white; }
 
 /* ===== PRACTICE PICKER ===== */
-.practice-btns {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 8px;
-  margin: 8px 0;
-}
+.practice-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 8px 0; }
 .practice-btn {
-  display: flex !important;
-  flex-direction: column;
-  align-items: center;
-  gap: 2px;
-  padding: 14px 8px !important;
-  text-align: center;
+  display: flex !important; flex-direction: column;
+  align-items: center; gap: 2px; padding: 14px 8px !important; text-align: center;
 }
 .practice-btn .pb-icon { font-size: 22px; margin-bottom: 2px; }
 .practice-btn .pb-title { font: 800 12px Orbitron; letter-spacing: .08em; }
 .practice-btn .pb-sub { font: 600 9px Rajdhani; opacity: .7; letter-spacing: .02em; }
-
 .diff-tab {
   padding: 6px 12px; font: 700 11px Orbitron;
   background: #ffffff08; color: var(--text-dim);
@@ -244,8 +228,7 @@ header {
   font: 700 10px Orbitron; letter-spacing: .05em;
   padding: 4px 10px; border-radius: 3px;
   background: #050812cc; border: 1px solid #ffffff30;
-  white-space: nowrap; color: white;
-  text-align: center;
+  white-space: nowrap; color: white; text-align: center;
   will-change: left, top;
 }
 .name-tag .tag-name { font-size: 11px; }
@@ -322,45 +305,26 @@ header {
 #damage-ring .diag.right { right: 0; top: 30%; bottom: 30%; width: 60px; background: linear-gradient(to left, #ff3050cc, transparent); }
 
 /* ===== FLAG ACTION BUTTONS ===== */
-#steal-btn,
-#treasure-btn {
-  position: absolute;
-  left: 50%;
-  bottom: 22%;
-  transform: translateX(-50%);
-  padding: 16px 42px;
-  font: 800 16px Orbitron;
-  letter-spacing: .15em;
-  color: #06101c;
-  border: 0;
-  border-radius: 4px;
-  cursor: pointer;
-  pointer-events: auto;
-  z-index: 10;
+#steal-btn, #treasure-btn {
+  position: absolute; left: 50%; bottom: 22%; transform: translateX(-50%);
+  padding: 16px 42px; font: 800 16px Orbitron; letter-spacing: .15em;
+  color: #06101c; border: 0; border-radius: 4px;
+  cursor: pointer; pointer-events: auto; z-index: 10;
   animation: flag-pulse 1s ease-in-out infinite;
 }
-#steal-btn {
-  background: linear-gradient(90deg, #ff7aa0, #ff4c73);
-  box-shadow: 0 0 30px #ff4c7380, 0 4px 16px #00000060;
-}
+#steal-btn { background: linear-gradient(90deg, #ff7aa0, #ff4c73); box-shadow: 0 0 30px #ff4c7380, 0 4px 16px #00000060; }
 #steal-btn:active { transform: translateX(-50%) scale(.95); }
-
-#treasure-btn {
-  background: linear-gradient(90deg, #52ffb1, #44d7ff);
-  box-shadow: 0 0 30px #52ffb180, 0 4px 16px #00000060;
-}
+#treasure-btn { background: linear-gradient(90deg, #52ffb1, #44d7ff); box-shadow: 0 0 30px #52ffb180, 0 4px 16px #00000060; }
 #treasure-btn:active { transform: translateX(-50%) scale(.95); }
-
 @keyframes flag-pulse {
   0%, 100% { box-shadow: 0 0 30px currentColor88, 0 4px 16px #00000060; }
-  50%      { box-shadow: 0 0 55px currentColorcc, 0 4px 16px #00000060; }
+  50% { box-shadow: 0 0 55px currentColorcc, 0 4px 16px #00000060; }
 }
 
-/* ===== MOBILE CONTROLS ===== */
+/* ===== MOBILE ===== */
 #mobile { position: absolute; inset: auto 0 0; height: 42%; pointer-events: none; }
-#joy-zone { position: absolute; left: 0; bottom: 0; width: 48%; height: 100%; pointer-events: auto; }
+#joy-zone { position: absolute; left: 22px; bottom: 24px; width: 120px; height: 120px; pointer-events: auto; }
 #joy-base {
-  position: absolute; left: 22px; bottom: 24px;
   width: 120px; height: 120px; border-radius: 50%;
   border: 1px solid #ffffff55; background: #0a142a44;
   display: grid; place-items: center; touch-action: none;
@@ -386,17 +350,43 @@ header {
 .actions #reload-btn { width: 46px; height: 46px; font-size: 18px; background: #ffe38b20; border-color: var(--gold); color: var(--gold); }
 .actions #dash-btn { width: 46px; height: 46px; font-size: 9px; background: #52ffb120; border-color: var(--green); color: var(--green); }
 
-/* ===== GAME OVER ===== */
-.go-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 20px 0; }
-.go-stats > div {
+/* ===== CUSTOMIZATION MODE ===== */
+#custom-grid {
+  position: absolute; inset: 0; z-index: 15;
   display: flex; flex-direction: column;
-  padding: 12px; border: 1px solid #ffffff1a;
-  background: #ffffff08; border-radius: 3px;
+  align-items: center; justify-content: flex-start; padding-top: 20px;
 }
+.grid-overlay {
+  position: absolute; inset: 0;
+  background-image: 
+    linear-gradient(rgba(255, 255, 255, 0.1) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.1) 1px, transparent 1px);
+  background-size: 50px 50px;
+  pointer-events: none;
+}
+.custom-header {
+  position: relative;
+  background: #050812ee; padding: 12px 24px;
+  border: 1px solid var(--blue); border-radius: 4px;
+  font: 700 12px Orbitron; color: white;
+  display: flex; align-items: center; gap: 16px;
+  box-shadow: 0 0 20px #44d7ff40;
+}
+#btn-save-custom {
+  background: var(--green); color: #000;
+  padding: 6px 12px; border-radius: 4px; font-weight: 800;
+}
+.draggable { cursor: grab; touch-action: none; transition: transform 0.1s ease; }
+.draggable.dragging {
+  cursor: grabbing; opacity: 0.8; transform: scale(1.1);
+  z-index: 100; pointer-events: none;
+}
+
+.go-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 20px 0; }
+.go-stats > div { display: flex; flex-direction: column; padding: 12px; border: 1px solid #ffffff1a; background: #ffffff08; border-radius: 3px; }
 .go-stats span { font: 700 10px Orbitron; color: var(--text-dim); letter-spacing: .12em; margin-bottom: 4px; }
 .go-stats b { font: 800 24px Orbitron; color: white; }
 
-/* ===== RESPONSIVE ===== */
 @media (max-width: 780px) {
   .lobby-grid { grid-template-columns: 1fr; }
   #lobby-canvas { height: 200px; }
@@ -430,7 +420,8 @@ header {
   header { padding: 7px 18px; }
   .score-bar { top: 58px; padding: 5px 10px; }
   #mobile { height: 56%; }
-  #joy-base { width: 94px; height: 94px; left: 22px; bottom: 14px; }
+  #joy-zone { width: 94px; height: 94px; left: 22px; bottom: 14px; }
+  #joy-base { width: 94px; height: 94px; }
   #joy-knob { width: 42px; height: 42px; }
   .actions { right: 20px; bottom: 14px; gap: 8px; }
   .actions button { width: 60px; height: 60px; font-size: 10px; }
@@ -444,22 +435,14 @@ header {
   .practice-btn .pb-sub { font-size: 8px; }
 }
 
-/* ===== SAFE AREA ===== */
 header {
   padding-top: max(12px, env(safe-area-inset-top));
   padding-left: max(clamp(10px, 3vw, 30px), env(safe-area-inset-left));
   padding-right: max(clamp(10px, 3vw, 30px), env(safe-area-inset-right));
 }
-.actions {
-  right: max(16px, env(safe-area-inset-right));
-  bottom: max(22px, env(safe-area-inset-bottom));
-}
-#joy-base {
-  left: max(22px, env(safe-area-inset-left));
-  bottom: max(24px, env(safe-area-inset-bottom));
-}
+.actions { right: max(16px, env(safe-area-inset-right)); bottom: max(22px, env(safe-area-inset-bottom)); }
+#joy-zone { left: max(22px, env(safe-area-inset-left)); bottom: max(24px, env(safe-area-inset-bottom)); }
 
-/* ===== REDUCED MOTION ===== */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: 0.001ms !important;
