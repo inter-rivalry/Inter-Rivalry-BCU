@@ -60,8 +60,9 @@ let myCharacter = CHAR_BLUE;
 let chosenForHost = CHAR_BLUE;
 let selectedGameMode = 'events';
 
-const local  = { x: -3, y: 0, z: 3, ry: 0, vy: 0, grounded: true, radius: 0.6, active: true };
-let remote   = { x: 3, y: 0, z: -3, ry: Math.PI, vy: 0, grounded: true, radius: 0.6 };
+// Added vx, vz for slippery physics
+const local  = { x: -3, y: 0, z: 3, vx: 0, vz: 0, ry: 0, vy: 0, grounded: true, radius: 0.7, active: true };
+let remote   = { x: 3, y: 0, z: -3, ry: Math.PI, vy: 0, grounded: true, radius: 0.7 };
 let remoteTarget = { x: 3, y: 0, z: -3, ry: Math.PI };
 let remoteVisible = false;
 let remoteName = '';
@@ -265,9 +266,13 @@ function applyButtonLayout() {
   const op = settings.buttonOpacity / 100;
   joystickEl.style.left = `${settings.joystickX}%`; joystickEl.style.bottom = `${settings.joystickY}%`;
   joystickEl.style.transform = `translate(-50%, 50%) scale(${scale})`; joystickEl.style.opacity = op;
+  
   jumpBtnEl.style.right = `${settings.jumpX}%`; jumpBtnEl.style.bottom = `${settings.jumpY}%`;
   jumpBtnEl.style.transform = `translate(50%, 50%) scale(${scale})`; jumpBtnEl.style.opacity = op;
-  shootBtnEl.style.right = `${settings.jumpX}%`; shootBtnEl.style.bottom = `${settings.jumpY + 25}%`; 
+  
+  // FIXED: Shoot button is exactly 90px above jump button
+  shootBtnEl.style.right = `${settings.jumpX}%`; 
+  shootBtnEl.style.bottom = `calc(${settings.jumpY}% + 90px)`; 
   shootBtnEl.style.transform = `translate(50%, 50%) scale(${scale})`; shootBtnEl.style.opacity = op;
 }
 
@@ -358,7 +363,12 @@ grid.position.y = -0.035; grid.material.transparent = true; grid.material.opacit
 function box(w,h,d,c,x,y,z){
   const m = new THREE.Mesh(new THREE.BoxGeometry(w,h,d), mat(c));
   m.position.set(x,y,z); m.castShadow = m.receiveShadow = true; scene.add(m);
-  colliders.push({ minX: x - w/2, maxX: x + w/2, minY: y - h/2, maxY: y + h/2, minZ: z - d/2, maxZ: z + d/2 });
+  // Using precise min/max for strict collision
+  colliders.push({ 
+    minX: x - w/2, maxX: x + w/2, 
+    minY: y - h/2, maxY: y + h/2, 
+    minZ: z - d/2, maxZ: z + d/2 
+  });
   return m;
 }
 
@@ -418,6 +428,7 @@ window.addEventListener('keydown', e => {
 });
 window.addEventListener('keyup', e => { keys.delete(e.code === 'Space' ? ' ' : e.key.toLowerCase()); });
 
+// CAMERA SWIPE
 canvas.addEventListener('pointerdown', e => { dragging = true; lastX = e.clientX; lastY = e.clientY; canvas.setPointerCapture?.(e.pointerId); });
 canvas.addEventListener('pointermove', e => {
   if (!dragging) return;
@@ -448,13 +459,15 @@ function triggerNextRound() {
   }
   const randomEvent = ALL_EVENTS[Math.floor(Math.random() * ALL_EVENTS.length)];
   channel.send('event_start', { event: randomEvent, mode: gameMode, round: currentRound });
-  startRound(randomEvent, gameMode, currentRound);
+  
+  // HOST FIX: Go through countdown to hide lobby
+  startCountdownThenMatch(() => startRound(randomEvent, gameMode, currentRound));
 }
 
 function startRound(eventId, mode, roundNum) {
   inMatch = true; currentEvent = eventId; gameMode = mode; currentRound = roundNum;
   hudCount.textContent = `ROUND ${currentRound}/${MAX_ROUNDS}`;
-  local.x = -3; local.y = 0; local.z = 3; local.vy = 0;
+  local.x = -3; local.y = 0; local.z = 3; local.vy = 0; local.vx = 0; local.vz = 0;
   remoteTarget.x = 3; remoteTarget.y = 0; remoteTarget.z = -3; remote.x = 3; remote.y = 0; remote.z = -3;
   gameTopbar.classList.remove('hidden'); gameBottomHud.classList.remove('hidden');
   applyButtonLayout(); showControls(); requestLandscape();
@@ -563,37 +576,22 @@ async function attachChannel(code) {
   channel = new Net.RoomChannel(code, IR_USER.userId, selfName);
   
   if (helloInterval) clearInterval(helloInterval);
-
-  // Keep pinging hello every 1.5 seconds until we see the peer
   helloInterval = setInterval(() => {
-    if (remoteVisible) {
-      clearInterval(helloInterval);
-      return;
-    }
+    if (remoteVisible) { clearInterval(helloInterval); return; }
     channel.send('hello', { name: selfName, irId: IR_USER.irId, char: myCharacter.id, isHost });
   }, 1500);
 
-  channel.on('hello', () => { 
-    channel.send('peer', { name: selfName, irId: IR_USER.irId, char: myCharacter.id, isHost }); 
-  });
+  channel.on('hello', () => { channel.send('peer', { name: selfName, irId: IR_USER.irId, char: myCharacter.id, isHost }); });
   
   channel.on('peer', ({ name, irId, char, isHost: peerIsHost }) => {
     if (remoteVisible) return; 
-    
     remoteName = name || 'Peer'; remoteIrId = irId || '';
-    
     if (peerIsHost) {
       const hostChar = CHARACTERS.find(c => c.id === char) || CHAR_BLUE;
       myCharacter = oppositeOf(hostChar); applyMyCharacter(); remoteChar = hostChar;
-    } else { 
-      remoteChar = CHARACTERS.find(c => c.id === char) || CHAR_PINK; 
-    }
-    
-    remoteVisible = true; 
-    if (helloInterval) clearInterval(helloInterval);
-    
+    } else { remoteChar = CHARACTERS.find(c => c.id === char) || CHAR_PINK; }
+    remoteVisible = true; if (helloInterval) clearInterval(helloInterval);
     applyRemoteCharacter(); renderRoom();
-    
     channel.send('peer', { name: selfName, irId: IR_USER.irId, char: myCharacter.id, isHost });
   });
   
@@ -608,10 +606,7 @@ async function attachChannel(code) {
   channel.on('move', ({ x, y, z, ry }) => {
     remoteTarget.x = Number(x) || 0; remoteTarget.y = Number(y) || 0;
     remoteTarget.z = Number(z) || 0; remoteTarget.ry = Number(ry) || 0;
-    if (!remoteVisible) { 
-      remoteVisible = true; remotePlayer.group.visible = true; renderRoom(); 
-      if (helloInterval) clearInterval(helloInterval);
-    }
+    if (!remoteVisible) { remoteVisible = true; remotePlayer.group.visible = true; renderRoom(); if (helloInterval) clearInterval(helloInterval); }
   });
   
   channel.on('shoot', ({ x, y, z, ry }) => {
@@ -629,7 +624,6 @@ async function attachChannel(code) {
   channel.on('collect', () => { scoreRemote++; });
   
   await channel.join();
-  
   channel.send('hello', { name: selfName, irId: IR_USER.irId, char: myCharacter.id, isHost });
 }
 
@@ -688,33 +682,82 @@ function updateLocalPlayer(dt) {
   if (keys.has(settings.keys.right)) s += 1; if (keys.has(settings.keys.left)) s -= 1;
   f -= touchDelta.y; s += touchDelta.x;
   const len = Math.hypot(f, s); if (len > 1) { f /= len; s /= len; }
+  
   const forward = new THREE.Vector3(-Math.sin(yaw), 0, -Math.cos(yaw));
   const right   = new THREE.Vector3( Math.cos(yaw), 0, -Math.sin(yaw));
   moveVec.set(0,0,0).addScaledVector(forward, f).addScaledVector(right, s);
-  let speed = 5.4;
-  if (currentEvent === 'PENGUIN') speed = 3.0; if (currentEvent === 'WOBBLY') speed = 6.5;
-  let moveX = moveVec.x * speed * dt; let moveZ = moveVec.z * speed * dt;
+
+  let maxSpeed = 5.4;
+  let friction = 0.8; 
+  let accel = 40;
+
+  if (currentEvent === 'PENGUIN') { maxSpeed = 3.0; friction = 0.6; }
+  else if (currentEvent === 'WOBBLY') { maxSpeed = 12.0; friction = 0.98; accel = 60; } // Slippery!
+
+  if (moveVec.lengthSq() > 0.001) {
+    local.vx += moveVec.x * accel * dt;
+    local.vz += moveVec.z * accel * dt;
+  }
+
+  local.vx *= friction;
+  local.vz *= friction;
+
+  const curSpeed = Math.hypot(local.vx, local.vz);
+  if (curSpeed > maxSpeed) {
+    local.vx = (local.vx / curSpeed) * maxSpeed;
+    local.vz = (local.vz / curSpeed) * maxSpeed;
+  }
+
+  let moveX = local.vx * dt;
+  let moveZ = local.vz * dt;
+
   if (currentEvent === 'MAGNETIC' && remoteVisible) {
     const dx = remote.x - local.x; const dz = remote.z - local.z;
     const dist = Math.max(0.1, Math.hypot(dx, dz));
-    if (dist > 2) { const pullStrength = 8.0 * dt; moveX += (dx / dist) * pullStrength; moveZ += (dz / dist) * pullStrength; }
+    if (dist > 2) { 
+      const pullStrength = 15.0 * dt; 
+      local.vx += (dx / dist) * pullStrength; 
+      local.vz += (dz / dist) * pullStrength; 
+    }
   }
+
   let nextX = THREE.MathUtils.clamp(local.x + moveX, -12.3, 12.3);
   let nextZ = THREE.MathUtils.clamp(local.z + moveZ, -12.3, 12.3);
+
+  // --- REAL WALL COLLISION ---
+  const r = 0.7; 
+  
+  // 1. Check X
   for (const box of colliders) {
-    if (nextX + local.radius > box.minX && nextX - local.radius < box.maxX && local.y + local.radius > box.minY && local.y + 1.5 < box.maxY && local.z + local.radius > box.minZ && local.z - local.radius < box.maxZ) {
-      if (moveX > 0) nextX = box.minX - local.radius; else if (moveX < 0) nextX = box.maxX + local.radius;
-    }
-    if (nextX + local.radius > box.minX && nextX - local.radius < box.maxX && local.y + local.radius > box.minY && local.y + 1.5 < box.maxY && nextZ + local.radius > box.minZ && nextZ - local.radius < box.maxZ) {
-      if (moveZ > 0) nextZ = box.minZ - local.radius; else if (moveZ < 0) nextZ = box.maxZ + local.radius;
+    if (local.y < box.maxY && local.y + 1.5 > box.minY) {
+      if (nextX + r > box.minX && nextX - r < box.maxX && local.z + r > box.minZ && local.z - r < box.maxZ) {
+        if (moveX > 0) nextX = box.minX - r; 
+        else if (moveX < 0) nextX = box.maxX + r; 
+        local.vx = 0;
+      }
     }
   }
+
+  // 2. Check Z
+  for (const box of colliders) {
+    if (local.y < box.maxY && local.y + 1.5 > box.minY) {
+      if (nextX + r > box.minX && nextX - r < box.maxX && nextZ + r > box.minZ && nextZ - r < box.maxZ) {
+        if (moveZ > 0) nextZ = box.minZ - r; 
+        else if (moveZ < 0) nextZ = box.maxZ + r; 
+        local.vz = 0;
+      }
+    }
+  }
+
   local.x = nextX; local.z = nextZ;
-  if (moveX !== 0 || moveZ !== 0) local.ry = Math.atan2(moveX, moveZ);
+  if (Math.abs(local.vx) > 0.1 || Math.abs(local.vz) > 0.1) local.ry = Math.atan2(local.vx, local.vz);
+  
   local.vy -= 18 * dt; local.y += local.vy * dt;
   if (local.y <= 0) { local.y = 0; local.vy = 0; local.grounded = true; }
+  
   localPlayer.group.position.set(local.x, local.y, local.z); localPlayer.group.rotation.y = local.ry;
   if (currentEvent === 'PENGUIN') localPlayer.group.rotation.z = Math.sin(performance.now() * 0.01) * 0.2; else localPlayer.group.rotation.z = 0;
+
   if (gameMode === 'missions') {
     for (let i = sparklesList.length - 1; i >= 0; i--) {
       const sp = sparklesList[i];
