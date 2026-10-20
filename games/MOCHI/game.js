@@ -1,5 +1,5 @@
 import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js';
-import * as Net from './network.js';
+import * as Net from './network.js?v=99';
 import { LOGIN_URL } from './config.js';
 
 const root    = document.querySelector('#play-root');
@@ -69,7 +69,7 @@ let remoteIrId = '';
 let remoteChar = CHAR_PINK;
 
 let channel = null;
-let helloInterval = null; // NEW: Keeps pinging until peer is found
+let helloInterval = null;
 let selfName = '';
 let roomCode = '';
 let isHost = false;
@@ -172,6 +172,8 @@ const slotEls = [
   { el: document.querySelector('#slot0'), avatar: document.querySelector('#slotAvatar0'), name: document.querySelector('#slotName0'), ready: document.querySelector('#slotReady0') },
   { el: document.querySelector('#slot1'), avatar: document.querySelector('#slotAvatar1'), name: document.querySelector('#slotName1'), ready: document.querySelector('#slotReady1') }
 ];
+
+function oppositeOf(ch) { return ch.id === 'blue' ? CHAR_PINK : CHAR_BLUE; }
 
 playBtn.onclick = () => showScreen('characterScreen');
 joinMenuBtn.onclick = () => showScreen('joinScreen');
@@ -560,27 +562,38 @@ function renderRoom() {
 async function attachChannel(code) {
   channel = new Net.RoomChannel(code, IR_USER.userId, selfName);
   
-  // STOP the ping loop once we see the peer
-  const stopPing = () => { if (helloInterval) { clearInterval(helloInterval); helloInterval = null; } };
+  if (helloInterval) clearInterval(helloInterval);
+
+  // Keep pinging hello every 1.5 seconds until we see the peer
+  helloInterval = setInterval(() => {
+    if (remoteVisible) {
+      clearInterval(helloInterval);
+      return;
+    }
+    channel.send('hello', { name: selfName, irId: IR_USER.irId, char: myCharacter.id, isHost });
+  }, 1500);
 
   channel.on('hello', () => { 
     channel.send('peer', { name: selfName, irId: IR_USER.irId, char: myCharacter.id, isHost }); 
   });
   
   channel.on('peer', ({ name, irId, char, isHost: peerIsHost }) => {
-    if (remoteVisible) return; // Already found them
+    if (remoteVisible) return; 
     
     remoteName = name || 'Peer'; remoteIrId = irId || '';
+    
     if (peerIsHost) {
       const hostChar = CHARACTERS.find(c => c.id === char) || CHAR_BLUE;
       myCharacter = oppositeOf(hostChar); applyMyCharacter(); remoteChar = hostChar;
     } else { 
       remoteChar = CHARACTERS.find(c => c.id === char) || CHAR_PINK; 
     }
-    remoteVisible = true; applyRemoteCharacter(); renderRoom();
-    stopPing();
     
-    // Reply back so they find us too
+    remoteVisible = true; 
+    if (helloInterval) clearInterval(helloInterval);
+    
+    applyRemoteCharacter(); renderRoom();
+    
     channel.send('peer', { name: selfName, irId: IR_USER.irId, char: myCharacter.id, isHost });
   });
   
@@ -595,7 +608,10 @@ async function attachChannel(code) {
   channel.on('move', ({ x, y, z, ry }) => {
     remoteTarget.x = Number(x) || 0; remoteTarget.y = Number(y) || 0;
     remoteTarget.z = Number(z) || 0; remoteTarget.ry = Number(ry) || 0;
-    if (!remoteVisible) { remoteVisible = true; remotePlayer.group.visible = true; renderRoom(); stopPing(); }
+    if (!remoteVisible) { 
+      remoteVisible = true; remotePlayer.group.visible = true; renderRoom(); 
+      if (helloInterval) clearInterval(helloInterval);
+    }
   });
   
   channel.on('shoot', ({ x, y, z, ry }) => {
@@ -614,11 +630,7 @@ async function attachChannel(code) {
   
   await channel.join();
   
-  // START PINGING until we see the peer
-  helloInterval = setInterval(() => {
-    if (remoteVisible) { clearInterval(helloInterval); return; }
-    channel.send('hello', { name: selfName, irId: IR_USER.irId, char: myCharacter.id, isHost });
-  }, 1000);
+  channel.send('hello', { name: selfName, irId: IR_USER.irId, char: myCharacter.id, isHost });
 }
 
 async function doCreate() {
