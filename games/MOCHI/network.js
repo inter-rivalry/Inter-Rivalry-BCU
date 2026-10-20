@@ -43,14 +43,23 @@ export async function createRoom(userId, irId) {
 export async function findRoom(code) {
   const { data, error } = await supabase
     .from('mochi_rooms')
-    .select('code, host_user_id, host_ir_id')
+    .select('code, host_user_id, host_ir_id, guest_user_id')
     .eq('code', String(code || '').toUpperCase().trim())
     .maybeSingle();
     
-  if (error) return { ok: false, error: error.message };
+  if (error) return { ok: false, error: 'Network error. Please try again.' };
   if (!data) return { ok: false, error: 'not_found' };
   
-  return { ok: true, code: data.code, hostUserId: data.host_user_id, hostIrId: data.host_ir_id };
+  return { ok: true, code: data.code, hostUserId: data.host_user_id, hostIrId: data.host_ir_id, guestUserId: data.guest_user_id };
+}
+
+export async function joinRoomInDb(code, guestUserId, guestIrId) {
+  const { error } = await supabase
+    .from('mochi_rooms')
+    .update({ guest_user_id: guestUserId, guest_ir_id: guestIrId })
+    .eq('code', code);
+  if (error) return { ok: false, error: error.message };
+  return { ok: true };
 }
 
 export async function deleteRoom(code) {
@@ -71,16 +80,10 @@ export async function loadMatchHistory(irId, limit = 10) {
 export async function saveMatch(entry) {
   const won = Number(entry.scoreSelf) > Number(entry.scoreOpponent);
   await supabase.from('mochi_matches').insert({
-    match_id: entry.matchId,
-    user_id: entry.userId,
-    ir_id: entry.irId,
-    player_name: entry.playerName,
-    character_id: entry.characterId,
-    opponent_ir_id: entry.opponentIrId,
-    opponent_name: entry.opponentName,
-    score_self: entry.scoreSelf,
-    score_opponent: entry.scoreOpponent,
-    won
+    match_id: entry.matchId, user_id: entry.userId, ir_id: entry.irId,
+    player_name: entry.playerName, character_id: entry.characterId,
+    opponent_ir_id: entry.opponentIrId, opponent_name: entry.opponentName,
+    score_self: entry.scoreSelf, score_opponent: entry.scoreOpponent, won
   });
 }
 
