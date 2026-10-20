@@ -653,35 +653,24 @@ async function attachChannel(code) {
   await channel.join();
 }
 
-// YOUR EXACT DO CREATE AND DO JOIN CODE:
 async function doCreate() {
   createBtn.disabled = true;
   createError.classList.add('hidden');
   createStatus.textContent = 'Creating room...';
 
   try {
-    const res = await Net.createRoom(
-      IR_USER.userId,
-      IR_USER.irId
-    );
-
-    if (!res.ok) {
-      throw new Error(res.error || 'Could not create room.');
-    }
+    const res = await Net.createRoom(IR_USER.userId, IR_USER.irId);
+    if (!res.ok) throw new Error(res.error || 'Could not create room.');
 
     selfName = IR_USER.name;
     roomCode = res.code;
     isHost = true;
     gameMode = selectedGameMode;
 
-    meReady = false;
-    peerReady = false;
-    remoteVisible = false;
-    remoteName = '';
-    remoteIrId = '';
+    meReady = false; peerReady = false; remoteVisible = false;
+    remoteName = ''; remoteIrId = '';
 
     await attachChannel(roomCode);
-
     applyMyCharacter();
     showScreen('roomScreen');
     renderRoom();
@@ -689,8 +678,7 @@ async function doCreate() {
     createStatus.textContent = 'Room created successfully!';
   } catch (error) {
     console.error('MOCHI create-room error:', error);
-    createError.textContent =
-      error.message || 'Could not create room. Please try again.';
+    createError.textContent = error.message || 'Could not create room.';
     createError.classList.remove('hidden');
     createStatus.textContent = 'Room creation failed.';
   } finally {
@@ -704,9 +692,7 @@ async function doJoin() {
   joinStatus.textContent = 'Finding room...';
 
   try {
-    const code = String(codeInput.value || '')
-      .trim()
-      .toUpperCase();
+    const code = String(codeInput.value || '').trim().toUpperCase();
 
     if (!/^[ABCDEFGHJKLMNPQRSTUVWXYZ23456789]{5}$/.test(code)) {
       throw new Error('Enter the complete 5-character room code.');
@@ -715,14 +701,9 @@ async function doJoin() {
     const found = await Net.findRoom(code);
 
     if (!found.ok) {
-      throw new Error(
-        found.error === 'not_found'
-          ? 'Room not found. Check the code with your friend.'
-          : found.error || 'Could not find the room.'
-      );
+      throw new Error(found.error === 'not_found' ? 'Room not found. Check the code with your friend.' : found.error || 'Could not find the room.');
     }
 
-    // Prevent accidentally treating the room creator as the joining player.
     if (found.hostUserId === IR_USER.userId) {
       throw new Error('You created this room. Use another account to join it.');
     }
@@ -731,14 +712,10 @@ async function doJoin() {
     roomCode = found.code;
     isHost = false;
 
-    meReady = false;
-    peerReady = false;
-    remoteVisible = false;
-    remoteName = '';
-    remoteIrId = '';
+    meReady = false; peerReady = false; remoteVisible = false;
+    remoteName = ''; remoteIrId = '';
 
     await attachChannel(roomCode);
-
     applyMyCharacter();
     showScreen('roomScreen');
     renderRoom();
@@ -746,8 +723,7 @@ async function doJoin() {
     joinStatus.textContent = 'Joined room successfully!';
   } catch (error) {
     console.error('MOCHI join-room error:', error);
-    joinError.textContent =
-      error.message || 'Could not join room. Please try again.';
+    joinError.textContent = error.message || 'Could not join room.';
     joinError.classList.remove('hidden');
     joinStatus.textContent = 'Could not join room.';
   } finally {
