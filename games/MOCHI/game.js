@@ -41,17 +41,14 @@ async function boot() {
   const user = await Net.getIRUser();
   if (!user.ok) {
     showScreen('loginScreen');
-    loading.classList.add('gone');
-    setTimeout(() => loading.remove(), 400);
-    return;
+    return false;
   }
   IR_USER = user;
   const badge = document.querySelector('#irBadge');
   badge.textContent = `${user.irId} · ${user.name}`;
   badge.classList.add('linked');
   showScreen('mainMenu');
-  loading.classList.add('gone');
-  setTimeout(() => loading.remove(), 400);
+  return true;
 }
 
 /* ============================================================
@@ -554,10 +551,7 @@ function startMatch() {
   totalScoreLocal = 0;
   totalScoreRemote = 0;
   updateScoreUI();
-  
-  if (isHost) {
-    triggerNextRound();
-  }
+  if (isHost) triggerNextRound();
 }
 
 function triggerNextRound() {
@@ -566,7 +560,6 @@ function triggerNextRound() {
     endMatch(totalScoreLocal, totalScoreRemote);
     return;
   }
-  
   const randomEvent = ALL_EVENTS[Math.floor(Math.random() * ALL_EVENTS.length)];
   channel.send('event_start', { event: randomEvent, mode: gameMode, round: currentRound });
   startRound(randomEvent, gameMode, currentRound);
@@ -626,11 +619,8 @@ function startRound(eventId, mode, roundNum) {
     if (isHost) localPlayer.group.visible = false;
     else remotePlayer.group.visible = false;
   }
-  if (eventId === 'KISS') {
-    shootBtnEl.style.display = 'flex';
-  } else {
-    shootBtnEl.style.display = 'none';
-  }
+  if (eventId === 'KISS') shootBtnEl.style.display = 'flex';
+  else shootBtnEl.style.display = 'none';
 
   projectiles.forEach(p => scene.remove(p.mesh));
   projectiles.length = 0;
@@ -665,20 +655,12 @@ function endRound() {
   clearInterval(eventTimerInterval);
   eventTimer.classList.add('hidden');
   shootBtnEl.style.display = 'none';
-  
   if (isHost) {
-    // Host determines winner
     if (scoreLocal > scoreRemote) totalScoreLocal++;
     else if (scoreRemote > scoreLocal) totalScoreRemote++;
-    
     channel.send('round_end', { sLocal: scoreLocal, sRemote: scoreRemote });
     updateScoreUI();
-    
-    // Wait 3 seconds, then go to next round
-    setTimeout(() => {
-      currentRound++;
-      triggerNextRound();
-    }, 3000);
+    setTimeout(() => { currentRound++; triggerNextRound(); }, 3000);
   } else {
     toast("Round over! Waiting for host...");
   }
@@ -690,7 +672,6 @@ function endMatch(finalLocal, finalRemote) {
   gameTopbar.classList.add('hidden');
   gameBottomHud.classList.add('hidden');
   currentEvent = 'NONE';
-  
   saveMatchToHistory(finalLocal, finalRemote);
   
   resName0.textContent = selfName;
@@ -710,7 +691,7 @@ function endMatch(finalLocal, finalRemote) {
 async function saveMatchToHistory(finalLocal, finalRemote) {
   const matchId = 'mm_' + Date.now();
   await Net.saveMatch({
-    matchId: matchId, userId: IR_USER.userId, irId: IR_USER.irId,
+    matchId, userId: IR_USER.userId, irId: IR_USER.irId,
     playerName: selfName, characterId: myCharacter.id,
     opponentIrId: remoteIrId, opponentName: remoteName,
     scoreSelf: finalLocal, scoreOpponent: finalRemote
@@ -789,24 +770,15 @@ async function attachChannel(code) {
   });
 
   channel.on('ready', ({ ready }) => { peerReady = !!ready; renderRoom(); });
-  
-  channel.on('event_start', ({ event, mode, round }) => {
-    startCountdownThenMatch(() => startRound(event, mode, round));
-  });
-
+  channel.on('event_start', ({ event, mode, round }) => startCountdownThenMatch(() => startRound(event, mode, round)));
   channel.on('round_end', ({ sLocal, sRemote }) => {
-    // Peer is host. We are guest. So their sLocal = our sRemote.
     if (sLocal > sRemote) totalScoreRemote++;
     else if (sRemote > sLocal) totalScoreLocal++;
     updateScoreUI();
     toast("ROUND OVER! 🍡");
   });
-
-  channel.on('match_end', ({ totalLocal, totalRemote }) => {
-    // Peer is host. We are guest.
-    endMatch(totalRemote, totalLocal);
-  });
-
+  channel.on('match_end', ({ totalLocal, totalRemote }) => endMatch(totalRemote, totalLocal));
+  
   channel.on('move', ({ x, y, z, ry }) => {
     remoteTarget.x = Number(x) || 0;
     remoteTarget.y = Number(y) || 0;
@@ -824,7 +796,7 @@ async function attachChannel(code) {
     heart.position.set(x, y, z);
     scene.add(heart);
     const dir = new THREE.Vector3(Math.sin(ry), 0, Math.cos(ry));
-    projectiles.push({ mesh: heart, x: x, y: y, z: z, vx: dir.x * 15, vz: dir.z * 15, isLocal: false });
+    projectiles.push({ mesh: heart, x, y, z, vx: dir.x * 15, vz: dir.z * 15, isLocal: false });
     SFX.kiss();
   });
 
@@ -837,10 +809,7 @@ async function attachChannel(code) {
     camera.position.y += (Math.random() - 0.5) * 1.0;
   });
 
-  channel.on('collect', () => {
-    scoreRemote++;
-  });
-
+  channel.on('collect', () => { scoreRemote++; });
   await channel.join();
 }
 
@@ -859,27 +828,12 @@ async function doJoin() {
   joinError.classList.add('hidden');
   const code = (codeInput.value || '').toUpperCase().trim();
   if (code.length < 4) return;
-  
   const found = await Net.findRoom(code);
-  if (!found.ok) { 
-    joinError.textContent = 'Room not found.'; 
-    joinError.classList.remove('hidden'); 
-    return; 
-  }
-  
-  selfName = IR_USER.name; 
-  roomCode = found.code; 
-  isHost = false; 
-  
+  if (!found.ok) { joinError.textContent = 'Room not found.'; joinError.classList.remove('hidden'); return; }
+  selfName = IR_USER.name; roomCode = found.code; isHost = false; 
   try {
-    await attachChannel(roomCode); 
-    applyMyCharacter(); 
-    showScreen('roomScreen'); 
-    renderRoom();
-  } catch (e) { 
-    joinError.textContent = 'Connection failed.'; 
-    joinError.classList.remove('hidden'); 
-  }
+    await attachChannel(roomCode); applyMyCharacter(); showScreen('roomScreen'); renderRoom();
+  } catch (e) { joinError.textContent = 'Connection failed.'; joinError.classList.remove('hidden'); }
 }
 
 /* ============================================================
@@ -899,17 +853,13 @@ async function startCountdownThenMatch(onComplete) {
   onComplete();
 }
 
-startBtn.onclick = () => {
-  if (!isHost) return;
-  startMatch();
-};
+startBtn.onclick = () => { if (!isHost) return; startMatch(); };
 
 /* ============================================================
    UPDATE LOOP
    ============================================================ */
 function updateLocalPlayer(dt) {
   if (!inMatch) return;
-
   let f = 0, s = 0;
   if (keys.has(settings.keys.up)) f += 1;
   if (keys.has(settings.keys.down)) f -= 1;
@@ -961,11 +911,8 @@ function updateLocalPlayer(dt) {
   localPlayer.group.position.set(local.x, local.y, local.z);
   localPlayer.group.rotation.y = local.ry;
 
-  if (currentEvent === 'PENGUIN') {
-    localPlayer.group.rotation.z = Math.sin(performance.now() * 0.01) * 0.2;
-  } else {
-    localPlayer.group.rotation.z = 0;
-  }
+  if (currentEvent === 'PENGUIN') localPlayer.group.rotation.z = Math.sin(performance.now() * 0.01) * 0.2;
+  else localPlayer.group.rotation.z = 0;
 
   if (gameMode === 'missions') {
     for (let i = sparklesList.length - 1; i >= 0; i--) {
@@ -994,36 +941,25 @@ function updateRemotePlayer(dt) {
   remotePlayer.group.position.set(remote.x, remoteTarget.y, remote.z);
   remotePlayer.group.rotation.y = remoteTarget.ry;
   
-  if (currentEvent === 'PENGUIN') {
-    remotePlayer.group.rotation.z = Math.sin(performance.now() * 0.01) * 0.2;
-  } else {
-    remotePlayer.group.rotation.z = 0;
-  }
+  if (currentEvent === 'PENGUIN') remotePlayer.group.rotation.z = Math.sin(performance.now() * 0.01) * 0.2;
+  else remotePlayer.group.rotation.z = 0;
 
   sparkles.children.forEach(s => { s.rotation.y += dt * 3; s.rotation.x += dt * 2; });
 
   for (let i = projectiles.length - 1; i >= 0; i--) {
     const p = projectiles[i];
-    p.x += p.vx * dt;
-    p.z += p.vz * dt;
+    p.x += p.vx * dt; p.z += p.vz * dt;
     p.mesh.position.set(p.x, p.y, p.z);
     p.mesh.rotation.y += dt * 5;
 
     if (p.isLocal && remoteVisible) {
       const dist = Math.hypot(p.x - remote.x, p.z - remote.z);
       if (dist < 1.0) {
-        scene.remove(p.mesh);
-        projectiles.splice(i, 1);
-        channel.send('hit', {});
-        toast("HIT! 💋");
-        continue;
+        scene.remove(p.mesh); projectiles.splice(i, 1);
+        channel.send('hit', {}); toast("HIT! 💋"); continue;
       }
     }
-    
-    if (Math.abs(p.x) > 15 || Math.abs(p.z) > 15) {
-      scene.remove(p.mesh);
-      projectiles.splice(i, 1);
-    }
+    if (Math.abs(p.x) > 15 || Math.abs(p.z) > 15) { scene.remove(p.mesh); projectiles.splice(i, 1); }
   }
 }
 
@@ -1066,8 +1002,7 @@ window.addEventListener('pointerdown', requestLandscape, { once: true });
 function checkRespawn() {
   if (local.y < -5) {
     local.x = -3; local.y = 0; local.z = 3; local.vy = 0;
-    SFX.splat();
-    toast("Whoops! Respawned! 🍡");
+    SFX.splat(); toast("Whoops! Respawned! 🍡");
   }
 }
 
@@ -1105,11 +1040,8 @@ readyBtn.onclick = () => { meReady = !meReady; channel?.send('ready', { ready: m
 copyCodeBtn.onclick = async () => { try { await navigator.clipboard.writeText(roomCode); toast('Copied!'); } catch { toast(roomCode); } };
 
 rematchBtn.onclick = () => {
-  if (isHost) {
-    startMatch();
-  } else {
-    toast("Waiting for host to rematch...");
-  }
+  if (isHost) startMatch();
+  else toast("Waiting for host to rematch...");
 };
 resultsLeaveBtn.onclick = () => {
   showScreen('roomScreen');
@@ -1117,15 +1049,27 @@ resultsLeaveBtn.onclick = () => {
   renderRoom();
 };
 
+/* ============================================================
+   MAIN BOOT SEQUENCE (LOADING FIX)
+   ============================================================ */
 (async function main() {
-  await boot();
-  if (IR_USER) {
+  // 1. Wait for login/auth to finish
+  const loggedIn = await boot();
+  
+  if (loggedIn) {
+    // 2. Load settings and setup character
     SETTINGS_KEY = 'mochi_settings_' + IR_USER.irId;
     settings = loadSettings();
     buildCharGrid();
     applyMyCharacter();
     applyButtonLayout();
+    
+    // 3. Start the 3D loop
+    animate();
+    setInterval(checkRespawn, 500); 
   }
-  animate();
-  setInterval(checkRespawn, 500); 
+  
+  // 4. ONLY NOW hide the loading screen
+  loading.classList.add('gone');
+  setTimeout(() => loading.remove(), 400);
 })();
