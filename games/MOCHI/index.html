@@ -40,7 +40,7 @@
         <div class="ir-badge" id="irBadge">…</div>
       </div>
       <div class="menu-actions">
-        <button id="playBtn" class="primary-button big">PLAY</button>
+        <button id="playBtn" class="primary-button big">CREATE ROOM</button>
         <button id="joinMenuBtn" class="secondary-button big">JOIN ROOM</button>
         <div class="menu-row">
           <button id="settingsBtn" class="ghost-button">⚙ SETTINGS</button>
@@ -48,16 +48,17 @@
         </div>
         <button id="historyBtn" class="ghost-button" style="width:100%">📜 MATCH HISTORY</button>
       </div>
-      <div class="menu-footer">v0.6 · Phase C</div>
+      <div class="menu-footer">v0.7 · Phase C</div>
     </div>
   </div>
 
-  <!-- CHARACTER SELECT -->
+  <!-- CHARACTER SELECT (host only) -->
   <div id="characterScreen" class="screen hidden">
     <div class="menu-card">
       <button class="back-button" data-back="mainMenu">← BACK</button>
-      <h2 class="screen-title">PICK YOUR MOCHI</h2>
-      <div class="char-grid" id="charGrid"></div>
+      <h2 class="screen-title">PICK YOUR COLOR</h2>
+      <p class="menu-sub" style="margin-top:0">The other player will automatically get the opposite color.</p>
+      <div class="char-grid two-col" id="charGrid"></div>
       <button id="charContinueBtn" class="primary-button big">CONTINUE</button>
     </div>
   </div>
@@ -79,7 +80,7 @@
     <div class="menu-card">
       <button class="back-button" data-back="mainMenu">← BACK</button>
       <h2 class="screen-title">JOIN ROOM</h2>
-      <p class="menu-sub">Ask your friend for the 5-letter code.</p>
+      <p class="menu-sub">Ask your friend for the 5-letter code. You'll get the opposite color from the host.</p>
       <input id="codeInput" maxlength="6" placeholder="ROOM CODE" autocomplete="off" class="code-input" />
       <button id="joinBtn" class="primary-button big">JOIN</button>
       <div id="joinError" class="lobby-error hidden"></div>
@@ -184,7 +185,7 @@
       <p><b>Move:</b> drag the joystick (mobile) or use your configured keys</p>
       <p><b>Jump:</b> tap JUMP or your configured key</p>
       <p><b>Camera:</b> drag anywhere on the arena</p>
-      <p><b>Multiplayer:</b> Create a room, share the 5-letter code, both press READY</p>
+      <p><b>Colors:</b> Host picks blue or pink. The other player automatically gets the other color.</p>
     </div>
   </div>
 
