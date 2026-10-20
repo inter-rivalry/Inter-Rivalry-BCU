@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
   <meta name="theme-color" content="#17152f">
   <title>MOCHI — Chaos Button</title>
-  <link rel="stylesheet" href="style.css?v=99">
+  <link rel="stylesheet" href="style.css?v=1000">
   <link rel="manifest" href="manifest.json">
 </head>
 <body>
@@ -67,7 +67,7 @@
         </div>
         <button id="historyBtn" class="ghost-button" style="width:100%">📜 MATCH HISTORY</button>
       </div>
-      <div class="menu-footer">v1.2 · Phase D</div>
+      <div class="menu-footer">v1.3 · Phase D</div>
     </div>
   </div>
 
@@ -209,7 +209,7 @@
     <div class="layout-editor-top">
       <div>
         <strong>EDIT CONTROL LAYOUT</strong>
-        <div class="layout-editor-hint">Drag the joystick and jump button. Tap DONE when finished.</div>
+        <div class="layout-editor-hint">Drag the controls where you want them. Tap DONE when finished.</div>
       </div>
       <button id="layoutDoneBtn" class="primary-button">DONE</button>
     </div>
@@ -223,6 +223,13 @@
         <div class="draggable-jump">⬆</div>
         <div class="draggable-label">JUMP</div>
       </div>
+      
+      <!-- NEW SHOOT BUTTON FOR LAYOUT EDITOR -->
+      <div class="draggable-control" id="editShoot">
+        <div class="draggable-shoot">💋</div>
+        <div class="draggable-label">SHOOT</div>
+      </div>
+      
     </div>
   </div>
 
@@ -234,6 +241,7 @@
       <p><b>Move:</b> drag the joystick</p>
       <p><b>Jump:</b> tap JUMP</p>
       <p><b>Camera:</b> drag anywhere on the arena</p>
+      <p><b>Chaos:</b> Survive the events and don't break the rope!</p>
     </div>
   </div>
 
@@ -275,7 +283,7 @@
   <div id="toast" class="toast hidden"></div>
 </div>
 
-<!-- NO SERVICE WORKER HERE ANYMORE -->
-<script type="module" src="game.js?v=999"></script>
+<!-- NO SERVICE WORKER HERE, JUST THE SCRIPT WITH CACHE BUSTER -->
+<script type="module" src="game.js?v=1000"></script>
 </body>
 </html>
