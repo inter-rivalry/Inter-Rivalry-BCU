@@ -78,15 +78,18 @@ function saveSettings() {
 }
 
 /* ============================================================
-   CHARACTERS
+   CHARACTERS — ONLY TWO
    ============================================================ */
-const CHARACTERS = [
-  { id: 'blue',   name: 'BLUE',   body: '#6ec6ff', accent: '#a99aff', emoji: '💙' },
-  { id: 'pink',   name: 'PINK',   body: '#ff8cc8', accent: '#a99aff', emoji: '🌸' },
-  { id: 'purple', name: 'PLUM',   body: '#a99aff', accent: '#78e9d2', emoji: '🍇' },
-  { id: 'mint',   name: 'MINT',   body: '#78e9d2', accent: '#ffe277', emoji: '🌿' }
-];
-let myCharacter = CHARACTERS[0];
+const CHAR_BLUE = { id: 'blue', name: 'BLUE', body: '#6ec6ff', accent: '#a99aff', emoji: '💙' };
+const CHAR_PINK = { id: 'pink', name: 'PINK', body: '#ff8cc8', accent: '#a99aff', emoji: '🌸' };
+const CHARACTERS = [CHAR_BLUE, CHAR_PINK];
+
+let myCharacter = CHAR_BLUE;      // default; overwritten by selection
+let chosenForHost = CHAR_BLUE;    // what the host picked in character select
+
+function oppositeOf(ch) {
+  return ch.id === 'blue' ? CHAR_PINK : CHAR_BLUE;
+}
 
 /* ============================================================
    STATE
@@ -97,7 +100,7 @@ let remoteTarget = { x: 3, y: 0, z: -3, ry: Math.PI };
 let remoteVisible = false;
 let remoteName = '';
 let remoteIrId = '';
-let remoteChar = CHARACTERS[1];
+let remoteChar = CHAR_PINK;
 
 let channel = null;
 let selfName = '';
@@ -173,8 +176,8 @@ const slotEls = [
 /* ============================================================
    NAV
    ============================================================ */
-playBtn.onclick         = () => showScreen('characterScreen');
-joinMenuBtn.onclick     = () => showScreen('joinScreen');
+playBtn.onclick         = () => showScreen('characterScreen');   // CREATE flow: pick color first
+joinMenuBtn.onclick     = () => showScreen('joinScreen');        // JOIN flow: no color pick
 settingsBtn.onclick     = () => { openSettings(); showScreen('settingsScreen'); };
 helpMenuBtn.onclick     = () => showScreen('helpMenuScreen');
 historyBtn.onclick      = () => { loadHistory(); showScreen('historyScreen'); };
@@ -182,27 +185,30 @@ roomSettingsBtn.onclick = () => { openSettings(); showScreen('settingsScreen'); 
 settingsBackBtn.onclick = () => showScreen(roomCode && !inMatch ? 'roomScreen' : 'mainMenu');
 
 /* ============================================================
-   CHARACTER SELECT
+   CHARACTER SELECT (host only)
    ============================================================ */
 function buildCharGrid() {
   charGrid.innerHTML = '';
   for (const ch of CHARACTERS) {
     const tile = document.createElement('div');
-    tile.className = 'char-tile' + (ch.id === myCharacter.id ? ' selected' : '');
+    tile.className = 'char-tile' + (ch.id === chosenForHost.id ? ' selected' : '');
     tile.innerHTML = `
       <div class="char-preview" style="background:linear-gradient(135deg,${ch.body},${ch.accent})"></div>
       <div class="char-name">${ch.name}</div>
     `;
     tile.onclick = () => {
-      myCharacter = ch;
+      chosenForHost = ch;
       document.querySelectorAll('.char-tile').forEach(t => t.classList.remove('selected'));
       tile.classList.add('selected');
-      applyMyCharacter();
     };
     charGrid.appendChild(tile);
   }
 }
-charContinueBtn.onclick = () => showScreen('createScreen');
+charContinueBtn.onclick = () => {
+  myCharacter = chosenForHost;
+  applyMyCharacter();
+  showScreen('createScreen');
+};
 
 /* ============================================================
    SETTINGS UI
@@ -327,7 +333,7 @@ setupDrag(editJoystick, 'joystickX', 'joystickY');
 setupDrag(editJump, 'jumpX', 'jumpY');
 
 /* ============================================================
-   ON-SCREEN CONTROLS — created ONCE at boot, always available
+   ON-SCREEN CONTROLS
    ============================================================ */
 const joystickEl = document.createElement('div');
 joystickEl.className = 'game-joystick';
@@ -343,15 +349,8 @@ jumpBtnEl.type = 'button';
 jumpBtnEl.innerHTML = '<span class="jump-arrow">⬆</span><span class="jump-text">JUMP</span>';
 root.appendChild(jumpBtnEl);
 
-function showControls() {
-  joystickEl.style.display = 'flex';
-  jumpBtnEl.style.display = 'flex';
-}
-function hideControls() {
-  joystickEl.style.display = 'none';
-  jumpBtnEl.style.display = 'none';
-}
-// Start hidden — will be shown when match begins
+function showControls() { joystickEl.style.display = 'flex'; jumpBtnEl.style.display = 'flex'; }
+function hideControls() { joystickEl.style.display = 'none'; jumpBtnEl.style.display = 'none'; }
 hideControls();
 
 function applyButtonLayout() {
@@ -493,8 +492,8 @@ function makePlayer(bodyColor, accentColor, x, z) {
   return { group: g, body, bobBase: 0.92 };
 }
 
-const localPlayer  = makePlayer('#6ec6ff','#a99aff', -3,  3);
-const remotePlayer = makePlayer('#ff8cc8','#a99aff',  3, -3);
+const localPlayer  = makePlayer(CHAR_BLUE.body, CHAR_BLUE.accent, -3,  3);
+const remotePlayer = makePlayer(CHAR_PINK.body, CHAR_PINK.accent,  3, -3);
 remotePlayer.group.visible = false;
 
 const sparkles = new THREE.Group(); scene.add(sparkles);
@@ -509,11 +508,15 @@ function applyMyCharacter() {
   scene.remove(localPlayer.group);
   const p = makePlayer(myCharacter.body, myCharacter.accent, local.x, local.z);
   Object.assign(localPlayer, p);
+  localPlayer.group.position.set(local.x, local.y, local.z);
+  localPlayer.group.rotation.y = local.ry;
 }
 function applyRemoteCharacter() {
   scene.remove(remotePlayer.group);
   const p = makePlayer(remoteChar.body, remoteChar.accent, remote.x, remote.z);
   Object.assign(remotePlayer, p);
+  remotePlayer.group.position.set(remote.x, remote.y, remote.z);
+  remotePlayer.group.rotation.y = remote.ry;
   remotePlayer.group.visible = remoteVisible;
 }
 
@@ -621,18 +624,41 @@ async function attachChannel(code) {
   channel = new Net.RoomChannel(code, IR_USER.userId, selfName);
 
   channel.on('hello', () => {
-    channel.send('peer', { name: selfName, irId: IR_USER.irId, char: myCharacter.id });
+    channel.send('peer', {
+      name: selfName,
+      irId: IR_USER.irId,
+      char: myCharacter.id,
+      isHost
+    });
   });
 
-  channel.on('peer', ({ name, irId, char }) => {
+  channel.on('peer', ({ name, irId, char, isHost: peerIsHost }) => {
     remoteName = name || 'Peer';
     remoteIrId = irId || '';
-    remoteChar = CHARACTERS.find(c => c.id === char) || CHARACTERS[1];
+
+    // COLOR RULE: host's choice wins. Peer gets opposite.
+    if (peerIsHost) {
+      // We're the guest. Host picked `char`. Take the opposite.
+      const hostChar = CHARACTERS.find(c => c.id === char) || CHAR_BLUE;
+      myCharacter = oppositeOf(hostChar);
+      applyMyCharacter();
+      remoteChar = hostChar;
+    } else {
+      // We're the host. Peer sent back our own choice.
+      remoteChar = CHARACTERS.find(c => c.id === char) || CHAR_PINK;
+    }
+
     remoteVisible = true;
     applyRemoteCharacter();
     remotePlayer.group.visible = true;
     renderRoom();
-    channel.send('peer', { name: selfName, irId: IR_USER.irId, char: myCharacter.id });
+    // Reply so a late joiner discovers us too
+    channel.send('peer', {
+      name: selfName,
+      irId: IR_USER.irId,
+      char: myCharacter.id,
+      isHost
+    });
   });
 
   channel.on('ready', ({ ready }) => { peerReady = !!ready; renderRoom(); });
@@ -707,9 +733,12 @@ async function doJoin() {
   meReady = false; peerReady = false; remoteVisible = false; inMatch = false;
   currentMatchId = null;
 
+  // Guests start with the opposite-of-blue by default — updated as soon as host's peer message arrives
+  myCharacter = CHAR_PINK;
+  applyMyCharacter();
+
   try {
     await attachChannel(roomCode);
-    applyMyCharacter();
     showScreen('roomScreen');
     renderRoom();
   } catch (e) {
@@ -765,7 +794,6 @@ function beginMatch() {
   gameTopbar.classList.remove('hidden');
   gameBottomHud.classList.remove('hidden');
 
-  // SHOW controls — this is the fix
   applyButtonLayout();
   showControls();
 
