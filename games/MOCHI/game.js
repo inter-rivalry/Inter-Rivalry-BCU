@@ -7,16 +7,11 @@ const canvas  = document.querySelector('#game');
 const loading = document.querySelector('#loading');
 
 const screens = {
-  loginScreen:     document.querySelector('#loginScreen'),
-  mainMenu:        document.querySelector('#mainMenu'),
-  characterScreen: document.querySelector('#characterScreen'),
-  createScreen:    document.querySelector('#createScreen'),
-  joinScreen:      document.querySelector('#joinScreen'),
-  roomScreen:      document.querySelector('#roomScreen'),
-  resultsScreen:   document.querySelector('#resultsScreen'),
-  settingsScreen:  document.querySelector('#settingsScreen'),
-  helpMenuScreen:  document.querySelector('#helpMenuScreen'),
-  historyScreen:   document.querySelector('#historyScreen')
+  loginScreen: document.querySelector('#loginScreen'), mainMenu: document.querySelector('#mainMenu'),
+  characterScreen: document.querySelector('#characterScreen'), createScreen: document.querySelector('#createScreen'),
+  joinScreen: document.querySelector('#joinScreen'), roomScreen: document.querySelector('#roomScreen'),
+  resultsScreen: document.querySelector('#resultsScreen'), settingsScreen: document.querySelector('#settingsScreen'),
+  helpMenuScreen: document.querySelector('#helpMenuScreen'), historyScreen: document.querySelector('#historyScreen')
 };
 
 function showScreen(id) {
@@ -24,37 +19,26 @@ function showScreen(id) {
     if (el) el.classList.toggle('hidden', key !== id);
   }
 }
-document.querySelectorAll('[data-back]').forEach(btn => {
-  btn.onclick = () => showScreen(btn.dataset.back);
-});
+document.querySelectorAll('[data-back]').forEach(btn => { btn.onclick = () => showScreen(btn.dataset.back); });
 document.querySelector('#loginLink').href = LOGIN_URL;
 
 let IR_USER = null;
-
 async function boot() {
   try {
     const user = await Net.getIRUser();
-    if (!user.ok) {
-      showScreen('loginScreen');
-      return false;
-    }
+    if (!user.ok) { showScreen('loginScreen'); return false; }
     IR_USER = user;
     const badge = document.querySelector('#irBadge');
     badge.textContent = `${user.irId} · ${user.name}`;
     badge.classList.add('linked');
     showScreen('mainMenu');
     return true;
-  } catch (err) {
-    showScreen('loginScreen');
-    return false;
-  }
+  } catch (err) { showScreen('loginScreen'); return false; }
 }
 
 const DEFAULTS = {
-  sensitivity: 10, cameraDistance: 9,
-  joystickX: 20, joystickY: 20, jumpX: 20, jumpY: 20,
-  buttonSize: 100, buttonOpacity: 80,
-  keys: { up: 'w', down: 's', left: 'a', right: 'd', jump: ' ' }
+  sensitivity: 10, cameraDistance: 9, joystickX: 20, joystickY: 20, jumpX: 20, jumpY: 20,
+  buttonSize: 100, buttonOpacity: 80, keys: { up: 'w', down: 's', left: 'a', right: 'd', jump: ' ' }
 };
 let settings = structuredClone(DEFAULTS);
 let SETTINGS_KEY = 'mochi_settings_guest';
@@ -66,9 +50,7 @@ function loadSettings() {
     return { ...DEFAULTS, ...saved, keys: { ...DEFAULTS.keys, ...(saved.keys || {}) } };
   } catch { return structuredClone(DEFAULTS); }
 }
-function saveSettings() {
-  try { localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings)); } catch {}
-}
+function saveSettings() { try { localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings)); } catch {} }
 
 const CHAR_BLUE = { id: 'blue', name: 'BLUE', body: '#6ec6ff', accent: '#a99aff', emoji: '💙' };
 const CHAR_PINK = { id: 'pink', name: 'PINK', body: '#ff8cc8', accent: '#a99aff', emoji: '🌸' };
@@ -113,68 +95,68 @@ const sparklesList = [];
 const projectiles = [];
 const ALL_EVENTS = ['MAGNETIC', 'PENGUIN', 'WOBBLY', 'INVISIBLE', 'KISS'];
 
-const playBtn         = document.querySelector('#playBtn');
-const joinMenuBtn     = document.querySelector('#joinMenuBtn');
-const settingsBtn     = document.querySelector('#settingsBtn');
-const helpMenuBtn     = document.querySelector('#helpMenuBtn');
-const historyBtn      = document.querySelector('#historyBtn');
-const createBtn       = document.querySelector('#createBtn');
-const joinBtn         = document.querySelector('#joinBtn');
-const codeInput       = document.querySelector('#codeInput');
-const createError     = document.querySelector('#createError');
-const createStatus    = document.querySelector('#createStatus');
-const joinError       = document.querySelector('#joinError');
-const joinStatus      = document.querySelector('#joinStatus');
-const charGrid        = document.querySelector('#charGrid');
+const playBtn = document.querySelector('#playBtn');
+const joinMenuBtn = document.querySelector('#joinMenuBtn');
+const settingsBtn = document.querySelector('#settingsBtn');
+const helpMenuBtn = document.querySelector('#helpMenuBtn');
+const historyBtn = document.querySelector('#historyBtn');
+const createBtn = document.querySelector('#createBtn');
+const joinBtn = document.querySelector('#joinBtn');
+const codeInput = document.querySelector('#codeInput');
+const createError = document.querySelector('#createError');
+const createStatus = document.querySelector('#createStatus');
+const joinError = document.querySelector('#joinError');
+const joinStatus = document.querySelector('#joinStatus');
+const charGrid = document.querySelector('#charGrid');
 const charContinueBtn = document.querySelector('#charContinueBtn');
-const roomCodeText    = document.querySelector('#roomCodeText');
-const copyCodeBtn     = document.querySelector('#copyCodeBtn');
-const leaveRoomBtn    = document.querySelector('#leaveRoomBtn');
-const readyBtn        = document.querySelector('#readyBtn');
-const startBtn        = document.querySelector('#startBtn');
-const roomHint        = document.querySelector('#roomHint');
+const roomCodeText = document.querySelector('#roomCodeText');
+const copyCodeBtn = document.querySelector('#copyCodeBtn');
+const leaveRoomBtn = document.querySelector('#leaveRoomBtn');
+const readyBtn = document.querySelector('#readyBtn');
+const startBtn = document.querySelector('#startBtn');
+const roomHint = document.querySelector('#roomHint');
 const roomSettingsBtn = document.querySelector('#roomSettingsBtn');
 const settingsBackBtn = document.querySelector('#settingsBackBtn');
-const sensSlider      = document.querySelector('#sensSlider');
-const sensVal         = document.querySelector('#sensVal');
-const distSlider      = document.querySelector('#distSlider');
-const distVal         = document.querySelector('#distVal');
-const sizeSlider      = document.querySelector('#sizeSlider');
-const sizeVal         = document.querySelector('#sizeVal');
-const opacitySlider   = document.querySelector('#opacitySlider');
-const opacityVal      = document.querySelector('#opacityVal');
-const layoutEditor    = document.querySelector('#layoutEditor');
-const layoutStage     = document.querySelector('#layoutStage');
-const editJoystick    = document.querySelector('#editJoystick');
-const editJump        = document.querySelector('#editJump');
-const layoutDoneBtn   = document.querySelector('#layoutDoneBtn');
-const openLayoutBtn   = document.querySelector('#openLayoutBtn');
-const resetLayoutBtn  = document.querySelector('#resetLayoutBtn');
-const countdownOverlay= document.querySelector('#countdownOverlay');
+const sensSlider = document.querySelector('#sensSlider');
+const sensVal = document.querySelector('#sensVal');
+const distSlider = document.querySelector('#distSlider');
+const distVal = document.querySelector('#distVal');
+const sizeSlider = document.querySelector('#sizeSlider');
+const sizeVal = document.querySelector('#sizeVal');
+const opacitySlider = document.querySelector('#opacitySlider');
+const opacityVal = document.querySelector('#opacityVal');
+const layoutEditor = document.querySelector('#layoutEditor');
+const layoutStage = document.querySelector('#layoutStage');
+const editJoystick = document.querySelector('#editJoystick');
+const editJump = document.querySelector('#editJump');
+const layoutDoneBtn = document.querySelector('#layoutDoneBtn');
+const openLayoutBtn = document.querySelector('#openLayoutBtn');
+const resetLayoutBtn = document.querySelector('#resetLayoutBtn');
+const countdownOverlay = document.querySelector('#countdownOverlay');
 const countdownNumber = document.querySelector('#countdownNumber');
-const gameTopbar      = document.querySelector('#gameTopbar');
-const gameBottomHud   = document.querySelector('#gameBottomHud');
-const scoreName0      = document.querySelector('#scoreName0');
-const scoreName1      = document.querySelector('#scoreName1');
-const scoreVal0       = document.querySelector('#scoreVal0');
-const scoreVal1       = document.querySelector('#scoreVal1');
-const hudCount        = document.querySelector('#hudCount');
-const eventBanner     = document.querySelector('#eventBanner');
-const eventTitle      = document.querySelector('#eventTitle');
-const eventDesc       = document.querySelector('#eventDesc');
-const eventTimer      = document.querySelector('#eventTimer');
-const resultsScreen   = document.querySelector('#resultsScreen');
-const winnerAnnounce  = document.querySelector('#winnerAnnouncement');
-const resName0        = document.querySelector('#resName0');
-const resName1        = document.querySelector('#resName1');
-const resScore0       = document.querySelector('#resScore0');
-const resScore1       = document.querySelector('#resScore1');
-const resAvatar0      = document.querySelector('#resAvatar0');
-const resAvatar1      = document.querySelector('#resAvatar1');
-const rematchBtn      = document.querySelector('#rematchBtn');
+const gameTopbar = document.querySelector('#gameTopbar');
+const gameBottomHud = document.querySelector('#gameBottomHud');
+const scoreName0 = document.querySelector('#scoreName0');
+const scoreName1 = document.querySelector('#scoreName1');
+const scoreVal0 = document.querySelector('#scoreVal0');
+const scoreVal1 = document.querySelector('#scoreVal1');
+const hudCount = document.querySelector('#hudCount');
+const eventBanner = document.querySelector('#eventBanner');
+const eventTitle = document.querySelector('#eventTitle');
+const eventDesc = document.querySelector('#eventDesc');
+const eventTimer = document.querySelector('#eventTimer');
+const resultsScreen = document.querySelector('#resultsScreen');
+const winnerAnnounce = document.querySelector('#winnerAnnouncement');
+const resName0 = document.querySelector('#resName0');
+const resName1 = document.querySelector('#resName1');
+const resScore0 = document.querySelector('#resScore0');
+const resScore1 = document.querySelector('#resScore1');
+const resAvatar0 = document.querySelector('#resAvatar0');
+const resAvatar1 = document.querySelector('#resAvatar1');
+const rematchBtn = document.querySelector('#rematchBtn');
 const resultsLeaveBtn = document.querySelector('#resultsLeaveBtn');
-const histList        = document.querySelector('#histList');
-const histEmpty       = document.querySelector('#histEmpty');
+const histList = document.querySelector('#histList');
+const histEmpty = document.querySelector('#histEmpty');
 const joystickEl = document.querySelector('#joystickZone');
 const joystickKnob = document.querySelector('#joystickKnob');
 const jumpBtnEl = document.querySelector('#jumpBtnZone');
@@ -190,11 +172,11 @@ const slotEls = [
   { el: document.querySelector('#slot1'), avatar: document.querySelector('#slotAvatar1'), name: document.querySelector('#slotName1'), ready: document.querySelector('#slotReady1') }
 ];
 
-playBtn.onclick         = () => showScreen('characterScreen');
-joinMenuBtn.onclick     = () => showScreen('joinScreen');
-settingsBtn.onclick     = () => { openSettings(); showScreen('settingsScreen'); };
-helpMenuBtn.onclick     = () => showScreen('helpMenuScreen');
-historyBtn.onclick      = () => { loadHistory(); showScreen('historyScreen'); };
+playBtn.onclick = () => showScreen('characterScreen');
+joinMenuBtn.onclick = () => showScreen('joinScreen');
+settingsBtn.onclick = () => { openSettings(); showScreen('settingsScreen'); };
+helpMenuBtn.onclick = () => showScreen('helpMenuScreen');
+historyBtn.onclick = () => { loadHistory(); showScreen('historyScreen'); };
 roomSettingsBtn.onclick = () => { openSettings(); showScreen('settingsScreen'); };
 settingsBackBtn.onclick = () => showScreen(roomCode && !inMatch ? 'roomScreen' : 'mainMenu');
 
@@ -228,22 +210,19 @@ function openSettings() {
   sizeSlider.value = settings.buttonSize; sizeVal.textContent = settings.buttonSize + '%';
   opacitySlider.value = settings.buttonOpacity; opacityVal.textContent = settings.buttonOpacity + '%';
 }
-
-sensSlider.oninput    = () => { settings.sensitivity = +sensSlider.value; sensVal.textContent = sensSlider.value; saveSettings(); };
-distSlider.oninput    = () => { settings.cameraDistance = +distSlider.value; distVal.textContent = distSlider.value; saveSettings(); };
-sizeSlider.oninput    = () => { settings.buttonSize = +sizeSlider.value; sizeVal.textContent = sizeSlider.value + '%'; saveSettings(); applyButtonLayout(); };
+sensSlider.oninput = () => { settings.sensitivity = +sensSlider.value; sensVal.textContent = sensSlider.value; saveSettings(); };
+distSlider.oninput = () => { settings.cameraDistance = +distSlider.value; distVal.textContent = distSlider.value; saveSettings(); };
+sizeSlider.oninput = () => { settings.buttonSize = +sizeSlider.value; sizeVal.textContent = sizeSlider.value + '%'; saveSettings(); applyButtonLayout(); };
 opacitySlider.oninput = () => { settings.buttonOpacity = +opacitySlider.value; opacityVal.textContent = opacitySlider.value + '%'; saveSettings(); applyButtonLayout(); };
 
 function positionEditHandles() {
-  editJoystick.style.left = `${settings.joystickX}%`;
-  editJoystick.style.top  = `${100 - settings.joystickY}%`;
+  editJoystick.style.left = `${settings.joystickX}%`; editJoystick.style.top = `${100 - settings.joystickY}%`;
   editJoystick.style.transform = 'translate(-50%,-50%)';
-  editJump.style.left = `${100 - settings.jumpX}%`;
-  editJump.style.top  = `${100 - settings.jumpY}%`;
+  editJump.style.left = `${100 - settings.jumpX}%`; editJump.style.top = `${100 - settings.jumpY}%`;
   editJump.style.transform = 'translate(-50%,-50%)';
 }
-openLayoutBtn.onclick  = () => { layoutEditor.classList.remove('hidden'); positionEditHandles(); };
-layoutDoneBtn.onclick  = () => { layoutEditor.classList.add('hidden'); applyButtonLayout(); saveSettings(); };
+openLayoutBtn.onclick = () => { layoutEditor.classList.remove('hidden'); positionEditHandles(); };
+layoutDoneBtn.onclick = () => { layoutEditor.classList.add('hidden'); applyButtonLayout(); saveSettings(); };
 
 let draggingEl = null, dragOffset = { x: 0, y: 0 };
 function setupDrag(el, keyX, keyY) {
@@ -264,8 +243,7 @@ function setupDrag(el, keyX, keyY) {
     const cy = e.clientY - dragOffset.y;
     let px = Math.max(6, Math.min(94, ((cx - stage.left) / stage.width) * 100));
     let py = Math.max(6, Math.min(94, ((cy - stage.top) / stage.height) * 100));
-    el.style.left = `${px}%`;
-    el.style.top  = `${py}%`;
+    el.style.left = `${px}%`; el.style.top = `${py}%`;
     settings[keyX] = keyX === 'jumpX' ? (100 - px) : px;
     settings[keyY] = keyY === 'jumpY' ? (100 - py) : (100 - py);
   });
@@ -282,18 +260,12 @@ hideControls();
 function applyButtonLayout() {
   const scale = settings.buttonSize / 100;
   const op = settings.buttonOpacity / 100;
-  joystickEl.style.left = `${settings.joystickX}%`;
-  joystickEl.style.bottom = `${settings.joystickY}%`;
-  joystickEl.style.transform = `translate(-50%, 50%) scale(${scale})`;
-  joystickEl.style.opacity = op;
-  jumpBtnEl.style.right = `${settings.jumpX}%`;
-  jumpBtnEl.style.bottom = `${settings.jumpY}%`;
-  jumpBtnEl.style.transform = `translate(50%, 50%) scale(${scale})`;
-  jumpBtnEl.style.opacity = op;
-  shootBtnEl.style.right = `${settings.jumpX}%`;
-  shootBtnEl.style.bottom = `${settings.jumpY + 25}%`; 
-  shootBtnEl.style.transform = `translate(50%, 50%) scale(${scale})`;
-  shootBtnEl.style.opacity = op;
+  joystickEl.style.left = `${settings.joystickX}%`; joystickEl.style.bottom = `${settings.joystickY}%`;
+  joystickEl.style.transform = `translate(-50%, 50%) scale(${scale})`; joystickEl.style.opacity = op;
+  jumpBtnEl.style.right = `${settings.jumpX}%`; jumpBtnEl.style.bottom = `${settings.jumpY}%`;
+  jumpBtnEl.style.transform = `translate(50%, 50%) scale(${scale})`; jumpBtnEl.style.opacity = op;
+  shootBtnEl.style.right = `${settings.jumpX}%`; shootBtnEl.style.bottom = `${settings.jumpY + 25}%`; 
+  shootBtnEl.style.transform = `translate(50%, 50%) scale(${scale})`; shootBtnEl.style.opacity = op;
 }
 
 let touchId = null, touchOrigin = null, touchDelta = { x: 0, y: 0 };
@@ -303,8 +275,7 @@ joystickEl.addEventListener('pointerdown', e => {
   const r = joystickEl.getBoundingClientRect();
   touchOrigin = { x: r.left + r.width / 2, y: r.top + r.height / 2 };
   joystickEl.setPointerCapture(e.pointerId);
-  joystickEl.classList.add('active');
-  moveJoystick(e);
+  joystickEl.classList.add('active'); moveJoystick(e);
 });
 joystickEl.addEventListener('pointermove', e => { e.preventDefault(); e.stopPropagation(); moveJoystick(e); });
 function moveJoystick(e) {
@@ -317,26 +288,19 @@ function moveJoystick(e) {
 function endJoystick(e) {
   if (touchId === e.pointerId) {
     touchId = null; touchDelta = { x: 0, y: 0 };
-    joystickEl.classList.remove('active');
-    joystickKnob.style.transform = 'translate(0,0)';
+    joystickEl.classList.remove('active'); joystickKnob.style.transform = 'translate(0,0)';
   }
 }
 joystickEl.addEventListener('pointerup', endJoystick);
 joystickEl.addEventListener('pointercancel', endJoystick);
 jumpBtnEl.addEventListener('pointerdown', e => { e.preventDefault(); e.stopPropagation(); jump(); });
-
-shootBtnEl.addEventListener('pointerdown', e => {
-  e.preventDefault(); e.stopPropagation();
-  shootKiss();
-});
+shootBtnEl.addEventListener('pointerdown', e => { e.preventDefault(); e.stopPropagation(); shootKiss(); });
 
 function shootKiss() {
   if (currentEvent !== 'KISS' || !inMatch) return;
   SFX.kiss();
   const heart = new THREE.Mesh(new THREE.SphereGeometry(0.3, 8, 8), new THREE.MeshStandardMaterial({ color: '#ff0066', emissive: '#ff0066' }));
-  heart.scale.set(1, 0.8, 0.4);
-  heart.position.set(local.x, local.y + 1, local.z);
-  scene.add(heart);
+  heart.scale.set(1, 0.8, 0.4); heart.position.set(local.x, local.y + 1, local.z); scene.add(heart);
   const dir = new THREE.Vector3(Math.sin(local.ry), 0, Math.cos(local.ry));
   projectiles.push({ mesh: heart, x: local.x, y: local.y + 1, z: local.z, vx: dir.x * 15, vz: dir.z * 15, isLocal: true });
   channel.send('shoot', { x: local.x, y: local.y + 1, z: local.z, ry: local.ry });
@@ -353,12 +317,9 @@ function playTone(freq, type, dur) {
   osc.start(); osc.stop(audioCtx.currentTime + dur);
 }
 const SFX = {
-  jump: () => playTone(400, 'sine', 0.15),
-  event: () => { playTone(600, 'square', 0.1); setTimeout(() => playTone(800, 'square', 0.2), 100); },
-  collect: () => playTone(1200, 'sine', 0.1),
-  hit: () => playTone(150, 'sawtooth', 0.3),
-  kiss: () => playTone(800, 'triangle', 0.2),
-  splat: () => playTone(100, 'sawtooth', 0.4)
+  jump: () => playTone(400, 'sine', 0.15), event: () => { playTone(600, 'square', 0.1); setTimeout(() => playTone(800, 'square', 0.2), 100); },
+  collect: () => playTone(1200, 'sine', 0.1), hit: () => playTone(150, 'sawtooth', 0.3),
+  kiss: () => playTone(800, 'triangle', 0.2), splat: () => playTone(100, 'sawtooth', 0.4)
 };
 
 const scene = new THREE.Scene();
@@ -366,19 +327,14 @@ scene.background = new THREE.Color('#9edfff');
 scene.fog = new THREE.Fog('#9edfff', 22, 65);
 const camera = new THREE.PerspectiveCamera(58, 1, 0.1, 120);
 const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: 'high-performance' });
-renderer.setPixelRatio(Math.min(devicePixelRatio, 1.7));
-renderer.shadowMap.enabled = true;
-renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-renderer.outputColorSpace = THREE.SRGBColorSpace;
-renderer.toneMapping = THREE.ACESFilmicToneMapping;
-renderer.toneMappingExposure = 1.12;
+renderer.setPixelRatio(Math.min(devicePixelRatio, 1.7)); renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap; renderer.outputColorSpace = THREE.SRGBColorSpace;
+renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.12;
 
 function resize() {
-  const w = root.clientWidth || window.innerWidth;
-  const h = root.clientHeight || window.innerHeight;
+  const w = root.clientWidth || window.innerWidth; const h = root.clientHeight || window.innerHeight;
   camera.aspect = w / h; camera.updateProjectionMatrix();
-  renderer.setPixelRatio(Math.min(devicePixelRatio, 1.7));
-  renderer.setSize(w, h, false);
+  renderer.setPixelRatio(Math.min(devicePixelRatio, 1.7)); renderer.setSize(w, h, false);
 }
 resize();
 if (typeof ResizeObserver !== 'undefined') new ResizeObserver(resize).observe(root);
@@ -386,10 +342,8 @@ window.addEventListener('resize', resize);
 
 scene.add(new THREE.HemisphereLight(0xffffff, 0x8e78bb, 2));
 const sun = new THREE.DirectionalLight(0xffffff, 2.4);
-sun.position.set(-8, 15, 9); sun.castShadow = true;
-sun.shadow.mapSize.set(1024, 1024);
-sun.shadow.camera.left = -18; sun.shadow.camera.right = 18;
-sun.shadow.camera.top = 18; sun.shadow.camera.bottom = -18;
+sun.position.set(-8, 15, 9); sun.castShadow = true; sun.shadow.mapSize.set(1024, 1024);
+sun.shadow.camera.left = -18; sun.shadow.camera.right = 18; sun.shadow.camera.top = 18; sun.shadow.camera.bottom = -18;
 scene.add(sun);
 
 const mat = c => new THREE.MeshStandardMaterial({ color: c, roughness: 0.72 });
@@ -431,10 +385,9 @@ function makePlayer(bodyColor, accentColor, x, z) {
   return { group: g, body, bobBase: 0.92 };
 }
 
-const localPlayer  = makePlayer(CHAR_BLUE.body, CHAR_BLUE.accent, -3,  3);
-const remotePlayer = makePlayer(CHAR_PINK.body, CHAR_PINK.accent,  3, -3);
-remotePlayer.group.visible = false;
-scene.add(sparkles);
+const localPlayer = makePlayer(CHAR_BLUE.body, CHAR_BLUE.accent, -3, 3);
+const remotePlayer = makePlayer(CHAR_PINK.body, CHAR_PINK.accent, 3, -3);
+remotePlayer.group.visible = false; scene.add(sparkles);
 
 function applyMyCharacter() {
   scene.remove(localPlayer.group);
@@ -452,14 +405,9 @@ function applyRemoteCharacter() {
 
 const keys = new Set();
 let yaw = 0, pitch = 0.26, dragging = false, lastX = 0, lastY = 0;
-const moveVec = new THREE.Vector3();
-const clock = new THREE.Clock();
+const moveVec = new THREE.Vector3(); const clock = new THREE.Clock();
 
-function jump() {
-  if (!inMatch || !local.grounded) return;
-  local.vy = 7.2; local.grounded = false;
-  SFX.jump();
-}
+function jump() { if (!inMatch || !local.grounded) return; local.vy = 7.2; local.grounded = false; SFX.jump(); }
 window.addEventListener('keydown', e => {
   const k = e.code === 'Space' ? ' ' : e.key.toLowerCase();
   if ([settings.keys.up, settings.keys.down, settings.keys.left, settings.keys.right, ' '].includes(k)) e.preventDefault();
@@ -481,8 +429,7 @@ canvas.addEventListener('pointercancel', () => dragging = false);
 function toast(msg) {
   const el = document.querySelector('#toast');
   el.textContent = msg; el.classList.remove('hidden');
-  clearTimeout(toast.timer);
-  toast.timer = setTimeout(() => el.classList.add('hidden'), 1400);
+  clearTimeout(toast.timer); toast.timer = setTimeout(() => el.classList.add('hidden'), 1400);
 }
 
 function startMatch() {
@@ -559,15 +506,12 @@ function endRound() {
     channel.send('round_end', { sLocal: scoreLocal, sRemote: scoreRemote });
     updateScoreUI();
     setTimeout(() => { currentRound++; triggerNextRound(); }, 3000);
-  } else {
-    toast("Round over! Waiting for host...");
-  }
+  } else { toast("Round over! Waiting for host..."); }
 }
 
 function endMatch(finalLocal, finalRemote) {
   inMatch = false; hideControls(); gameTopbar.classList.add('hidden'); gameBottomHud.classList.add('hidden');
-  currentEvent = 'NONE';
-  saveMatchToHistory(finalLocal, finalRemote);
+  currentEvent = 'NONE'; saveMatchToHistory(finalLocal, finalRemote);
   resName0.textContent = selfName; resName1.textContent = remoteName || 'P2';
   resScore0.textContent = finalLocal; resScore1.textContent = finalRemote;
   resAvatar0.textContent = myCharacter.emoji; resAvatar1.textContent = remoteChar.emoji;
@@ -579,14 +523,8 @@ function endMatch(finalLocal, finalRemote) {
 
 async function saveMatchToHistory(finalLocal, finalRemote) {
   const matchId = 'mm_' + Date.now();
-  await Net.saveMatch({
-    matchId, userId: IR_USER.userId, irId: IR_USER.irId,
-    playerName: selfName, characterId: myCharacter.id,
-    opponentIrId: remoteIrId, opponentName: remoteName,
-    scoreSelf: finalLocal, scoreOpponent: finalRemote
-  });
+  await Net.saveMatch({ matchId, userId: IR_USER.userId, irId: IR_USER.irId, playerName: selfName, characterId: myCharacter.id, opponentIrId: remoteIrId, opponentName: remoteName, scoreSelf: finalLocal, scoreOpponent: finalRemote });
 }
-
 function updateScoreUI() { scoreVal0.textContent = totalScoreLocal; scoreVal1.textContent = totalScoreRemote; }
 
 function renderRoom() {
@@ -658,33 +596,21 @@ async function doCreate() {
   createBtn.textContent = 'CREATING...';
   createError.classList.add('hidden');
   createStatus.textContent = 'Creating room...';
-  createStatus.classList.remove('ok', 'bad');
 
   try {
     const res = await Net.createRoom(IR_USER.userId, IR_USER.irId);
     if (!res.ok) throw new Error(res.error || 'Could not create room.');
 
-    selfName = IR_USER.name;
-    roomCode = res.code;
-    isHost = true;
+    selfName = IR_USER.name; roomCode = res.code; isHost = true;
     gameMode = selectedGameMode;
-
-    meReady = false; peerReady = false; remoteVisible = false;
-    remoteName = ''; remoteIrId = '';
+    meReady = false; peerReady = false; remoteVisible = false; remoteName = ''; remoteIrId = '';
 
     await attachChannel(roomCode);
-    applyMyCharacter();
-    showScreen('roomScreen');
-    renderRoom();
-
-    createStatus.textContent = 'Room created successfully!';
-    createStatus.classList.add('ok');
+    applyMyCharacter(); showScreen('roomScreen'); renderRoom();
+    createStatus.textContent = 'Room created!';
   } catch (error) {
-    console.error('MOCHI create-room error:', error);
     createError.textContent = error.message || 'Could not create room.';
-    createError.classList.remove('hidden');
-    createStatus.textContent = 'Room creation failed.';
-    createStatus.classList.add('bad');
+    createError.classList.remove('hidden'); createStatus.textContent = 'Failed.';
   } finally {
     createBtn.disabled = false;
     createBtn.textContent = 'CREATE ROOM';
@@ -696,61 +622,25 @@ async function doJoin() {
   joinBtn.textContent = 'SEARCHING...';
   joinError.classList.add('hidden');
   joinStatus.textContent = 'Looking for room...';
-  joinStatus.classList.remove('ok', 'bad');
 
   try {
     const code = String(codeInput.value || '').trim().toUpperCase();
-
-    if (!/^[ABCDEFGHJKLMNPQRSTUVWXYZ23456789]{5}$/.test(code)) {
-      throw new Error('Enter the complete 5-character room code.');
-    }
+    if (!/^[ABCDEFGHJKLMNPQRSTUVWXYZ23456789]{5}$/.test(code)) throw new Error('Enter a 5-character code.');
 
     const found = await Net.findRoom(code);
+    if (!found.ok) throw new Error(found.error === 'not_found' ? 'Room not found. Check the code.' : found.error);
 
-    if (!found.ok) {
-      if (found.error === 'not_found') {
-        throw new Error('Room not found. Check the code with your friend.');
-      } else {
-        throw new Error(found.error || 'Network error. Please try again.');
-      }
-    }
+    if (found.hostUserId === IR_USER.userId) throw new Error('You created this room. Use another account to join.');
 
-    if (found.hostUserId === IR_USER.userId) {
-      throw new Error('You created this room. Use another account to join it.');
-    }
+    selfName = IR_USER.name; roomCode = found.code; isHost = false;
+    meReady = false; peerReady = false; remoteVisible = false; remoteName = ''; remoteIrId = '';
 
-    if (found.guestUserId) {
-      throw new Error('This room is already full!');
-    }
-
-    selfName = IR_USER.name;
-    roomCode = found.code;
-    isHost = false;
-
-    meReady = false; peerReady = false; remoteVisible = false;
-    remoteName = ''; remoteIrId = '';
-
-    joinStatus.textContent = 'Locking room...';
-    const lockRes = await Net.joinRoomInDb(roomCode, IR_USER.userId, IR_USER.irId);
-    if (!lockRes.ok) throw new Error('Could not lock room. It might be full.');
-
-    joinStatus.textContent = 'Connecting...';
-    await new Promise(r => setTimeout(r, 800));
     await attachChannel(roomCode);
-
-    applyMyCharacter();
-    showScreen('roomScreen');
-    renderRoom();
-
+    applyMyCharacter(); showScreen('roomScreen'); renderRoom();
     joinStatus.textContent = 'Joined successfully!';
-    joinStatus.classList.add('ok');
-
   } catch (error) {
-    console.error('MOCHI join-room error:', error);
-    joinError.textContent = error.message || 'Could not join room. Please try again.';
-    joinError.classList.remove('hidden');
-    joinStatus.textContent = 'Could not join room.';
-    joinStatus.classList.add('bad');
+    joinError.textContent = error.message || 'Could not join room.';
+    joinError.classList.remove('hidden'); joinStatus.textContent = 'Failed.';
   } finally {
     joinBtn.disabled = false;
     joinBtn.textContent = 'JOIN';
@@ -883,7 +773,7 @@ leaveRoomBtn.onclick = async () => {
 };
 readyBtn.onclick = () => { meReady = !meReady; channel?.send('ready', { ready: meReady }); renderRoom(); };
 copyCodeBtn.onclick = async () => { try { await navigator.clipboard.writeText(roomCode); toast('Copied!'); } catch { toast(roomCode); } };
-rematchBtn.onclick = () => { if (isHost) startMatch(); else toast("Waiting for host to rematch..."); };
+rematchBtn.onclick = () => { if (isHost) startMatch(); else toast("Waiting for host..."); };
 resultsLeaveBtn.onclick = () => { showScreen('roomScreen'); meReady = false; peerReady = false; renderRoom(); };
 
 (async function main() {
