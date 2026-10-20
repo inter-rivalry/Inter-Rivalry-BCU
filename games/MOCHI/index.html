@@ -11,15 +11,20 @@
 <body>
 <div id="play-root">
   
+  <!-- LOADING SCREEN -->
+  <div id="loading" class="loading">🍡 Building the MOCHI arena…</div>
+
+  <!-- EVENT BANNER & TIMER -->
   <div id="eventBanner" class="event-banner hidden">
     <h2 id="eventTitle">MAGNETIC MODE</h2>
     <p id="eventDesc">Stay close!</p>
   </div>
   <div id="eventTimer" class="event-timer hidden">30</div>
 
-  <div id="loading" class="loading">🍡 Building the MOCHI arena…</div>
+  <!-- GAME CANVAS -->
   <canvas id="game"></canvas>
 
+  <!-- ON-SCREEN CONTROLS -->
   <div id="joystickZone" class="game-joystick" style="display:none;">
     <div id="joystickKnob" class="game-joystick-knob"></div>
   </div>
@@ -27,6 +32,7 @@
     <span class="jump-arrow">⬆</span><span class="jump-text">JUMP</span>
   </button>
 
+  <!-- LOGIN SCREEN -->
   <div id="loginScreen" class="screen hidden">
     <div class="menu-card">
       <div class="menu-logo">
@@ -43,6 +49,7 @@
     </div>
   </div>
 
+  <!-- MAIN MENU -->
   <div id="mainMenu" class="screen hidden">
     <div class="menu-card">
       <div class="menu-logo">
@@ -60,10 +67,11 @@
         </div>
         <button id="historyBtn" class="ghost-button" style="width:100%">📜 MATCH HISTORY</button>
       </div>
-      <div class="menu-footer">v1.0 · Phase D</div>
+      <div class="menu-footer">v1.2 · Phase D</div>
     </div>
   </div>
 
+  <!-- CHARACTER SELECT -->
   <div id="characterScreen" class="screen hidden">
     <div class="menu-card">
       <button class="back-button" data-back="mainMenu">← BACK</button>
@@ -74,12 +82,12 @@
     </div>
   </div>
 
+  <!-- CREATE ROOM -->
   <div id="createScreen" class="screen hidden">
     <div class="menu-card">
       <button class="back-button" data-back="characterScreen">← BACK</button>
       <h2 class="screen-title">CREATE ROOM</h2>
       <p class="menu-sub">Choose a game mode, then create the room.</p>
-      
       <div class="mode-selector" id="modeSelector">
         <div class="mode-tile selected" data-mode="events">
           <div class="mode-icon">🎲</div>
@@ -96,13 +104,13 @@
           </div>
         </div>
       </div>
-
       <button id="createBtn" class="primary-button big" style="margin-top:20px;">CREATE ROOM</button>
       <div id="createError" class="lobby-error hidden"></div>
       <div id="createStatus" class="conn-status">Ready</div>
     </div>
   </div>
 
+  <!-- JOIN ROOM -->
   <div id="joinScreen" class="screen hidden">
     <div class="menu-card">
       <button class="back-button" data-back="mainMenu">← BACK</button>
@@ -115,6 +123,7 @@
     </div>
   </div>
 
+  <!-- ROOM LOBBY -->
   <div id="roomScreen" class="screen hidden">
     <div class="room-card">
       <div class="room-header">
@@ -148,6 +157,30 @@
     </div>
   </div>
 
+  <!-- RESULTS SCREEN -->
+  <div id="resultsScreen" class="screen hidden">
+    <div class="menu-card results-card">
+      <h2 class="screen-title" style="text-align:center">MATCH OVER!</h2>
+      <div id="winnerAnnouncement" class="winner-text">PLAYER 1 WINS!</div>
+      <div class="final-scores">
+        <div class="final-score-box">
+          <div class="slot-avatar" id="resAvatar0">🍡</div>
+          <div id="resName0">P1</div>
+          <div id="resScore0">0</div>
+        </div>
+        <div class="vs-text">VS</div>
+        <div class="final-score-box">
+          <div class="slot-avatar" id="resAvatar1">🍡</div>
+          <div id="resName1">P2</div>
+          <div id="resScore1">0</div>
+        </div>
+      </div>
+      <button id="rematchBtn" class="primary-button big" style="margin-top:20px">REMATCH</button>
+      <button id="resultsLeaveBtn" class="ghost-button full-width" style="margin-top:10px">RETURN TO LOBBY</button>
+    </div>
+  </div>
+
+  <!-- SETTINGS -->
   <div id="settingsScreen" class="screen hidden">
     <div class="menu-card settings-card">
       <button class="back-button" id="settingsBackBtn">← BACK</button>
@@ -171,6 +204,7 @@
     </div>
   </div>
 
+  <!-- LAYOUT EDITOR -->
   <div id="layoutEditor" class="layout-editor hidden">
     <div class="layout-editor-top">
       <div>
@@ -192,6 +226,7 @@
     </div>
   </div>
 
+  <!-- HOW TO PLAY -->
   <div id="helpMenuScreen" class="screen hidden">
     <div class="menu-card">
       <button class="back-button" data-back="mainMenu">← BACK</button>
@@ -202,6 +237,7 @@
     </div>
   </div>
 
+  <!-- MATCH HISTORY -->
   <div id="historyScreen" class="screen hidden">
     <div class="menu-card">
       <button class="back-button" data-back="mainMenu">← BACK</button>
@@ -211,10 +247,12 @@
     </div>
   </div>
 
+  <!-- COUNTDOWN -->
   <div id="countdownOverlay" class="countdown-overlay hidden">
     <div class="countdown-number" id="countdownNumber">3</div>
   </div>
 
+  <!-- IN-GAME HUD -->
   <header class="topbar hidden" id="gameTopbar">
     <div class="brand">
       <span class="brand-icon">🍡</span>
@@ -224,31 +262,27 @@
       <div class="score-pill"><span class="dot-pink"></span><span id="scoreName0">P1</span><b id="scoreVal0">0</b></div>
       <div class="score-pill"><span class="dot-mint"></span><span id="scoreName1">P2</span><b id="scoreVal1">0</b></div>
     </div>
-    <button id="helpBtn" class="icon-button">?</button>
   </header>
 
   <div class="bottom-hud hidden" id="gameBottomHud">
     <div class="center-hud">
       <span class="hud-emoji" id="hudEmoji">✨</span>
-      <div><strong id="hudLabel">NET</strong><div class="meter"><i></i></div></div>
-      <span class="meter-count" id="hudCount">--</span>
-    </div>
-  </div>
-
-  <div id="helpModal" class="modal hidden">
-    <div class="modal-card">
-      <button id="closeHelp" class="close-button">×</button>
-      <div class="modal-emoji">🎮</div>
-      <h2>Quick help</h2>
-      <p><b>Move:</b> joystick</p>
-      <p><b>Jump:</b> JUMP button</p>
-      <p><b>Camera:</b> drag on the arena</p>
-      <button id="gotIt" class="primary-button">GOT IT</button>
+      <div><strong id="hudLabel">ROUND</strong><div class="meter"><i></i></div></div>
+      <span class="meter-count" id="hudCount">1/5</span>
     </div>
   </div>
 
   <div id="toast" class="toast hidden"></div>
 </div>
+
+<script>
+  // Register Service Worker for caching
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('./sw.js').catch(err => console.log('SW failed:', err));
+    });
+  }
+</script>
 <script type="module" src="game.js"></script>
 </body>
 </html>
