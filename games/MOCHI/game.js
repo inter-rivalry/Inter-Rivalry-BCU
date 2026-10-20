@@ -555,16 +555,23 @@ function renderRoom() {
 
 async function attachChannel(code) {
   channel = new Net.RoomChannel(code, IR_USER.userId, selfName);
-  channel.on('hello', () => { channel.send('peer', { name: selfName, irId: IR_USER.irId, char: myCharacter.id, isHost }); });
+  
+  channel.on('hello', () => { 
+    channel.send('peer', { name: selfName, irId: IR_USER.irId, char: myCharacter.id, isHost }); 
+  });
+  
   channel.on('peer', ({ name, irId, char, isHost: peerIsHost }) => {
     remoteName = name || 'Peer'; remoteIrId = irId || '';
     if (peerIsHost) {
       const hostChar = CHARACTERS.find(c => c.id === char) || CHAR_BLUE;
       myCharacter = oppositeOf(hostChar); applyMyCharacter(); remoteChar = hostChar;
-    } else { remoteChar = CHARACTERS.find(c => c.id === char) || CHAR_PINK; }
+    } else { 
+      remoteChar = CHARACTERS.find(c => c.id === char) || CHAR_PINK; 
+    }
     remoteVisible = true; applyRemoteCharacter(); renderRoom();
     channel.send('peer', { name: selfName, irId: IR_USER.irId, char: myCharacter.id, isHost });
   });
+  
   channel.on('ready', ({ ready }) => { peerReady = !!ready; renderRoom(); });
   channel.on('event_start', ({ event, mode, round }) => startCountdownThenMatch(() => startRound(event, mode, round)));
   channel.on('round_end', ({ sLocal, sRemote }) => {
@@ -572,28 +579,32 @@ async function attachChannel(code) {
     updateScoreUI(); toast("ROUND OVER! 🍡");
   });
   channel.on('match_end', ({ totalLocal, totalRemote }) => endMatch(totalRemote, totalLocal));
+  
   channel.on('move', ({ x, y, z, ry }) => {
     remoteTarget.x = Number(x) || 0; remoteTarget.y = Number(y) || 0;
     remoteTarget.z = Number(z) || 0; remoteTarget.ry = Number(ry) || 0;
     if (!remoteVisible) { remoteVisible = true; remotePlayer.group.visible = true; renderRoom(); }
   });
+  
   channel.on('shoot', ({ x, y, z, ry }) => {
     const heart = new THREE.Mesh(new THREE.SphereGeometry(0.3, 8, 8), new THREE.MeshStandardMaterial({ color: '#ff0066', emissive: '#ff0066' }));
     heart.scale.set(1, 0.8, 0.4); heart.position.set(x, y, z); scene.add(heart);
     const dir = new THREE.Vector3(Math.sin(ry), 0, Math.cos(ry));
     projectiles.push({ mesh: heart, x, y, z, vx: dir.x * 15, vz: dir.z * 15, isLocal: false }); SFX.kiss();
   });
+  
   channel.on('hit', () => {
     local.vy = 5.0; local.x -= 3.0; SFX.hit(); toast("💋 SMOOCHED!");
     camera.position.x += (Math.random() - 0.5) * 1.0; camera.position.y += (Math.random() - 0.5) * 1.0;
   });
+  
   channel.on('collect', () => { scoreRemote++; });
+  
   await channel.join();
 }
 
 async function doCreate() {
   createBtn.disabled = true;
-  createBtn.textContent = 'CREATING...';
   createError.classList.add('hidden');
   createStatus.textContent = 'Creating room...';
 
@@ -613,13 +624,11 @@ async function doCreate() {
     createError.classList.remove('hidden'); createStatus.textContent = 'Failed.';
   } finally {
     createBtn.disabled = false;
-    createBtn.textContent = 'CREATE ROOM';
   }
 }
 
 async function doJoin() {
   joinBtn.disabled = true;
-  joinBtn.textContent = 'SEARCHING...';
   joinError.classList.add('hidden');
   joinStatus.textContent = 'Looking for room...';
 
@@ -629,7 +638,6 @@ async function doJoin() {
 
     const found = await Net.findRoom(code);
     if (!found.ok) throw new Error(found.error === 'not_found' ? 'Room not found. Check the code.' : found.error);
-
     if (found.hostUserId === IR_USER.userId) throw new Error('You created this room. Use another account to join.');
 
     selfName = IR_USER.name; roomCode = found.code; isHost = false;
@@ -643,7 +651,6 @@ async function doJoin() {
     joinError.classList.remove('hidden'); joinStatus.textContent = 'Failed.';
   } finally {
     joinBtn.disabled = false;
-    joinBtn.textContent = 'JOIN';
   }
 }
 
