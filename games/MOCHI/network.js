@@ -6,7 +6,7 @@ export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON, {
 });
 
 /* ============================================================
-   IR USER — same Supabase Auth session as your website
+   IR USER
    ============================================================ */
 export async function getIRUser() {
   const { data: { user }, error } = await supabase.auth.getUser();
@@ -18,22 +18,10 @@ export async function getIRUser() {
     .eq('id', user.id)
     .maybeSingle();
 
-  const name =
-    profile?.full_name ||
-    user.user_metadata?.full_name ||
-    user.user_metadata?.username ||
-    user.email?.split('@')[0] ||
-    'Player-' + user.id.slice(0, 4);
-
+  const name = profile?.full_name || user.user_metadata?.full_name || user.email?.split('@')[0] || 'Player';
   const irId = profile?.inter_rivalry_id || 'IR-???';
 
-  return {
-    ok: true,
-    userId: user.id,
-    irId,
-    name: String(name).slice(0, 16),
-    gender: null
-  };
+  return { ok: true, userId: user.id, irId, name: String(name).slice(0, 16), gender: null };
 }
 
 /* ============================================================
@@ -53,6 +41,7 @@ export async function createRoom(userId, irId) {
       .from('mochi_rooms')
       .insert({ code, host_user_id: userId, host_ir_id: irId });
     if (!error) return { ok: true, code };
+    // If the error is a unique violation (code already exists), try a new code
     if (error.code !== '23505') return { ok: false, error: error.message };
   }
   return { ok: false, error: 'code_collision' };
@@ -64,8 +53,10 @@ export async function findRoom(code) {
     .select('code, host_user_id, host_ir_id')
     .eq('code', String(code || '').toUpperCase().trim())
     .maybeSingle();
+    
   if (error) return { ok: false, error: error.message };
   if (!data) return { ok: false, error: 'not_found' };
+  
   return { ok: true, code: data.code, hostUserId: data.host_user_id, hostIrId: data.host_ir_id };
 }
 
@@ -105,8 +96,6 @@ export async function saveMatch(entry) {
 
 /* ============================================================
    REALTIME CHANNEL
-   - Both sides send hello on join (with retries).
-   - Both sides reply to hello AND to peer (handshake completes both ways).
    ============================================================ */
 export class RoomChannel {
   constructor(code, selfId, name) {
@@ -139,7 +128,6 @@ export class RoomChannel {
         })
         .subscribe(status => {
           if (status === 'SUBSCRIBED') {
-            // Announce presence now and retry a few times to catch late joiners
             this.send('hello', {});
             setTimeout(() => this.send('hello', {}), 800);
             setTimeout(() => this.send('hello', {}), 2500);
