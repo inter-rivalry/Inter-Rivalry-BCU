@@ -3,7 +3,7 @@ import * as Net from './network.js';
 import { LOGIN_URL } from './config.js';
 
 /* ============================================================
-   BOOT: check login first
+   DOM ROOT
    ============================================================ */
 const root    = document.querySelector('#play-root');
 const canvas  = document.querySelector('#game');
@@ -31,6 +31,9 @@ document.querySelectorAll('[data-back]').forEach(btn => {
 });
 document.querySelector('#loginLink').href = LOGIN_URL;
 
+/* ============================================================
+   AUTH BOOT
+   ============================================================ */
 let IR_USER = null;
 
 async function boot() {
@@ -42,15 +45,16 @@ async function boot() {
     return;
   }
   IR_USER = user;
-  document.querySelector('#irBadge').textContent = `${user.irId} · ${user.name}`;
-  document.querySelector('#irBadge').classList.add('linked');
+  const badge = document.querySelector('#irBadge');
+  badge.textContent = `${user.irId} · ${user.name}`;
+  badge.classList.add('linked');
   showScreen('mainMenu');
   loading.classList.add('gone');
   setTimeout(() => loading.remove(), 400);
 }
 
 /* ============================================================
-   SETTINGS (persisted per IR user)
+   SETTINGS
    ============================================================ */
 const DEFAULTS = {
   sensitivity: 10, cameraDistance: 9,
@@ -59,7 +63,9 @@ const DEFAULTS = {
   buttonSize: 100, buttonOpacity: 70,
   keys: { up: 'w', down: 's', left: 'a', right: 'd', jump: ' ' }
 };
-const SETTINGS_KEY = 'mochi_settings_' + (IR_USER?.irId || 'guest');
+let settings = structuredClone(DEFAULTS);
+let SETTINGS_KEY = 'mochi_settings_guest';
+
 function loadSettings() {
   try {
     const raw = localStorage.getItem(SETTINGS_KEY);
@@ -67,7 +73,6 @@ function loadSettings() {
     return { ...DEFAULTS, ...saved, keys: { ...DEFAULTS.keys, ...(saved.keys || {}) } };
   } catch { return structuredClone(DEFAULTS); }
 }
-let settings = structuredClone(DEFAULTS);
 function saveSettings() {
   try { localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings)); } catch {}
 }
@@ -81,13 +86,6 @@ const CHARACTERS = [
   { id: 'purple', name: 'PLUM',   body: '#a99aff', accent: '#78e9d2', emoji: '🍇' },
   { id: 'mint',   name: 'MINT',   body: '#78e9d2', accent: '#ffe277', emoji: '🌿' }
 ];
-// Gender-based default — will be enabled when you confirm the column
-function pickDefaultCharacter() {
-  // TODO: after gender column known, replace with:
-  // if (IR_USER.gender === 'male')   return CHARACTERS[0];
-  // if (IR_USER.gender === 'female') return Math.random() < 0.5 ? CHARACTERS[1] : CHARACTERS[2];
-  return CHARACTERS[0]; // default blue for now
-}
 let myCharacter = CHARACTERS[0];
 
 /* ============================================================
@@ -110,18 +108,17 @@ let meReady = false;
 let inMatch = false;
 let lastMoveSent = 0;
 let currentMatchId = null;
-let matchSaved = false;
 
 /* ============================================================
    DOM REFS
    ============================================================ */
-const createBtn       = document.querySelector('#createBtn');
-const joinBtn         = document.querySelector('#joinBtn');
-const joinMenuBtn     = document.querySelector('#joinMenuBtn');
 const playBtn         = document.querySelector('#playBtn');
+const joinMenuBtn     = document.querySelector('#joinMenuBtn');
 const settingsBtn     = document.querySelector('#settingsBtn');
 const helpMenuBtn     = document.querySelector('#helpMenuBtn');
 const historyBtn      = document.querySelector('#historyBtn');
+const createBtn       = document.querySelector('#createBtn');
+const joinBtn         = document.querySelector('#joinBtn');
 const codeInput       = document.querySelector('#codeInput');
 const createError     = document.querySelector('#createError');
 const createStatus    = document.querySelector('#createStatus');
@@ -174,13 +171,13 @@ const slotEls = [
 ];
 
 /* ============================================================
-   NAV BUTTONS
+   NAV
    ============================================================ */
-playBtn.onclick      = () => showScreen('characterScreen');
-joinMenuBtn.onclick  = () => showScreen('joinScreen');
-settingsBtn.onclick  = () => { openSettings(); showScreen('settingsScreen'); };
-helpMenuBtn.onclick  = () => showScreen('helpMenuScreen');
-historyBtn.onclick   = () => { loadHistory(); showScreen('historyScreen'); };
+playBtn.onclick         = () => showScreen('characterScreen');
+joinMenuBtn.onclick     = () => showScreen('joinScreen');
+settingsBtn.onclick     = () => { openSettings(); showScreen('settingsScreen'); };
+helpMenuBtn.onclick     = () => showScreen('helpMenuScreen');
+historyBtn.onclick      = () => { loadHistory(); showScreen('historyScreen'); };
 roomSettingsBtn.onclick = () => { openSettings(); showScreen('settingsScreen'); };
 settingsBackBtn.onclick = () => showScreen(roomCode && !inMatch ? 'roomScreen' : 'mainMenu');
 
@@ -268,24 +265,17 @@ function openSettings() {
   renderControls();
 }
 
-sensSlider.oninput = () => { settings.sensitivity = +sensSlider.value; sensVal.textContent = sensSlider.value; saveSettings(); };
-distSlider.oninput = () => { settings.cameraDistance = +distSlider.value; distVal.textContent = distSlider.value; saveSettings(); };
-sizeSlider.oninput = () => { settings.buttonSize = +sizeSlider.value; sizeVal.textContent = sizeSlider.value + '%'; saveSettings(); applyButtonLayout(); };
+sensSlider.oninput    = () => { settings.sensitivity = +sensSlider.value; sensVal.textContent = sensSlider.value; saveSettings(); };
+distSlider.oninput    = () => { settings.cameraDistance = +distSlider.value; distVal.textContent = distSlider.value; saveSettings(); };
+sizeSlider.oninput    = () => { settings.buttonSize = +sizeSlider.value; sizeVal.textContent = sizeSlider.value + '%'; saveSettings(); applyButtonLayout(); };
 opacitySlider.oninput = () => { settings.buttonOpacity = +opacitySlider.value; opacityVal.textContent = opacitySlider.value + '%'; saveSettings(); applyButtonLayout(); };
 resetControlsBtn.onclick = () => { settings.keys = structuredClone(DEFAULTS.keys); saveSettings(); renderControls(); toast('Keys reset'); };
 
 /* ============================================================
    LAYOUT EDITOR
    ============================================================ */
-function openLayoutEditor() {
-  layoutEditor.classList.remove('hidden');
-  positionEditHandles();
-}
-function closeLayoutEditor() {
-  layoutEditor.classList.add('hidden');
-  applyButtonLayout();
-  saveSettings();
-}
+function openLayoutEditor() { layoutEditor.classList.remove('hidden'); positionEditHandles(); }
+function closeLayoutEditor() { layoutEditor.classList.add('hidden'); applyButtonLayout(); saveSettings(); }
 openLayoutBtn.onclick  = openLayoutEditor;
 layoutDoneBtn.onclick  = closeLayoutEditor;
 resetLayoutBtn.onclick = () => {
@@ -362,7 +352,6 @@ function applyButtonLayout() {
   jumpBtnEl.style.transform = `translate(-50%,-50%) scale(${scale})`;
   jumpBtnEl.style.opacity = op;
 }
-applyButtonLayout();
 
 let touchId = null, touchOrigin = null, touchDelta = { x: 0, y: 0 };
 joystickEl.addEventListener('pointerdown', e => {
@@ -570,6 +559,7 @@ function setStatus(el, text, state) {
 function renderRoom() {
   roomCodeText.textContent = roomCode || '-----';
   const my = slotEls[0], peer = slotEls[1];
+
   my.avatar.textContent = myCharacter.emoji;
   my.name.textContent = selfName;
   my.ready.textContent = meReady ? 'READY' : 'not ready';
@@ -590,14 +580,25 @@ function renderRoom() {
     peer.el.style.opacity = .6;
   }
 
-  const both = remoteVisible && meReady && peerReady;
-  startBtn.classList.toggle('hidden', !isHost || !both);
+  // Host always sees START. Enabled only when peer is present.
+  if (isHost) {
+    startBtn.classList.remove('hidden');
+    const canStart = remoteVisible;
+    startBtn.disabled = !canStart;
+    startBtn.style.opacity = canStart ? '1' : '0.5';
+    startBtn.style.pointerEvents = canStart ? 'auto' : 'none';
+    startBtn.textContent = canStart ? 'START MATCH' : 'WAITING FOR PEER…';
+  } else {
+    startBtn.classList.add('hidden');
+  }
+
   readyBtn.classList.toggle('hidden', inMatch);
   readyBtn.textContent = meReady ? 'NOT READY' : 'READY';
+
   roomHint.textContent = inMatch ? 'Match in progress'
     : remoteVisible
-      ? (both ? (isHost ? 'Press START MATCH.' : 'Waiting for host…') : 'Both players must be ready.')
-      : 'Share the code with a friend.';
+      ? (meReady && peerReady ? (isHost ? 'Press START MATCH.' : 'Waiting for host…') : 'Both players must be ready.')
+      : 'Waiting for friend to join…';
 }
 
 /* ============================================================
@@ -605,33 +606,48 @@ function renderRoom() {
    ============================================================ */
 async function attachChannel(code) {
   channel = new Net.RoomChannel(code, IR_USER.userId, selfName);
-  channel.on('hello', () => channel.send('peer', { name: selfName, irId: IR_USER.irId, char: myCharacter.id }));
+
+  channel.on('hello', () => {
+    channel.send('peer', { name: selfName, irId: IR_USER.irId, char: myCharacter.id });
+  });
+
   channel.on('peer', ({ name, irId, char }) => {
     remoteName = name || 'Peer';
     remoteIrId = irId || '';
     remoteChar = CHARACTERS.find(c => c.id === char) || CHARACTERS[1];
     remoteVisible = true;
     applyRemoteCharacter();
+    remotePlayer.group.visible = true;
     renderRoom();
+    // Reply so a late joiner discovers us too
+    channel.send('peer', { name: selfName, irId: IR_USER.irId, char: myCharacter.id });
   });
+
   channel.on('ready', ({ ready }) => { peerReady = !!ready; renderRoom(); });
   channel.on('start', () => startCountdownThenMatch());
+
   channel.on('move', ({ x, y, z, ry }) => {
     remoteTarget.x = Number(x) || 0;
     remoteTarget.y = Number(y) || 0;
     remoteTarget.z = Number(z) || 0;
     remoteTarget.ry = Number(ry) || 0;
-    remoteVisible = true;
+    if (!remoteVisible) {
+      remoteVisible = true;
+      remotePlayer.group.visible = true;
+      renderRoom();
+    }
   });
+
   channel.on('leave', () => {
     remoteVisible = false; peerReady = false; renderRoom();
     toast('Peer left 👋');
   });
+
   await channel.join();
 }
 
 /* ============================================================
-   CREATE / JOIN
+   CREATE / JOIN / LEAVE
    ============================================================ */
 async function doCreate() {
   createError.classList.add('hidden');
@@ -646,8 +662,9 @@ async function doCreate() {
   selfName = IR_USER.name;
   roomCode = res.code;
   isHost = true;
-  meReady = false; peerReady = false; remoteVisible = false; inMatch = false; matchSaved = false;
+  meReady = false; peerReady = false; remoteVisible = false; inMatch = false;
   currentMatchId = null;
+
   try {
     await attachChannel(roomCode);
     applyMyCharacter();
@@ -675,8 +692,9 @@ async function doJoin() {
   selfName = IR_USER.name;
   roomCode = found.code;
   isHost = false;
-  meReady = false; peerReady = false; remoteVisible = false; inMatch = false; matchSaved = false;
+  meReady = false; peerReady = false; remoteVisible = false; inMatch = false;
   currentMatchId = null;
+
   try {
     await attachChannel(roomCode);
     applyMyCharacter();
@@ -721,9 +739,16 @@ async function startCountdownThenMatch() {
 
 function beginMatch() {
   inMatch = true;
+
   local.x = -3; local.y = 0; local.z = 3; local.ry = 0; local.vy = 0; local.grounded = true;
-  remoteTarget.x = 3; remoteTarget.y = 0; remoteTarget.z = -3; remoteTarget.ry = Math.PI;
-  remote.x = 3; remote.y = 0; remote.z = -3; remote.ry = Math.PI;
+
+  if (remoteVisible) {
+    remoteTarget.x = 3; remoteTarget.y = 0; remoteTarget.z = -3; remoteTarget.ry = Math.PI;
+    remote.x = 3; remote.y = 0; remote.z = -3; remote.ry = Math.PI;
+    remotePlayer.group.position.set(3, 0, -3);
+    remotePlayer.group.visible = true;
+  }
+
   currentMatchId = 'mm_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6);
 
   gameTopbar.classList.remove('hidden');
@@ -771,6 +796,7 @@ function updateLocalPlayer(dt) {
     localPlayer.group.rotation.y = local.ry;
     return;
   }
+
   let f = 0, s = 0;
   if (keys.has(settings.keys.up))    f += 1;
   if (keys.has(settings.keys.down))  f -= 1;
@@ -809,7 +835,8 @@ function updateLocalPlayer(dt) {
     channel.send('move', { x: local.x, y: local.y, z: local.z, ry: local.ry });
   }
   hudCount.textContent = remoteVisible ? '2P' : '1P';
-  document.querySelector('.meter i').style.width = '100%';
+  const meter = document.querySelector('.meter i');
+  if (meter) meter.style.width = '100%';
 }
 
 function updateRemotePlayer(dt) {
@@ -854,20 +881,28 @@ function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
 createBtn.onclick    = doCreate;
 joinBtn.onclick      = doJoin;
 leaveRoomBtn.onclick = doLeave;
+
 readyBtn.onclick = () => {
   meReady = !meReady;
   channel?.send('ready', { ready: meReady });
   renderRoom();
 };
-startBtn.onclick = () => { if (!isHost) return; channel?.send('start', {}); startCountdownThenMatch(); };
+
+startBtn.onclick = () => {
+  if (!isHost) return;
+  if (!remoteVisible) { toast('Waiting for peer…'); return; }
+  channel?.send('start', {});
+  startCountdownThenMatch();
+};
+
 copyCodeBtn.onclick = async () => {
   try { await navigator.clipboard.writeText(roomCode); toast('Code copied 📋'); }
   catch { toast(roomCode); }
 };
 
-document.querySelector('#helpBtn').onclick     = () => document.querySelector('#helpModal').classList.remove('hidden');
-document.querySelector('#closeHelp').onclick   = () => document.querySelector('#helpModal').classList.add('hidden');
-document.querySelector('#gotIt').onclick       = () => document.querySelector('#helpModal').classList.add('hidden');
+document.querySelector('#helpBtn').onclick   = () => document.querySelector('#helpModal').classList.remove('hidden');
+document.querySelector('#closeHelp').onclick = () => document.querySelector('#helpModal').classList.add('hidden');
+document.querySelector('#gotIt').onclick     = () => document.querySelector('#helpModal').classList.add('hidden');
 
 /* ============================================================
    LANDSCAPE LOCK
@@ -893,8 +928,8 @@ window.addEventListener('keydown',     requestLandscape, { once: true });
 (async function main() {
   await boot();
   if (IR_USER) {
+    SETTINGS_KEY = 'mochi_settings_' + IR_USER.irId;
     settings = loadSettings();
-    myCharacter = pickDefaultCharacter();
     buildCharGrid();
     applyMyCharacter();
     applyButtonLayout();
