@@ -5,9 +5,6 @@ export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON, {
   realtime: { params: { eventsPerSecond: 30 } }
 });
 
-/* ============================================================
-   IR USER
-   ============================================================ */
 export async function getIRUser() {
   const { data: { user }, error } = await supabase.auth.getUser();
   if (error || !user) return { ok: false, reason: 'not_logged_in' };
@@ -24,9 +21,6 @@ export async function getIRUser() {
   return { ok: true, userId: user.id, irId, name: String(name).slice(0, 16), gender: null };
 }
 
-/* ============================================================
-   ROOM HELPERS
-   ============================================================ */
 function genCode() {
   const A = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
   let s = '';
@@ -61,9 +55,6 @@ export async function deleteRoom(code) {
   await supabase.from('mochi_rooms').delete().eq('code', code);
 }
 
-/* ============================================================
-   MATCH HISTORY
-   ============================================================ */
 export async function loadMatchHistory(irId, limit = 10) {
   const { data, error } = await supabase
     .from('mochi_matches')
@@ -91,9 +82,6 @@ export async function saveMatch(entry) {
   });
 }
 
-/* ============================================================
-   REALTIME CHANNEL
-   ============================================================ */
 export class RoomChannel {
   constructor(code, selfId, name) {
     this.code = code;
