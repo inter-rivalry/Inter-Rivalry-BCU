@@ -69,6 +69,7 @@ let remoteIrId = '';
 let remoteChar = CHAR_PINK;
 
 let channel = null;
+let helloInterval = null; // NEW: Keeps pinging until peer is found
 let selfName = '';
 let roomCode = '';
 let isHost = false;
@@ -533,6 +534,7 @@ function renderRoom() {
   my.avatar.textContent = myCharacter.emoji; my.name.textContent = selfName;
   my.ready.textContent = meReady ? 'READY' : 'not ready';
   my.el.classList.add('you'); my.el.classList.toggle('ready', meReady);
+  
   if (remoteVisible) {
     peer.avatar.textContent = remoteChar.emoji; peer.name.textContent = `${remoteName}`;
     peer.ready.textContent = peerReady ? 'READY' : 'not ready';
@@ -541,6 +543,7 @@ function renderRoom() {
     peer.avatar.textContent = '🍡'; peer.name.textContent = '—';
     peer.ready.textContent = 'waiting…'; peer.el.classList.remove('ready'); peer.el.style.opacity = .6;
   }
+
   if (isHost) {
     startBtn.classList.remove('hidden');
     const canStart = remoteVisible;
@@ -548,6 +551,7 @@ function renderRoom() {
     startBtn.style.opacity = canStart ? '1' : '0.5';
     startBtn.textContent = canStart ? 'START MATCH' : 'WAITING FOR PEER…';
   } else { startBtn.classList.add('hidden'); }
+
   readyBtn.classList.toggle('hidden', inMatch);
   readyBtn.textContent = meReady ? 'NOT READY' : 'READY';
   roomHint.textContent = inMatch ? 'Match in progress' : remoteVisible ? 'Press START MATCH.' : 'Waiting for friend to join…';
@@ -556,11 +560,16 @@ function renderRoom() {
 async function attachChannel(code) {
   channel = new Net.RoomChannel(code, IR_USER.userId, selfName);
   
+  // STOP the ping loop once we see the peer
+  const stopPing = () => { if (helloInterval) { clearInterval(helloInterval); helloInterval = null; } };
+
   channel.on('hello', () => { 
     channel.send('peer', { name: selfName, irId: IR_USER.irId, char: myCharacter.id, isHost }); 
   });
   
   channel.on('peer', ({ name, irId, char, isHost: peerIsHost }) => {
+    if (remoteVisible) return; // Already found them
+    
     remoteName = name || 'Peer'; remoteIrId = irId || '';
     if (peerIsHost) {
       const hostChar = CHARACTERS.find(c => c.id === char) || CHAR_BLUE;
@@ -569,6 +578,9 @@ async function attachChannel(code) {
       remoteChar = CHARACTERS.find(c => c.id === char) || CHAR_PINK; 
     }
     remoteVisible = true; applyRemoteCharacter(); renderRoom();
+    stopPing();
+    
+    // Reply back so they find us too
     channel.send('peer', { name: selfName, irId: IR_USER.irId, char: myCharacter.id, isHost });
   });
   
@@ -583,7 +595,7 @@ async function attachChannel(code) {
   channel.on('move', ({ x, y, z, ry }) => {
     remoteTarget.x = Number(x) || 0; remoteTarget.y = Number(y) || 0;
     remoteTarget.z = Number(z) || 0; remoteTarget.ry = Number(ry) || 0;
-    if (!remoteVisible) { remoteVisible = true; remotePlayer.group.visible = true; renderRoom(); }
+    if (!remoteVisible) { remoteVisible = true; remotePlayer.group.visible = true; renderRoom(); stopPing(); }
   });
   
   channel.on('shoot', ({ x, y, z, ry }) => {
@@ -601,37 +613,30 @@ async function attachChannel(code) {
   channel.on('collect', () => { scoreRemote++; });
   
   await channel.join();
+  
+  // START PINGING until we see the peer
+  helloInterval = setInterval(() => {
+    if (remoteVisible) { clearInterval(helloInterval); return; }
+    channel.send('hello', { name: selfName, irId: IR_USER.irId, char: myCharacter.id, isHost });
+  }, 1000);
 }
 
 async function doCreate() {
-  createBtn.disabled = true;
-  createError.classList.add('hidden');
-  createStatus.textContent = 'Creating room...';
-
+  createBtn.disabled = true; createError.classList.add('hidden'); createStatus.textContent = 'Creating room...';
   try {
     const res = await Net.createRoom(IR_USER.userId, IR_USER.irId);
     if (!res.ok) throw new Error(res.error || 'Could not create room.');
-
-    selfName = IR_USER.name; roomCode = res.code; isHost = true;
-    gameMode = selectedGameMode;
+    selfName = IR_USER.name; roomCode = res.code; isHost = true; gameMode = selectedGameMode;
     meReady = false; peerReady = false; remoteVisible = false; remoteName = ''; remoteIrId = '';
-
-    await attachChannel(roomCode);
-    applyMyCharacter(); showScreen('roomScreen'); renderRoom();
+    await attachChannel(roomCode); applyMyCharacter(); showScreen('roomScreen'); renderRoom();
     createStatus.textContent = 'Room created!';
   } catch (error) {
-    createError.textContent = error.message || 'Could not create room.';
-    createError.classList.remove('hidden'); createStatus.textContent = 'Failed.';
-  } finally {
-    createBtn.disabled = false;
-  }
+    createError.textContent = error.message || 'Could not create room.'; createError.classList.remove('hidden'); createStatus.textContent = 'Failed.';
+  } finally { createBtn.disabled = false; }
 }
 
 async function doJoin() {
-  joinBtn.disabled = true;
-  joinError.classList.add('hidden');
-  joinStatus.textContent = 'Looking for room...';
-
+  joinBtn.disabled = true; joinBtn.textContent = 'SEARCHING...'; joinError.classList.add('hidden'); joinStatus.textContent = 'Looking for room...';
   try {
     const code = String(codeInput.value || '').trim().toUpperCase();
     if (!/^[ABCDEFGHJKLMNPQRSTUVWXYZ23456789]{5}$/.test(code)) throw new Error('Enter a 5-character code.');
@@ -643,15 +648,11 @@ async function doJoin() {
     selfName = IR_USER.name; roomCode = found.code; isHost = false;
     meReady = false; peerReady = false; remoteVisible = false; remoteName = ''; remoteIrId = '';
 
-    await attachChannel(roomCode);
-    applyMyCharacter(); showScreen('roomScreen'); renderRoom();
+    await attachChannel(roomCode); applyMyCharacter(); showScreen('roomScreen'); renderRoom();
     joinStatus.textContent = 'Joined successfully!';
   } catch (error) {
-    joinError.textContent = error.message || 'Could not join room.';
-    joinError.classList.remove('hidden'); joinStatus.textContent = 'Failed.';
-  } finally {
-    joinBtn.disabled = false;
-  }
+    joinError.textContent = error.message || 'Could not join room.'; joinError.classList.remove('hidden'); joinStatus.textContent = 'Failed.';
+  } finally { joinBtn.disabled = false; joinBtn.textContent = 'JOIN'; }
 }
 
 async function startCountdownThenMatch(onComplete) {
@@ -774,6 +775,7 @@ async function loadHistory() {
 createBtn.onclick = doCreate;
 joinBtn.onclick = doJoin;
 leaveRoomBtn.onclick = async () => {
+  if (helloInterval) clearInterval(helloInterval);
   if (channel) { await channel.leave(); channel = null; }
   if (isHost && roomCode) Net.deleteRoom(roomCode);
   roomCode = ''; isHost = false; inMatch = false; hideControls(); showScreen('mainMenu');
