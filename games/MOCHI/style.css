@@ -375,3 +375,17 @@ p.note{
   .jump-button{padding:10px 13px}
   .lobby-card,.room-card,.menu-card{padding:18px}
 }
+.hist-list{display:flex;flex-direction:column;gap:8px;max-height:60vh;overflow-y:auto}
+.hist-item{
+  display:flex;align-items:center;gap:10px;
+  padding:12px 14px;border-radius:12px;background:#171434;
+  border:1px solid #ffffff1c;font-size:12px;
+}
+.hist-item.won{border-color:#76f3d066;background:#76f3d011}
+.hist-item.lost{border-color:#ff4d6d44;background:#ff4d6d11}
+.hist-icon{font-size:20px}
+.hist-info{flex:1}
+.hist-name{font-weight:900;color:#fff;letter-spacing:1px}
+.hist-score{font-size:11px;color:#8f88b8;margin-top:3px}
+.hist-score b{color:#ffe66d}
+.hist-empty{text-align:center;padding:30px 20px;color:#8f88b8;font-size:13px;font-weight:800}
