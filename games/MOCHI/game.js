@@ -37,8 +37,12 @@ async function boot() {
 }
 
 const DEFAULTS = {
-  sensitivity: 10, cameraDistance: 9, joystickX: 20, joystickY: 20, jumpX: 20, jumpY: 20,
-  buttonSize: 100, buttonOpacity: 80, keys: { up: 'w', down: 's', left: 'a', right: 'd', jump: ' ' }
+  sensitivity: 10, cameraDistance: 9, 
+  joystickX: 20, joystickY: 20, 
+  jumpX: 20, jumpY: 20,
+  shootX: 20, shootY: 35, // Shoot button position
+  buttonSize: 100, buttonOpacity: 80, 
+  keys: { up: 'w', down: 's', left: 'a', right: 'd', jump: ' ' }
 };
 let settings = structuredClone(DEFAULTS);
 let SETTINGS_KEY = 'mochi_settings_guest';
@@ -60,7 +64,6 @@ let myCharacter = CHAR_BLUE;
 let chosenForHost = CHAR_BLUE;
 let selectedGameMode = 'events';
 
-// Added vx, vz for slippery physics
 const local  = { x: -3, y: 0, z: 3, vx: 0, vz: 0, ry: 0, vy: 0, grounded: true, radius: 0.7, active: true };
 let remote   = { x: 3, y: 0, z: -3, ry: Math.PI, vy: 0, grounded: true, radius: 0.7 };
 let remoteTarget = { x: 3, y: 0, z: -3, ry: Math.PI };
@@ -93,12 +96,17 @@ const MAX_ROUNDS = 5;
 let totalScoreLocal = 0;
 let totalScoreRemote = 0;
 
+// GAMEPLAY STATES
+let magneticSurvivalTime = 0;
+let lastLocalJump = 0;
+let lastRemoteJump = 0;
+let freezeTimer = 0;
+
 const colliders = []; 
-const movingObstacles = []; // For Chaos obstacles
+const movingObstacles = []; 
 const sparkles = new THREE.Group(); 
 const sparklesList = [];
 const projectiles = [];
-// INVISIBLE REMOVED
 const ALL_EVENTS = ['MAGNETIC', 'PENGUIN', 'WOBBLY', 'KISS'];
 
 const playBtn = document.querySelector('#playBtn');
@@ -135,6 +143,7 @@ const layoutEditor = document.querySelector('#layoutEditor');
 const layoutStage = document.querySelector('#layoutStage');
 const editJoystick = document.querySelector('#editJoystick');
 const editJump = document.querySelector('#editJump');
+const editShoot = document.querySelector('#editShoot');
 const layoutDoneBtn = document.querySelector('#layoutDoneBtn');
 const openLayoutBtn = document.querySelector('#openLayoutBtn');
 const resetLayoutBtn = document.querySelector('#resetLayoutBtn');
@@ -228,6 +237,8 @@ function positionEditHandles() {
   editJoystick.style.transform = 'translate(-50%,-50%)';
   editJump.style.left = `${100 - settings.jumpX}%`; editJump.style.top = `${100 - settings.jumpY}%`;
   editJump.style.transform = 'translate(-50%,-50%)';
+  editShoot.style.left = `${100 - settings.shootX}%`; editShoot.style.top = `${100 - settings.shootY}%`;
+  editShoot.style.transform = 'translate(-50%,-50%)';
 }
 openLayoutBtn.onclick = () => { layoutEditor.classList.remove('hidden'); positionEditHandles(); };
 layoutDoneBtn.onclick = () => { layoutEditor.classList.add('hidden'); applyButtonLayout(); saveSettings(); };
@@ -252,14 +263,15 @@ function setupDrag(el, keyX, keyY) {
     let px = Math.max(6, Math.min(94, ((cx - stage.left) / stage.width) * 100));
     let py = Math.max(6, Math.min(94, ((cy - stage.top) / stage.height) * 100));
     el.style.left = `${px}%`; el.style.top = `${py}%`;
-    settings[keyX] = keyX === 'jumpX' ? (100 - px) : px;
-    settings[keyY] = keyY === 'jumpY' ? (100 - py) : (100 - py);
+    settings[keyX] = keyX === 'jumpX' || keyX === 'shootX' ? (100 - px) : px;
+    settings[keyY] = keyY === 'jumpY' || keyY === 'shootY' ? (100 - py) : (100 - py);
   });
   el.addEventListener('pointerup', () => { draggingEl = null; saveSettings(); });
   el.addEventListener('pointercancel', () => { draggingEl = null; saveSettings(); });
 }
 setupDrag(editJoystick, 'joystickX', 'joystickY');
 setupDrag(editJump, 'jumpX', 'jumpY');
+setupDrag(editShoot, 'shootX', 'shootY');
 
 function showControls() { joystickEl.style.display = 'flex'; jumpBtnEl.style.display = 'flex'; }
 function hideControls() { joystickEl.style.display = 'none'; jumpBtnEl.style.display = 'none'; shootBtnEl.style.display = 'none'; }
@@ -274,10 +286,10 @@ function applyButtonLayout() {
   jumpBtnEl.style.right = `${settings.jumpX}%`; jumpBtnEl.style.bottom = `${settings.jumpY}%`;
   jumpBtnEl.style.transform = `translate(50%, 50%) scale(${scale})`; jumpBtnEl.style.opacity = op;
   
-  // FIXED: Shoot button is exactly 90px above jump button
-  shootBtnEl.style.right = `${settings.jumpX}%`; 
-  shootBtnEl.style.bottom = `calc(${settings.jumpY}% + 90px)`; 
-  shootBtnEl.style.transform = `translate(50%, 50%) scale(${scale})`; shootBtnEl.style.opacity = op;
+  shootBtnEl.style.right = `${settings.shootX}%`; 
+  shootBtnEl.style.bottom = `${settings.shootY}%`; 
+  shootBtnEl.style.transform = `translate(50%, 50%) scale(${scale})`; 
+  shootBtnEl.style.opacity = op;
 }
 
 let touchId = null, touchOrigin = null, touchDelta = { x: 0, y: 0 };
@@ -311,11 +323,21 @@ shootBtnEl.addEventListener('pointerdown', e => { e.preventDefault(); e.stopProp
 function shootKiss() {
   if (currentEvent !== 'KISS' || !inMatch) return;
   SFX.kiss();
+  
   const heart = new THREE.Mesh(new THREE.SphereGeometry(0.3, 8, 8), new THREE.MeshStandardMaterial({ color: '#ff0066', emissive: '#ff0066' }));
   heart.scale.set(1, 0.8, 0.4); heart.position.set(local.x, local.y + 1, local.z); scene.add(heart);
-  const dir = new THREE.Vector3(Math.sin(local.ry), 0, Math.cos(local.ry));
+  
+  let targetRy = local.ry;
+  if (remoteVisible) {
+    const dx = remote.x - local.x;
+    const dz = remote.z - local.z;
+    targetRy = Math.atan2(dx, dz);
+    local.ry = targetRy; 
+  }
+
+  const dir = new THREE.Vector3(Math.sin(targetRy), 0, Math.cos(targetRy));
   projectiles.push({ mesh: heart, x: local.x, y: local.y + 1, z: local.z, vx: dir.x * 15, vz: dir.z * 15, isLocal: true });
-  channel.send('shoot', { x: local.x, y: local.y + 1, z: local.z, ry: local.ry });
+  channel.send('shoot', { x: local.x, y: local.y + 1, z: local.z, ry: targetRy });
 }
 
 const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -336,7 +358,7 @@ const SFX = {
 
 const scene = new THREE.Scene();
 scene.background = new THREE.Color('#9edfff');
-scene.fog = new THREE.Fog('#9edfff', 22, 65);
+scene.fog = new THREE.Fog('#9edfff', 30, 80);
 const camera = new THREE.PerspectiveCamera(58, 1, 0.1, 120);
 const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: 'high-performance' });
 renderer.setPixelRatio(Math.min(devicePixelRatio, 1.7)); renderer.shadowMap.enabled = true;
@@ -355,34 +377,35 @@ window.addEventListener('resize', resize);
 scene.add(new THREE.HemisphereLight(0xffffff, 0x8e78bb, 2));
 const sun = new THREE.DirectionalLight(0xffffff, 2.4);
 sun.position.set(-8, 15, 9); sun.castShadow = true; sun.shadow.mapSize.set(1024, 1024);
-sun.shadow.camera.left = -18; sun.shadow.camera.right = 18; sun.shadow.camera.top = 18; sun.shadow.camera.bottom = -18;
+sun.shadow.camera.left = -25; sun.shadow.camera.right = 25; sun.shadow.camera.top = 25; sun.shadow.camera.bottom = -25;
 scene.add(sun);
 
 const mat = c => new THREE.MeshStandardMaterial({ color: c, roughness: 0.72 });
-const floor = new THREE.Mesh(new THREE.BoxGeometry(28, 0.5, 28), mat('#f7f0ff'));
+
+// BIGGER ARENA
+const floor = new THREE.Mesh(new THREE.BoxGeometry(40, 0.5, 40), mat('#f7f0ff'));
 floor.position.y = -0.3; floor.receiveShadow = true; scene.add(floor);
-const grid = new THREE.GridHelper(28, 28, '#c1b4f4', '#d8d0ef');
+const grid = new THREE.GridHelper(40, 40, '#c1b4f4', '#d8d0ef');
 grid.position.y = -0.035; grid.material.transparent = true; grid.material.opacity = 0.4; scene.add(grid);
 
 function box(w,h,d,c,x,y,z){
   const m = new THREE.Mesh(new THREE.BoxGeometry(w,h,d), mat(c));
   m.position.set(x,y,z); m.castShadow = m.receiveShadow = true; scene.add(m);
   colliders.push({ 
-    minX: x - w/2, maxX: x + w/2, 
-    minY: y - h/2, maxY: y + h/2, 
-    minZ: z - d/2, maxZ: z + d/2 
+    minX: x - w/2, maxX: x + w/2, minY: y - h/2, maxY: y + h/2, minZ: z - d/2, maxZ: z + d/2 
   });
   return m;
 }
 
-box(28,.65,.65,'#ff85bd',0,.15,-14); box(28,.65,.65,'#78e9d2',0,.15,14);
-box(.65,.65,28,'#a99aff',-14,.15,0); box(.65,.65,28,'#ffe277',14,.15,0);
-box(7,.18,5,'#ffd8ec',0,.02,0); box(3.2,.5,3.2,'#ff7db7',0,.3,0); box(2.1,.22,2.1,'#ffe66d',0,.66,0);
+// EXPANDED ARENA WALLS
+box(40,.65,.65,'#ff85bd',0,.15,-20); box(40,.65,.65,'#78e9d2',0,.15,20);
+box(.65,.65,40,'#a99aff',-20,.15,0); box(.65,.65,40,'#ffe277',20,.15,0);
+box(10,.18,5,'#ffd8ec',0,.02,0); box(4.2,.5,4.2,'#ff7db7',0,.3,0); box(2.1,.22,2.1,'#ffe66d',0,.66,0);
 for (const [x,y,z,w,h,d,c] of [
-  [-6,.7,-5,2.1,1.4,1.6,'#ff8cc8'],[6,.7,-5,2.1,1.4,1.6,'#8e83ff'],
-  [-6,.7,5,2.1,1.4,1.6,'#72e6ce'],[6,.7,5,2.1,1.4,1.6,'#ffd76f'],
-  [0,.55,-8,3,1.1,1.2,'#ffa66b'],[0,.55,8,3,1.1,1.2,'#8bd8ff'],
-  [-9,.45,0,1.2,.9,3,'#b9a5ff'],[9,.45,0,1.2,.9,3,'#ff9acb']
+  [-8,.7,-8,2.1,1.4,1.6,'#ff8cc8'],[8,.7,-8,2.1,1.4,1.6,'#8e83ff'],
+  [-8,.7,8,2.1,1.4,1.6,'#72e6ce'],[8,.7,8,2.1,1.4,1.6,'#ffd76f'],
+  [0,.55,-12,3,1.1,1.2,'#ffa66b'],[0,.55,12,3,1.1,1.2,'#8bd8ff'],
+  [-14,.45,0,1.2,.9,3,'#b9a5ff'],[14,.45,0,1.2,.9,3,'#ff9acb']
 ]) box(w,h,d,c,x,y,z);
 
 function makePlayer(bodyColor, accentColor, x, z) {
@@ -400,6 +423,22 @@ function makePlayer(bodyColor, accentColor, x, z) {
   g.position.set(x,0,z); scene.add(g);
   return { group: g, body, bobBase: 0.92 };
 }
+
+// TARGET RING FOR AIM LOCK
+const targetRing = new THREE.Mesh(
+  new THREE.TorusGeometry(0.6, 0.08, 8, 24), 
+  new THREE.MeshStandardMaterial({ color: '#ff0000', emissive: '#ff0000' })
+);
+targetRing.rotation.x = Math.PI / 2;
+targetRing.visible = false;
+scene.add(targetRing);
+
+// ROPE TETHER
+const ropeGeo = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(), new THREE.Vector3()]);
+const ropeMat = new THREE.LineBasicMaterial({ color: '#ffffff', linewidth: 3 });
+const ropeLine = new THREE.Line(ropeGeo, ropeMat);
+ropeLine.visible = false;
+scene.add(ropeLine);
 
 const localPlayer = makePlayer(CHAR_BLUE.body, CHAR_BLUE.accent, -3, 3);
 const remotePlayer = makePlayer(CHAR_PINK.body, CHAR_PINK.accent, 3, -3);
@@ -423,7 +462,19 @@ const keys = new Set();
 let yaw = 0, pitch = 0.26, dragging = false, lastX = 0, lastY = 0;
 const moveVec = new THREE.Vector3(); const clock = new THREE.Clock();
 
-function jump() { if (!inMatch || !local.grounded) return; local.vy = 7.2; local.grounded = false; SFX.jump(); }
+function jump() { 
+  if (!inMatch || !local.grounded) return; 
+  local.vy = 7.2; local.grounded = false; 
+  SFX.jump(); 
+  if (currentEvent === 'MAGNETIC') {
+    lastLocalJump = Date.now();
+    channel.send('sync_jump', {});
+  }
+  if (currentEvent === 'PENGUIN') {
+    local.vx = Math.sin(local.ry) * 12;
+    local.vz = Math.cos(local.ry) * 12;
+  }
+}
 window.addEventListener('keydown', e => {
   const k = e.code === 'Space' ? ' ' : e.key.toLowerCase();
   if ([settings.keys.up, settings.keys.down, settings.keys.left, settings.keys.right, ' '].includes(k)) e.preventDefault();
@@ -431,13 +482,17 @@ window.addEventListener('keydown', e => {
 });
 window.addEventListener('keyup', e => { keys.delete(e.code === 'Space' ? ' ' : e.key.toLowerCase()); });
 
-// CAMERA SWIPE
+// CAMERA SWIPE FIXED
 canvas.addEventListener('pointerdown', e => { dragging = true; lastX = e.clientX; lastY = e.clientY; canvas.setPointerCapture?.(e.pointerId); });
 canvas.addEventListener('pointermove', e => {
   if (!dragging) return;
-  const sens = 0.006 * (settings.sensitivity / 10);
-  yaw -= (e.clientX - lastX) * sens;
-  pitch = THREE.MathUtils.clamp(pitch + (e.clientY - lastY) * 0.003 * (settings.sensitivity / 10), -0.1, 0.8);
+  const sens = 0.0025 * (settings.sensitivity / 10); 
+  let dx = e.clientX - lastX;
+  let dy = e.clientY - lastY;
+  const isRotated = window.innerHeight > window.innerWidth;
+  if (isRotated) { const temp = dx; dx = dy; dy = -temp; }
+  yaw -= dx * sens;
+  pitch = THREE.MathUtils.clamp(pitch + dy * sens, -0.1, 0.8);
   lastX = e.clientX; lastY = e.clientY;
 });
 canvas.addEventListener('pointerup', () => dragging = false);
@@ -462,16 +517,12 @@ function triggerNextRound() {
     return;
   }
   
-  // ANTI-SPAM LOGIC
   let available = ALL_EVENTS.filter(e => !(e === lastEvent1 && e === lastEvent2));
   if (available.length === 0) available = ALL_EVENTS;
   const randomEvent = available[Math.floor(Math.random() * available.length)];
-  lastEvent2 = lastEvent1;
-  lastEvent1 = randomEvent;
+  lastEvent2 = lastEvent1; lastEvent1 = randomEvent;
   
   channel.send('event_start', { event: randomEvent, mode: gameMode, round: currentRound });
-  
-  // HOST FIX: Go through countdown to hide lobby
   startCountdownThenMatch(() => startRound(randomEvent, gameMode, currentRound));
 }
 
@@ -484,6 +535,7 @@ function startRound(eventId, mode, roundNum) {
   applyButtonLayout(); showControls(); requestLandscape();
   scoreName0.textContent = selfName; scoreName1.textContent = remoteName || 'P2';
   scoreLocal = 0; scoreRemote = 0;
+  magneticSurvivalTime = 0; freezeTimer = 0;
   
   localPlayer.body.material.emissive = new THREE.Color(0x000000);
   remotePlayer.body.material.emissive = new THREE.Color(0x000000);
@@ -491,9 +543,9 @@ function startRound(eventId, mode, roundNum) {
   localPlayer.group.visible = true; remotePlayer.group.visible = remoteVisible;
 
   let title = "", desc = "";
-  if (eventId === 'MAGNETIC') { title = "MAGNETIC MODE 🧲"; desc = "You are pulled together!"; }
-  if (eventId === 'PENGUIN') { title = "PENGUIN MODE 🐧"; desc = "Waddle waddle!"; }
-  if (eventId === 'WOBBLY') { title = "WOBBLY LEGS 🫨"; desc = "Slippery when wet!"; }
+  if (eventId === 'MAGNETIC') { title = "MAGNETIC MODE 🧲"; desc = "Survive 10s & Sync Jumps!"; }
+  if (eventId === 'PENGUIN') { title = "PENGUIN MODE 🐧"; desc = "Huddle when freezing!"; }
+  if (eventId === 'WOBBLY') { title = "WOBBLY LEGS 🫨"; desc = "Don't break the rope!"; }
   if (eventId === 'KISS') { title = "FLYING KISS ATTACK 💋"; desc = "Tap the SHOOT button!"; }
   
   eventTitle.textContent = title; eventDesc.textContent = desc;
@@ -502,25 +554,30 @@ function startRound(eventId, mode, roundNum) {
 
   if (eventId === 'MAGNETIC') { localPlayer.body.material.emissive = new THREE.Color('#ff0000'); remotePlayer.body.material.emissive = new THREE.Color('#ff0000'); }
   if (eventId === 'PENGUIN') { localPlayer.group.scale.set(1, 0.6, 1); remotePlayer.group.scale.set(1, 0.6, 1); }
-  if (eventId === 'KISS') shootBtnEl.style.display = 'flex'; else shootBtnEl.style.display = 'none';
+  if (eventId === 'KISS') { shootBtnEl.style.display = 'flex'; targetRing.visible = true; } 
+  else { shootBtnEl.style.display = 'none'; targetRing.visible = false; }
 
-  // --- SPAWN MOVING OBSTACLES ---
+  if (eventId === 'WOBBLY') { ropeLine.visible = true; } else { ropeLine.visible = false; }
+
+  // SPINNING WHEELS FOR MAGNETIC
   movingObstacles.forEach(o => scene.remove(o.mesh));
   movingObstacles.length = 0;
   
-  for(let i=0; i<2; i++) {
-    const geo = new THREE.BoxGeometry(4, 1.5, 4);
-    const mesh = new THREE.Mesh(geo, mat('#ffa500')); // Orange sweeper
-    mesh.castShadow = true;
-    scene.add(mesh);
-    movingObstacles.push({
-      mesh: mesh,
-      speed: 2 + Math.random() * 2,
-      range: 8,
-      centerX: (Math.random() - 0.5) * 15,
-      centerZ: (Math.random() - 0.5) * 15,
-      phase: Math.random() * Math.PI * 2
-    });
+  if (eventId === 'MAGNETIC') {
+    for(let i=0; i<4; i++) {
+      const geo = new THREE.CylinderGeometry(1.5, 1.5, 0.5, 8); // Spinning wheel
+      const mesh = new THREE.Mesh(geo, mat('#ffa500')); 
+      mesh.castShadow = true;
+      scene.add(mesh);
+      movingObstacles.push({
+        mesh: mesh,
+        speed: 2 + Math.random() * 2,
+        range: 10,
+        centerX: (Math.random() - 0.5) * 25,
+        centerZ: (Math.random() - 0.5) * 25,
+        phase: Math.random() * Math.PI * 2
+      });
+    }
   }
 
   projectiles.forEach(p => scene.remove(p.mesh)); projectiles.length = 0;
@@ -529,7 +586,7 @@ function startRound(eventId, mode, roundNum) {
     sparkles.clear(); sparklesList.length = 0;
     for (let i = 0; i < 10; i++) {
       const s = new THREE.Mesh(new THREE.OctahedronGeometry(0.3), new THREE.MeshStandardMaterial({color: '#ff70b7', emissive: '#ff70b7'}));
-      s.position.set((Math.random() - 0.5) * 20, 1, (Math.random() - 0.5) * 20);
+      s.position.set((Math.random() - 0.5) * 30, 1, (Math.random() - 0.5) * 30);
       sparkles.add(s); sparklesList.push(s);
     }
   }
@@ -545,6 +602,7 @@ function startRound(eventId, mode, roundNum) {
 
 function endRound() {
   clearInterval(eventTimerInterval); eventTimer.classList.add('hidden'); shootBtnEl.style.display = 'none';
+  ropeLine.visible = false;
   if (isHost) {
     if (scoreLocal > scoreRemote) totalScoreLocal++; else if (scoreRemote > scoreLocal) totalScoreRemote++;
     channel.send('round_end', { sLocal: scoreLocal, sRemote: scoreRemote });
@@ -624,9 +682,7 @@ async function attachChannel(code) {
   });
   
   channel.on('ready', ({ ready }) => { peerReady = !!ready; renderRoom(); });
-  channel.on('event_start', ({ event, mode, round }) => {
-    startCountdownThenMatch(() => startRound(event, mode, round));
-  });
+  channel.on('event_start', ({ event, mode, round }) => startCountdownThenMatch(() => startRound(event, mode, round)));
   channel.on('round_end', ({ sLocal, sRemote }) => {
     if (sLocal > sRemote) totalScoreRemote++; else if (sRemote > sLocal) totalScoreLocal++;
     updateScoreUI(); toast("ROUND OVER! 🍡");
@@ -637,6 +693,17 @@ async function attachChannel(code) {
     remoteTarget.x = Number(x) || 0; remoteTarget.y = Number(y) || 0;
     remoteTarget.z = Number(z) || 0; remoteTarget.ry = Number(ry) || 0;
     if (!remoteVisible) { remoteVisible = true; remotePlayer.group.visible = true; renderRoom(); if (helloInterval) clearInterval(helloInterval); }
+  });
+
+  channel.on('sync_jump', () => {
+    lastRemoteJump = Date.now();
+    if (currentEvent === 'MAGNETIC') {
+      // If time between jumps is > 250ms, slam the player down
+      if (Math.abs(lastLocalJump - lastRemoteJump) > 250) {
+        local.vy = -10; // Slam
+        toast("OUT OF SYNC! 💥");
+      }
+    }
   });
   
   channel.on('shoot', ({ x, y, z, ry }) => {
@@ -722,7 +789,7 @@ function updateLocalPlayer(dt) {
   let accel = 40;
 
   if (currentEvent === 'PENGUIN') { maxSpeed = 3.0; friction = 0.6; }
-  else if (currentEvent === 'WOBBLY') { maxSpeed = 12.0; friction = 0.98; accel = 60; } // Slippery!
+  else if (currentEvent === 'WOBBLY') { maxSpeed = 12.0; friction = 0.98; accel = 60; } 
 
   if (moveVec.lengthSq() > 0.001) {
     local.vx += moveVec.x * accel * dt;
@@ -741,40 +808,61 @@ function updateLocalPlayer(dt) {
   let moveX = local.vx * dt;
   let moveZ = local.vz * dt;
 
-  // STRONGER MAGNET
   if (currentEvent === 'MAGNETIC' && remoteVisible) {
     const dx = remote.x - local.x; const dz = remote.z - local.z;
     const dist = Math.max(0.1, Math.hypot(dx, dz));
     if (dist > 2) { 
-      const pullStrength = 50.0 * dt; // Increased from 15.0
+      const pullStrength = 50.0 * dt; // VERY STRONG MAGNET
       local.vx += (dx / dist) * pullStrength; 
       local.vz += (dz / dist) * pullStrength; 
     }
   }
 
-  let nextX = THREE.MathUtils.clamp(local.x + moveX, -12.3, 12.3);
-  let nextZ = THREE.MathUtils.clamp(local.z + moveZ, -12.3, 12.3);
+  if (currentEvent === 'WOBBLY' && remoteVisible) {
+    const dx = remote.x - local.x; const dz = remote.z - local.z;
+    const dist = Math.max(0.1, Math.hypot(dx, dz));
+    if (dist > 5) {
+      // Rope yanks them back
+      const pullStrength = 20.0 * dt;
+      local.vx += (dx / dist) * pullStrength;
+      local.vz += (dz / dist) * pullStrength;
+    }
+  }
 
-  // --- REAL WALL COLLISION ---
-  const r = 0.7; 
-  
-  // 1. Check X
-  for (const box of colliders) {
-    if (local.y < box.maxY && local.y + 1.5 > box.minY) {
-      if (nextX + r > box.minX && nextX - r < box.maxX && local.z + r > box.minZ && local.z - r < box.maxZ) {
-        if (moveX > 0) nextX = box.minX - r; 
-        else if (moveX < 0) nextX = box.maxX + r; 
-        local.vx = 0;
+  if (currentEvent === 'PENGUIN') {
+    freezeTimer += dt;
+    if (freezeTimer > 5) {
+      if (remoteVisible) {
+        const dist = Math.hypot(remote.x - local.x, remote.z - local.z);
+        if (dist > 3) {
+          // FROZEN!
+          local.vx = 0; local.vz = 0;
+          localPlayer.body.material.emissive = new THREE.Color('#00ffff'); // Blue frozen
+          if (freezeTimer > 5.1) { freezeTimer = 0; localPlayer.body.material.emissive = new THREE.Color(0x000000); }
+        } else {
+          freezeTimer = 0; // Huddled successfully
+        }
       }
     }
   }
 
-  // 2. Check Z
+  let nextX = THREE.MathUtils.clamp(local.x + moveX, -19.3, 19.3);
+  let nextZ = THREE.MathUtils.clamp(local.z + moveZ, -19.3, 19.3);
+
+  // REAL WALLS
+  const r = 0.7; 
+  for (const box of colliders) {
+    if (local.y < box.maxY && local.y + 1.5 > box.minY) {
+      if (nextX + r > box.minX && nextX - r < box.maxX && local.z + r > box.minZ && local.z - r < box.maxZ) {
+        if (moveX > 0) nextX = box.minX - r; else if (moveX < 0) nextX = box.maxX + r; 
+        local.vx = 0;
+      }
+    }
+  }
   for (const box of colliders) {
     if (local.y < box.maxY && local.y + 1.5 > box.minY) {
       if (nextX + r > box.minX && nextX - r < box.maxX && nextZ + r > box.minZ && nextZ - r < box.maxZ) {
-        if (moveZ > 0) nextZ = box.minZ - r; 
-        else if (moveZ < 0) nextZ = box.maxZ + r; 
+        if (moveZ > 0) nextZ = box.minZ - r; else if (moveZ < 0) nextZ = box.maxZ + r; 
         local.vz = 0;
       }
     }
@@ -815,7 +903,7 @@ function updateRemotePlayer(dt) {
       const dist = Math.hypot(p.x - remote.x, p.z - remote.z);
       if (dist < 1.0) { scene.remove(p.mesh); projectiles.splice(i, 1); channel.send('hit', {}); toast("HIT! 💋"); continue; }
     }
-    if (Math.abs(p.x) > 15 || Math.abs(p.z) > 15) { scene.remove(p.mesh); projectiles.splice(i, 1); }
+    if (Math.abs(p.x) > 20 || Math.abs(p.z) > 20) { scene.remove(p.mesh); projectiles.splice(i, 1); }
   }
 }
 
@@ -828,24 +916,45 @@ function cameraFollow(dt) {
 function animate() {
   requestAnimationFrame(animate); const dt = Math.min(clock.getDelta(), 0.04);
   
-  // Move Chaos Obstacles
   const time = performance.now() * 0.001;
   for (const obs of movingObstacles) {
     obs.mesh.position.x = obs.centerX + Math.sin(time * obs.speed + obs.phase) * obs.range;
     obs.mesh.position.z = obs.centerZ + Math.cos(time * obs.speed + obs.phase) * obs.range;
-    obs.mesh.rotation.y += dt * 2;
+    obs.mesh.rotation.x += dt * 5; // Spin the wheel!
     
-    // Check collision with obstacle (roughly)
-    if (inMatch) {
+    if (inMatch && currentEvent === 'MAGNETIC') {
        const dx = local.x - obs.mesh.position.x;
        const dz = local.z - obs.mesh.position.z;
        const dist = Math.hypot(dx, dz);
-       if (dist < 2.5) { // Hit!
-          local.vx = (dx/dist) * 15; local.vz = (dz/dist) * 15;
-          local.vy = 5; local.grounded = false;
-          SFX.hit(); toast("BONK! 💥");
+       if (dist < 2.0) { 
+          // HIT! Respawn and reset survival timer
+          local.x = -3; local.y = 0; local.z = 3; local.vy = 0; local.vx = 0; local.vz = 0;
+          magneticSurvivalTime = 0;
+          SFX.hit(); toast("OUCH! 💥 Respawned.");
        }
     }
+  }
+
+  if (inMatch && currentEvent === 'MAGNETIC') {
+    magneticSurvivalTime += dt;
+    if (magneticSurvivalTime >= 10.0) {
+      // Win!
+      if (isHost) endRound();
+      magneticSurvivalTime = 0; // Prevent looping
+    }
+  }
+
+  if (inMatch && currentEvent === 'WOBBLY' && remoteVisible) {
+    // Update rope line
+    const positions = ropeLine.geometry.attributes.position.array;
+    positions[0] = local.x; positions[1] = local.y + 1; positions[2] = local.z;
+    positions[3] = remote.x; positions[4] = remoteTarget.y + 1; positions[5] = remote.z;
+    ropeLine.geometry.attributes.position.needsUpdate = true;
+  }
+
+  if (inMatch && currentEvent === 'KISS' && targetRing.visible && remoteVisible) {
+    targetRing.position.set(remote.x, 0.1, remote.z);
+    targetRing.rotation.z += dt * 3;
   }
 
   updateLocalPlayer(dt); updateRemotePlayer(dt); cameraFollow(dt); renderer.render(scene, camera);
