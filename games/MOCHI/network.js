@@ -41,7 +41,6 @@ export async function createRoom(userId, irId) {
       .from('mochi_rooms')
       .insert({ code, host_user_id: userId, host_ir_id: irId });
     if (!error) return { ok: true, code };
-    // If the error is a unique violation (code already exists), try a new code
     if (error.code !== '23505') return { ok: false, error: error.message };
   }
   return { ok: false, error: 'code_collision' };
@@ -53,10 +52,8 @@ export async function findRoom(code) {
     .select('code, host_user_id, host_ir_id')
     .eq('code', String(code || '').toUpperCase().trim())
     .maybeSingle();
-    
   if (error) return { ok: false, error: error.message };
   if (!data) return { ok: false, error: 'not_found' };
-  
   return { ok: true, code: data.code, hostUserId: data.host_user_id, hostIrId: data.host_ir_id };
 }
 
