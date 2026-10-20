@@ -327,18 +327,32 @@ setupDrag(editJoystick, 'joystickX', 'joystickY');
 setupDrag(editJump, 'jumpX', 'jumpY');
 
 /* ============================================================
-   ON-SCREEN CONTROLS
+   ON-SCREEN CONTROLS — created ONCE at boot, always available
    ============================================================ */
 const joystickEl = document.createElement('div');
-joystickEl.className = 'game-joystick hidden';
+joystickEl.className = 'game-joystick';
+joystickEl.id = 'gameJoystick';
 joystickEl.innerHTML = '<div class="game-joystick-knob"></div>';
 root.appendChild(joystickEl);
 const joystickKnob = joystickEl.querySelector('.game-joystick-knob');
 
 const jumpBtnEl = document.createElement('button');
-jumpBtnEl.className = 'game-jump-btn hidden';
+jumpBtnEl.className = 'game-jump-btn';
+jumpBtnEl.id = 'gameJumpBtn';
+jumpBtnEl.type = 'button';
 jumpBtnEl.innerHTML = '<span class="jump-arrow">⬆</span><span class="jump-text">JUMP</span>';
 root.appendChild(jumpBtnEl);
+
+function showControls() {
+  joystickEl.style.display = 'flex';
+  jumpBtnEl.style.display = 'flex';
+}
+function hideControls() {
+  joystickEl.style.display = 'none';
+  jumpBtnEl.style.display = 'none';
+}
+// Start hidden — will be shown when match begins
+hideControls();
 
 function applyButtonLayout() {
   const scale = settings.buttonSize / 100;
@@ -580,7 +594,6 @@ function renderRoom() {
     peer.el.style.opacity = .6;
   }
 
-  // Host always sees START. Enabled only when peer is present.
   if (isHost) {
     startBtn.classList.remove('hidden');
     const canStart = remoteVisible;
@@ -619,7 +632,6 @@ async function attachChannel(code) {
     applyRemoteCharacter();
     remotePlayer.group.visible = true;
     renderRoom();
-    // Reply so a late joiner discovers us too
     channel.send('peer', { name: selfName, irId: IR_USER.irId, char: myCharacter.id });
   });
 
@@ -715,8 +727,7 @@ async function doLeave() {
   remoteVisible = false; inMatch = false;
   gameTopbar.classList.add('hidden');
   gameBottomHud.classList.add('hidden');
-  joystickEl.classList.add('hidden');
-  jumpBtnEl.classList.add('hidden');
+  hideControls();
   showScreen('mainMenu');
 }
 
@@ -753,8 +764,10 @@ function beginMatch() {
 
   gameTopbar.classList.remove('hidden');
   gameBottomHud.classList.remove('hidden');
-  joystickEl.classList.remove('hidden');
-  jumpBtnEl.classList.remove('hidden');
+
+  // SHOW controls — this is the fix
+  applyButtonLayout();
+  showControls();
 
   scoreName0.textContent = selfName;
   scoreName1.textContent = remoteName || 'P2';
