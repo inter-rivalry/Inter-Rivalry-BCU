@@ -10,12 +10,20 @@
 </head>
 <body>
 <div id="play-root">
+  
+  <!-- CHAOS EVENT BANNER & TIMER -->
+  <div id="eventBanner" class="event-banner hidden">
+    <h2 id="eventTitle">MAGNETIC MODE</h2>
+    <p id="eventDesc">Stay close!</p>
+  </div>
+  <div id="eventTimer" class="event-timer hidden">30</div>
+
   <div id="loading" class="loading">🍡 Building the MOCHI arena…</div>
   
   <!-- GAME CANVAS -->
   <canvas id="game"></canvas>
 
-  <!-- ON-SCREEN CONTROLS (Fixed to screen) -->
+  <!-- ON-SCREEN CONTROLS -->
   <div id="joystickZone" class="game-joystick" style="display:none;">
     <div id="joystickKnob" class="game-joystick-knob"></div>
   </div>
@@ -58,7 +66,7 @@
         </div>
         <button id="historyBtn" class="ghost-button" style="width:100%">📜 MATCH HISTORY</button>
       </div>
-      <div class="menu-footer">v0.8 · Phase C</div>
+      <div class="menu-footer">v1.0 · Phase D</div>
     </div>
   </div>
 
@@ -78,8 +86,26 @@
     <div class="menu-card">
       <button class="back-button" data-back="characterScreen">← BACK</button>
       <h2 class="screen-title">CREATE ROOM</h2>
-      <p class="menu-sub">You'll be the host. Share the code with your friend.</p>
-      <button id="createBtn" class="primary-button big">CREATE ROOM</button>
+      <p class="menu-sub">Choose a game mode, then create the room.</p>
+      
+      <div class="mode-selector" id="modeSelector">
+        <div class="mode-tile selected" data-mode="events">
+          <div class="mode-icon">🎲</div>
+          <div>
+            <div class="mode-name">EVENTS ONLY</div>
+            <div class="mode-desc">Survive the funny physics!</div>
+          </div>
+        </div>
+        <div class="mode-tile" data-mode="missions">
+          <div class="mode-icon">💖</div>
+          <div>
+            <div class="mode-name">MISSIONS + EVENTS</div>
+            <div class="mode-desc">Collect hearts while surviving!</div>
+          </div>
+        </div>
+      </div>
+
+      <button id="createBtn" class="primary-button big" style="margin-top:20px;">CREATE ROOM</button>
       <div id="createError" class="lobby-error hidden"></div>
       <div id="createStatus" class="conn-status">Ready</div>
     </div>
@@ -189,7 +215,6 @@
       <p><b>Move:</b> drag the joystick</p>
       <p><b>Jump:</b> tap JUMP</p>
       <p><b>Camera:</b> drag anywhere on the arena</p>
-      <p><b>Colors:</b> Host picks blue or pink. The other player automatically gets the opposite color.</p>
     </div>
   </div>
 
