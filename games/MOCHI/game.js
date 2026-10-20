@@ -31,25 +31,13 @@ document.querySelector('#loginLink').href = LOGIN_URL;
 
 let IR_USER = null;
 
-// FIXED: Boot function with 3-second timeout
 async function boot() {
   try {
-    const userPromise = Net.getIRUser();
-    const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 3000));
-    
-    const user = await Promise.race([userPromise, timeoutPromise]);
-    
+    const user = await Net.getIRUser();
     if (!user.ok) {
-      if (!navigator.onLine || user.reason === 'timeout') {
-        IR_USER = { ok: true, userId: 'offline_guest', irId: 'GUEST', name: 'Guest 🍡' };
-        document.querySelector('#irBadge').textContent = `${IR_USER.irId} · ${IR_USER.name}`;
-        showScreen('mainMenu');
-        return true;
-      }
       showScreen('loginScreen');
       return false;
     }
-    
     IR_USER = user;
     const badge = document.querySelector('#irBadge');
     badge.textContent = `${user.irId} · ${user.name}`;
@@ -57,11 +45,8 @@ async function boot() {
     showScreen('mainMenu');
     return true;
   } catch (err) {
-    console.log("Login timeout or error, going offline:", err);
-    IR_USER = { ok: true, userId: 'offline_guest', irId: 'GUEST', name: 'Guest 🍡' };
-    document.querySelector('#irBadge').textContent = `${IR_USER.irId} · ${IR_USER.name}`;
-    showScreen('mainMenu');
-    return true;
+    showScreen('loginScreen');
+    return false;
   }
 }
 
@@ -128,7 +113,6 @@ const sparklesList = [];
 const projectiles = [];
 const ALL_EVENTS = ['MAGNETIC', 'PENGUIN', 'WOBBLY', 'INVISIBLE', 'KISS'];
 
-// DOM REFS (Shortened for brevity, all queried correctly)
 const playBtn         = document.querySelector('#playBtn');
 const joinMenuBtn     = document.querySelector('#joinMenuBtn');
 const settingsBtn     = document.querySelector('#settingsBtn');
@@ -669,22 +653,106 @@ async function attachChannel(code) {
   await channel.join();
 }
 
+// YOUR EXACT DO CREATE AND DO JOIN CODE:
 async function doCreate() {
+  createBtn.disabled = true;
   createError.classList.add('hidden');
-  const res = await Net.createRoom(IR_USER.userId, IR_USER.irId);
-  if (!res.ok) return;
-  selfName = IR_USER.name; roomCode = res.code; isHost = true; gameMode = selectedGameMode;
-  try { await attachChannel(roomCode); applyMyCharacter(); showScreen('roomScreen'); renderRoom(); } catch (e) { createError.textContent = 'Connection failed.'; createError.classList.remove('hidden'); }
+  createStatus.textContent = 'Creating room...';
+
+  try {
+    const res = await Net.createRoom(
+      IR_USER.userId,
+      IR_USER.irId
+    );
+
+    if (!res.ok) {
+      throw new Error(res.error || 'Could not create room.');
+    }
+
+    selfName = IR_USER.name;
+    roomCode = res.code;
+    isHost = true;
+    gameMode = selectedGameMode;
+
+    meReady = false;
+    peerReady = false;
+    remoteVisible = false;
+    remoteName = '';
+    remoteIrId = '';
+
+    await attachChannel(roomCode);
+
+    applyMyCharacter();
+    showScreen('roomScreen');
+    renderRoom();
+
+    createStatus.textContent = 'Room created successfully!';
+  } catch (error) {
+    console.error('MOCHI create-room error:', error);
+    createError.textContent =
+      error.message || 'Could not create room. Please try again.';
+    createError.classList.remove('hidden');
+    createStatus.textContent = 'Room creation failed.';
+  } finally {
+    createBtn.disabled = false;
+  }
 }
 
 async function doJoin() {
+  joinBtn.disabled = true;
   joinError.classList.add('hidden');
-  const code = (codeInput.value || '').toUpperCase().trim();
-  if (code.length < 4) return;
-  const found = await Net.findRoom(code);
-  if (!found.ok) { joinError.textContent = 'Room not found.'; joinError.classList.remove('hidden'); return; }
-  selfName = IR_USER.name; roomCode = found.code; isHost = false; 
-  try { await attachChannel(roomCode); applyMyCharacter(); showScreen('roomScreen'); renderRoom(); } catch (e) { joinError.textContent = 'Connection failed.'; joinError.classList.remove('hidden'); }
+  joinStatus.textContent = 'Finding room...';
+
+  try {
+    const code = String(codeInput.value || '')
+      .trim()
+      .toUpperCase();
+
+    if (!/^[ABCDEFGHJKLMNPQRSTUVWXYZ23456789]{5}$/.test(code)) {
+      throw new Error('Enter the complete 5-character room code.');
+    }
+
+    const found = await Net.findRoom(code);
+
+    if (!found.ok) {
+      throw new Error(
+        found.error === 'not_found'
+          ? 'Room not found. Check the code with your friend.'
+          : found.error || 'Could not find the room.'
+      );
+    }
+
+    // Prevent accidentally treating the room creator as the joining player.
+    if (found.hostUserId === IR_USER.userId) {
+      throw new Error('You created this room. Use another account to join it.');
+    }
+
+    selfName = IR_USER.name;
+    roomCode = found.code;
+    isHost = false;
+
+    meReady = false;
+    peerReady = false;
+    remoteVisible = false;
+    remoteName = '';
+    remoteIrId = '';
+
+    await attachChannel(roomCode);
+
+    applyMyCharacter();
+    showScreen('roomScreen');
+    renderRoom();
+
+    joinStatus.textContent = 'Joined room successfully!';
+  } catch (error) {
+    console.error('MOCHI join-room error:', error);
+    joinError.textContent =
+      error.message || 'Could not join room. Please try again.';
+    joinError.classList.remove('hidden');
+    joinStatus.textContent = 'Could not join room.';
+  } finally {
+    joinBtn.disabled = false;
+  }
 }
 
 async function startCountdownThenMatch(onComplete) {
