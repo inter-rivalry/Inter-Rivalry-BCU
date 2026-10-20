@@ -73,7 +73,6 @@ let practiceDifficulty = 'medium';
 let frameCount = 0;
 let lastScoreBlue = 0, lastScoreRed = 0;
 
-// Animation state
 let walkBob = 0;
 let landingDip = 0;
 let dashWhoosh = 0;
@@ -82,12 +81,11 @@ let matchElapsed = 0;
 const lastPlayerPos = new THREE.Vector3();
 const playerVel = new THREE.Vector3();
 
-// Battlefield animation references
 let ambientParticles = null;
 let baseBlueMat = null, baseRedMat = null;
 let sunLight = null;
-let sceneBaseColor = new THREE.Color(0x8ed9f5);
-let sceneWarmColor = new THREE.Color(0xa8c8e0);
+const sceneBaseColor = new THREE.Color(0x8ed9f5);
+const sceneWarmColor = new THREE.Color(0xa8c8e0);
 
 const aim = {
   sensitivity: +(localStorage.getItem('rivals-sens') || (touch ? 1.4 : 1.0)),
@@ -285,23 +283,18 @@ function resetHumanoidAnim(group) {
   group.userData.materials.forEach(m => { m.opacity = 1; m.transparent = false; });
 }
 
-/* ===== FLAG WITH WAVE ===== */
+/* ===== FLAG ===== */
 function buildFlag(color) {
   const g = new THREE.Group();
   const pole = new THREE.Mesh(new THREE.CylinderGeometry(.04, .04, 2.2, 6), new THREE.MeshStandardMaterial({ color: 0x888888 }));
   pole.position.y = 1.1; g.add(pole);
-
   const clothGeo = new THREE.PlaneGeometry(.8, .5, 8, 6);
-  const clothMat = new THREE.MeshStandardMaterial({
-    color, side: THREE.DoubleSide,
-    emissive: color, emissiveIntensity: .35,
-  });
+  const clothMat = new THREE.MeshStandardMaterial({ color, side: THREE.DoubleSide, emissive: color, emissiveIntensity: .35 });
   const cloth = new THREE.Mesh(clothGeo, clothMat);
   cloth.position.set(.42, 1.85, 0);
   g.add(cloth);
   g.userData.cloth = cloth;
   g.userData.clothBase = clothGeo.attributes.position.array.slice();
-
   const base = new THREE.Mesh(new THREE.CylinderGeometry(.6, .7, .1, 20),
     new THREE.MeshStandardMaterial({ color: 0x1a2540, roughness: .8 }));
   base.position.y = .05; g.add(base);
@@ -315,7 +308,6 @@ function updateFlagWave(flagMesh, t) {
   for (let i = 0; i < pos.count; i++) {
     const x = base[i * 3];
     const y = base[i * 3 + 1];
-    // Ripple based on distance from pole (x = 0 to .8)
     const ripple = Math.sin(t * 4 + x * 8) * 0.06 * (x + 0.4);
     pos.setZ(i, ripple);
     pos.setY(i, y + Math.sin(t * 3 + x * 6) * 0.02 * x);
@@ -352,7 +344,7 @@ function buildGun() {
   return g;
 }
 
-/* ===== AMBIENT PARTICLES ===== */
+/* ===== AMBIENT ===== */
 function createAmbientParticles() {
   const count = 40;
   const geo = new THREE.BufferGeometry();
@@ -362,11 +354,7 @@ function createAmbientParticles() {
     positions[i * 3] = rand(-24, 24);
     positions[i * 3 + 1] = rand(1, 8);
     positions[i * 3 + 2] = rand(-24, 24);
-    velocities.push({
-      x: rand(-0.3, 0.3),
-      y: rand(-0.1, 0.15),
-      z: rand(-0.3, 0.3),
-    });
+    velocities.push({ x: rand(-0.3, 0.3), y: rand(-0.1, 0.15), z: rand(-0.3, 0.3) });
   }
   geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
   const mat = new THREE.PointsMaterial({
@@ -419,8 +407,7 @@ function spawnDamageNumber(x, y, z, text, isHeadshot) {
   ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
   ctx.fillStyle = isHeadshot ? '#52ffb1' : '#ffe38b';
   ctx.strokeStyle = '#000'; ctx.lineWidth = 4;
-  ctx.strokeText(text, 64, 32);
-  ctx.fillText(text, 64, 32);
+  ctx.strokeText(text, 64, 32); ctx.fillText(text, 64, 32);
   const tex = new THREE.CanvasTexture(canvas);
   const mat = new THREE.SpriteMaterial({ map: tex, transparent: true, depthTest: false });
   const sprite = new THREE.Sprite(mat);
@@ -509,7 +496,6 @@ function initWorld() {
   grid.position.y = .01; scene.add(grid);
 
   const blue = new THREE.MeshStandardMaterial({ color: 0x168bd3, roughness: .85 });
-  const red = new THREE.MeshStandardMaterial({ color: 0xd93258, roughness: .85 });
   const wallM = new THREE.MeshStandardMaterial({ color: 0x19243d, roughness: .95 });
 
   box(50, 2, .8, wallM, 0, 1, -25);
@@ -517,7 +503,6 @@ function initWorld() {
   box(.8, 2, 50, wallM, -25, 1, 0);
   box(.8, 2, 50, wallM, 25, 1, 0);
 
-  // Base zones with emissive pulse
   baseBlueMat = new THREE.MeshStandardMaterial({ color: 0x168bd3, roughness: .7, emissive: 0x168bd3, emissiveIntensity: 0.3 });
   baseRedMat = new THREE.MeshStandardMaterial({ color: 0xd93258, roughness: .7, emissive: 0xd93258, emissiveIntensity: 0.3 });
   box(6, .2, 12, baseBlueMat, -21, .1, 0);
@@ -544,7 +529,6 @@ function initWorld() {
   gunGroup = buildGun();
   camera.add(gunGroup);
 
-  // Ambient particles
   ambientParticles = createAmbientParticles();
 
   addEventListener('resize', () => {
@@ -570,6 +554,7 @@ function addPlayer(id, name, irId, team) {
     targetPos: new THREE.Vector3(team === 'blue' ? -20 : 20, 0, 0),
     yaw: 0, hp: 100, alive: true, prevPos: new THREE.Vector3(),
   });
+  console.log('[PLAYER] Added', name, 'team', team, 'at', group.position.toArray());
 }
 function removePlayer(id) {
   const p = players.get(id);
@@ -635,7 +620,8 @@ function clearTargets() {
 function onMatchState(d) {
   const p = players.get(d.id);
   if (!p) return;
-  p.targetPos.set(d.pos[0], d.pos[1], d.pos[2]);
+  // FIX: force Y to 0 (floor) — was causing floating
+  p.targetPos.set(d.pos[0], 0, d.pos[2]);
   p.yaw = d.yaw; p.hp = d.hp;
   if (!d.alive && p.alive) triggerDeathAnim(p.group);
   p.alive = d.alive;
@@ -651,8 +637,10 @@ function onShotFired(d) {
   setTimeout(() => { scene.remove(line); geo.dispose(); line.material.dispose(); }, 80);
 }
 function onHitReceived(d) {
+  console.log('[HIT] Received:', d);
   if (d.target === localId) {
-    if (!alive || invulnT > 0) return;
+    if (!alive || invulnT > 0) { console.log('[HIT] Ignored: dead or invuln'); return; }
+    console.log('[HIT] Taking damage:', d.damage, 'hp before:', health);
     health = Math.max(0, health - d.damage);
     invulnT = INVULN;
     cameraShake = Math.min(cameraShake + .4, .7);
@@ -663,17 +651,19 @@ function onHitReceived(d) {
   }
 }
 function onFlagUpdate(d) {
+  console.log('[FLAG] Event:', d, 'isHost:', isHost);
   if (d.type === 'capture' && isHost) {
     const f = flags[d.team];
-    if (!f || f.carrier !== d.carrier) return;
+    if (!f || f.carrier !== d.carrier) { console.log('[FLAG] capture rejected: carrier mismatch'); return; }
     const carrier = players.get(d.carrier);
-    if (!carrier || !carrier.alive) return;
+    if (!carrier || !carrier.alive) { console.log('[FLAG] capture rejected: carrier dead'); return; }
     const ownBaseX = carrier.team === 'blue' ? -21 : 21;
     const dx = carrier.group.position.x - ownBaseX;
     const dz = carrier.group.position.z;
-    if (dx * dx + dz * dz > TREASURE_RANGE * TREASURE_RANGE) return;
+    if (dx * dx + dz * dz > TREASURE_RANGE * TREASURE_RANGE) { console.log('[FLAG] capture rejected: too far'); return; }
     if (carrier.team === 'blue') scoreBlue++; else scoreRed++;
     captures++; f.carrier = null;
+    f.mesh.position.copy(f.basePos);
     net.broadcastMatch('score', { scoreBlue, scoreRed });
     net.broadcastMatch('flag', { team: d.team, carrier: null, baseX: f.basePos.x, baseZ: f.basePos.z, scoreBlue, scoreRed });
     if (scoreBlue >= CAPTURES_TO_WIN || scoreRed >= CAPTURES_TO_WIN) endMatch(scoreBlue >= CAPTURES_TO_WIN ? 'blue' : 'red');
@@ -681,16 +671,18 @@ function onFlagUpdate(d) {
   }
   if (d.type === 'steal' && isHost) {
     const f = flags[d.team];
-    if (!f || f.carrier) return;
+    if (!f || f.carrier) { console.log('[FLAG] steal rejected: already carried'); return; }
     const stealer = players.get(d.stealer);
-    if (!stealer || !stealer.alive || stealer.team === d.team) return;
+    if (!stealer || !stealer.alive || stealer.team === d.team) { console.log('[FLAG] steal rejected: invalid stealer'); return; }
     const dx = stealer.group.position.x - f.mesh.position.x;
     const dz = stealer.group.position.z - f.mesh.position.z;
-    if (dx * dx + dz * dz > STEAL_RANGE * STEAL_RANGE) return;
+    if (dx * dx + dz * dz > STEAL_RANGE * STEAL_RANGE) { console.log('[FLAG] steal rejected: too far', Math.sqrt(dx*dx+dz*dz)); return; }
     f.carrier = stealer.id;
+    console.log('[FLAG] Steal approved, new carrier:', stealer.name);
     net.broadcastMatch('flag', { team: d.team, carrier: stealer.id, baseX: f.basePos.x, baseZ: f.basePos.z, scoreBlue, scoreRed });
     return;
   }
+  // Normal state update
   const f = flags[d.team];
   if (!f) return;
   f.carrier = d.carrier;
@@ -709,9 +701,8 @@ function onKillFeed(d) {
 }
 function onMatchEnd(d) { endMatch(d.winner || (d.blueScore > d.redScore ? 'blue' : 'red')); }
 
-/* ===== FLAG RESET ON DEATH (critical fix) ===== */
+/* ===== FLAG RESET ON DEATH ===== */
 function resetFlagsOnDeath(entityId) {
-  // Instantly snap any flag carried by this entity back to base
   for (const team of ['blue', 'red']) {
     const f = flags[team];
     if (!f) continue;
@@ -768,7 +759,9 @@ function shoot() {
     for (const b of bots) if (b.alive && b.team !== localTeam) b.hitParts.forEach(m => { m.userData.__bot = b; candidates.push(m); });
   } else {
     players.forEach(p => {
-      if (p.team !== localTeam && p.alive) p.hitParts.forEach(m => { m.userData.__pid = p.id; candidates.push(m); });
+      if (p.team !== localTeam && p.alive) {
+        p.hitParts.forEach(m => { m.userData.__pid = p.id; candidates.push(m); });
+      }
     });
   }
   candidates.push(...wallMeshes);
@@ -819,6 +812,7 @@ function shoot() {
       const pid = h.object.userData.__pid;
       if (pid) {
         hitInfo = { id: pid, headshot: isHead };
+        console.log('[SHOOT] Hit player', pid, 'headshot:', isHead);
         net.broadcastMatch('hit', { target: pid, damage: isHead ? 100 : 35, headshot: isHead, shooter: localId });
         spawnDamageNumber(h.point.x, 1.5, h.point.z, isHead ? '100' : '35', isHead);
         spawnImpact(h.point.x, h.point.y, h.point.z, 0xff4c73);
@@ -1168,9 +1162,10 @@ function updateAimLock(dt) {
   }
 }
 
-/* ===== HOST FLAG LOGIC (real matches) ===== */
+/* ===== HOST FLAG LOGIC (real matches) — updates flag mesh from any carrier ===== */
 let flagTick = 0;
 function hostFlagLogic(dt) {
+  if (!hostFlagLogic && !isHost) return;
   if (!isHost || practiceMode || !running) return;
   flagTick += dt;
   if (flagTick < 0.05) return;
@@ -1232,11 +1227,18 @@ function leaveMatch() {
 function doSteal() {
   const enemyTeam = localTeam === 'blue' ? 'red' : 'blue';
   const f = flags[enemyTeam];
-  if (!f || f.carrier) return;
+  if (!f) { console.log('[STEAL] No enemy flag'); return; }
+  if (f.carrier) { console.log('[STEAL] Flag already carried by', f.carrier); return; }
   const dx = camera.position.x - f.mesh.position.x, dz = camera.position.z - f.mesh.position.z;
-  if (dx * dx + dz * dz > STEAL_RANGE * STEAL_RANGE) return;
+  const d2 = dx * dx + dz * dz;
+  console.log('[STEAL] Attempt. dist:', Math.sqrt(d2), 'range:', STEAL_RANGE, 'isHost:', isHost, 'enemyFlagPos:', f.mesh.position.toArray(), 'myPos:', [camera.position.x, camera.position.z]);
+  if (d2 > STEAL_RANGE * STEAL_RANGE) { console.log('[STEAL] Too far'); return; }
   if (practiceMode) { f.carrier = localId; toast('FLAG STOLEN'); }
-  else { net.broadcastMatch('flag', { type: 'steal', team: enemyTeam, stealer: localId }); toast('STEALING'); }
+  else {
+    net.broadcastMatch('flag', { type: 'steal', team: enemyTeam, stealer: localId });
+    console.log('[STEAL] Broadcast sent');
+    toast('STEALING');
+  }
 }
 function doTreasure() {
   const enemyTeam = localTeam === 'blue' ? 'red' : 'blue';
@@ -1485,29 +1487,11 @@ function update(dt, t) {
     muzzleFlash.material.opacity = Math.max(0, muzzleFlash.material.opacity - dt * 20);
   }
 
-  // ===== BATTLEFIELD ANIMATIONS =====
-  // Ambient particles
   updateAmbientParticles(ambientParticles, dt);
-
-  // Base zone pulse
   if (baseBlueMat) baseBlueMat.emissiveIntensity = 0.3 + Math.sin(t * 2) * 0.15;
   if (baseRedMat) baseRedMat.emissiveIntensity = 0.3 + Math.sin(t * 2 + Math.PI) * 0.15;
-
-  // Flag wave
   if (flags.blue) updateFlagWave(flags.blue.mesh, t);
   if (flags.red) updateFlagWave(flags.red.mesh, t);
-
-  // Wall pulse (subtle)
-  if (wallMeshes.length) {
-    const pulse = 0.85 + Math.sin(t * 1.5) * 0.05;
-    wallMeshes.forEach(m => { if (m.material) m.material.color.setHex(0x168bd3).multiplyScalar(pulse); });
-  }
-
-  // Sky color shift
-  if (!practiceMode) {
-    const shift = Math.min(1, matchElapsed / 300);
-    scene.background.lerpColors(sceneBaseColor, sceneWarmColor, shift * 0.3);
-  }
 
   for (let i = effects.length - 1; i >= 0; i--) {
     const e = effects[i];
@@ -1546,6 +1530,7 @@ function update(dt, t) {
   for (const p of players.values()) {
     p.prevPos = p.prevPos || new THREE.Vector3().copy(p.group.position);
     p.group.position.lerp(p.targetPos, Math.min(1, dt * 10));
+    p.group.position.y = 0; // Force Y to 0 (fix floating)
     p.group.rotation.y = p.yaw;
     const moved = p.group.position.distanceTo(p.prevPos) > 0.01;
     p.prevPos.copy(p.group.position);
@@ -1559,6 +1544,7 @@ function update(dt, t) {
         p.label.style.display = '';
       } else p.label.style.display = 'none';
     }
+    // Flag follows ANY carrier (local or remote)
     if (flags.blue?.carrier === p.id) flags.blue.mesh.position.set(p.group.position.x, 0, p.group.position.z);
     if (flags.red?.carrier === p.id) flags.red.mesh.position.set(p.group.position.x, 0, p.group.position.z);
   }
@@ -1594,7 +1580,6 @@ function update(dt, t) {
       updateBots(dt, t);
       updateProjectiles(dt);
     }
-    // Local flag follows carrier
     for (const team of ['blue', 'red']) {
       if (flags[team].carrier === localId && alive) {
         flags[team].mesh.position.set(camera.position.x, 0, camera.position.z);
@@ -1612,7 +1597,7 @@ function update(dt, t) {
       stateBroadcastTimer = 0;
       net.broadcastMatch('state', {
         id: localId,
-        pos: [camera.position.x, camera.position.y, camera.position.z],
+        pos: [camera.position.x, 0, camera.position.z], // FIX: y=0 (was causing floating)
         yaw, pitch, hp: health, alive,
         hasFlag: flags.blue?.carrier === localId ? 'blue' : (flags.red?.carrier === localId ? 'red' : null),
       });
@@ -1822,7 +1807,6 @@ function bindLobby() {
     await net.setReady(!me?.ready);
   });
   $('btn-start').addEventListener('click', async () => {
-    // Check both teams have at least 1 player
     const playersList = (await net.client.from('room_players').select('*').eq('room_id', net.room.id)).data || [];
     const blueCount = playersList.filter(p => p.team === 'blue').length;
     const redCount = playersList.filter(p => p.team === 'red').length;
@@ -1862,9 +1846,7 @@ function renderRoomPlayers(list) {
   const me = list.find(p => p.user_id === localId);
   $('btn-ready').textContent = me?.ready ? 'UNREADY' : 'READY';
   if (net.isHost) {
-    // Host ALWAYS sees START button
     $('btn-start').classList.remove('hidden');
-    // Disable if either team empty
     const hasBothTeams = blue.length > 0 && red.length > 0;
     $('btn-start').disabled = !hasBothTeams;
     $('btn-start').textContent = hasBothTeams ? 'START MATCH' : 'NEED 1+ PER TEAM';
