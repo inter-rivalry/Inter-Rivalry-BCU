@@ -1,4 +1,4 @@
-import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js';
+limport * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js';
 import { Net } from './net.js';
 
 const $ = id => document.getElementById(id);
@@ -1219,4 +1219,123 @@ function loop() {
 
 /* ===== MATCH START ===== */
 function enterMatch(match, allPlayers) {
-  lockLandscape(); matchId = match.id; matchMode = match.mode || 'standard'; roundTime = MODES[matchMode].matchTime; scoreBlue = match.blue_score || 0;
+  lockLandscape(); matchId = match.id; matchMode = match.mode || 'standard'; roundTime = MODES[matchMode].matchTime; scoreBlue = match.blue_score || 0; scoreRed = match.red_score || 0;
+  gameOver = false; practiceMode = false; kills = deaths = captures = headshots = 0; matchElapsed = 0;
+  $('lobby').classList.add('hidden'); $('room').classList.add('hidden'); $('hud').classList.remove('hidden'); if (touch) $('mobile').classList.remove('hidden');
+  for (const id of Array.from(players.keys())) removePlayer(id);
+  let myTeam = 'blue';
+  for (const p of allPlayers) { if (p.user_id === localId) { myTeam = p.team; continue; } addPlayer(p.user_id, p.display_name, p.ir_id || '', p.team); }
+  localTeam = myTeam; flags.blue.mesh.position.copy(flags.blue.basePos); flags.red.mesh.position.copy(flags.red.basePos); flags.blue.carrier = flags.red.carrier = null;
+  const baseX = localTeam === 'blue' ? -20 : 20; camera.position.set(baseX, H, 0); lastPlayerPos.copy(camera.position); yaw = localTeam === 'blue' ? -Math.PI / 2 : Math.PI / 2; pitch = 0;
+  health = 100; alive = true; ammo = 12; reloadT = 0; invulnT = 1;
+  net.subscribeMatch(matchId, {
+    onState: onMatchState, onShot: onShotFired, onHit: onHitReceived, onFlag: onFlagUpdate, onScore: onScoreUpdate, onKill: onKillFeed, onEnd: onMatchEnd,
+    onJoined: () => { running = true; if (!touch) renderer.domElement.requestPointerLock?.(); },
+  });
+  updateHud();
+}
+
+function enterPractice(variant) {
+  lockLandscape(); practiceMode = true; practiceVariant = variant; gameOver = false; running = true; paused = false; matchId = null;
+  localTeam = 'blue'; scoreBlue = scoreRed = 0; lastScoreBlue = 0; lastScoreRed = 0; kills = deaths = captures = headshots = 0; matchElapsed = 0;
+  $('lobby').classList.add('hidden'); $('room').classList.add('hidden'); $('hud').classList.remove('hidden'); if (touch) $('mobile').classList.remove('hidden');
+  clearBotsAndProjectiles(); clearTargets();
+  if (variant === 'range') { for (let i = 0; i < 6; i++) addRangeTarget(); }
+  else { addBot('Blue 1', 'blue'); addBot('Blue 2', 'blue'); addBot('Red 1', 'red'); addBot('Red 2', 'red'); addBot('Red 3', 'red'); }
+  flags.blue.mesh.position.copy(flags.blue.basePos); flags.red.mesh.position.copy(flags.red.basePos); flags.blue.carrier = flags.red.carrier = null;
+  camera.position.set(-20, H, 0); lastPlayerPos.copy(camera.position); yaw = -Math.PI / 2; pitch = 0;
+  health = 100; alive = true; ammo = 12; reloadT = 0; invulnT = 1; updateHud();
+  if (!touch) renderer.domElement.requestPointerLock?.();
+}
+
+/* ===== LOBBY ===== */
+function showLobby() {
+  running = false; gameOver = true; paused = false; customizing = false;
+  $('lobby').classList.remove('hidden'); $('hud').classList.add('hidden'); $('pause').classList.add('hidden'); $('gameover').classList.add('hidden'); $('custom-grid').classList.add('hidden');
+  $('sens-slider').value = aim.sensitivity; $('sens-val').textContent = aim.sensitivity.toFixed(1);
+  $('assist-slider').value = Math.round(aim.assistStrength * 100); $('assist-val').textContent = Math.round(aim.assistStrength * 100) + '%';
+  $('vol-slider').value = Math.round((+(localStorage.getItem('rivals-vol') || 50))); $('vol-val').textContent = $('vol-slider').value + '%';
+  $('lobby-name').textContent = `${localName} · ${localIrId}`;
+  document.querySelectorAll('.mode-tabs .tab').forEach(t => t.classList.toggle('active', t.dataset.mode === gameMode));
+  $('mode-desc').textContent = MODES[gameMode].desc;
+  $('practice-panel').classList.toggle('hidden', gameMode !== 'practice'); $('match-panel').classList.toggle('hidden', gameMode === 'practice');
+  document.querySelectorAll('.swatch').forEach(b => b.classList.toggle('active', b.dataset.color === playerColorKey)); $('color-name').textContent = COLORS[playerColorKey].name;
+  document.querySelectorAll('.diff-tab').forEach(b => b.classList.toggle('active', b.dataset.diff === practiceDifficulty));
+  if (!lobbyPreview) { lobbyPreview = new LobbyPreview($('lobby-canvas')); lobbyPreview.setColor(COLORS[playerColorKey].hex); requestAnimationFrame(() => lobbyPreview.resize()); }
+  else { lobbyPreview.setColor(COLORS[playerColorKey].hex); lobbyPreview.resize(); }
+}
+
+function bindLobby() {
+  $('lobby').addEventListener('pointerdown', () => { lockLandscape(); }, { once: true });
+  document.querySelectorAll('.mode-tabs .tab').forEach(btn => {
+    btn.addEventListener('click', () => {
+      gameMode = btn.dataset.mode; document.querySelectorAll('.mode-tabs .tab').forEach(b => b.classList.remove('active')); btn.classList.add('active');
+      $('mode-desc').textContent = MODES[gameMode].desc; $('practice-panel').classList.toggle('hidden', gameMode !== 'practice'); $('match-panel').classList.toggle('hidden', gameMode === 'practice');
+    });
+  });
+  document.querySelectorAll('.diff-tab').forEach(btn => {
+    btn.addEventListener('click', () => { practiceDifficulty = btn.dataset.diff; document.querySelectorAll('.diff-tab').forEach(b => b.classList.remove('active')); btn.classList.add('active'); });
+  });
+  document.querySelectorAll('.swatch').forEach(btn => {
+    btn.addEventListener('click', () => {
+      playerColorKey = btn.dataset.color; localStorage.setItem('rivals-color', playerColorKey);
+      document.querySelectorAll('.swatch').forEach(b => b.classList.remove('active')); btn.classList.add('active');
+      $('color-name').textContent = COLORS[playerColorKey].name; if (lobbyPreview) lobbyPreview.setColor(COLORS[playerColorKey].hex);
+    });
+  });
+  $('sens-slider').addEventListener('input', e => { aim.sensitivity = +e.target.value; localStorage.setItem('rivals-sens', aim.sensitivity); $('sens-val').textContent = aim.sensitivity.toFixed(1); });
+  $('assist-slider').addEventListener('input', e => { aim.assistStrength = +e.target.value / 100; localStorage.setItem('rivals-assist', aim.assistStrength); $('assist-val').textContent = e.target.value + '%'; });
+  $('vol-slider').addEventListener('input', e => { localStorage.setItem('rivals-vol', e.target.value); $('vol-val').textContent = e.target.value + '%'; });
+  let teamSize = 3;
+  document.querySelectorAll('.size-tab').forEach(t => { t.addEventListener('click', () => { teamSize = +t.dataset.size; document.querySelectorAll('.size-tab').forEach(x => x.classList.remove('active')); t.classList.add('active'); }); });
+  
+  $('btn-range').addEventListener('click', () => enterPractice('range'));
+  $('btn-botmatch').addEventListener('click', () => enterPractice('botmatch'));
+  $('btn-create').addEventListener('click', async () => { const r = await net.createRoom(teamSize, gameMode); if (!r.ok) return toast('Could not create room'); showRoomUI(); });
+  $('btn-find').addEventListener('click', async () => { const r = await net.findMatch(teamSize, gameMode); if (!r.ok) return toast('No match available'); showRoomUI(); });
+  $('btn-join').addEventListener('click', () => $('join-row').classList.toggle('hidden'));
+  $('btn-join-go').addEventListener('click', async () => {
+    const code = $('join-code').value.trim().toUpperCase(); if (!code) return;
+    const r = await net.joinRoom(code); if (!r.ok) return toast(r.reason === 'not_found' ? 'Room not found' : 'Could not join'); showRoomUI();
+  });
+  $('btn-leave').addEventListener('click', async () => { await net.leaveRoom(); $('room').classList.add('hidden'); $('lobby').classList.remove('hidden'); });
+  $('btn-ready').addEventListener('click', async () => {
+    const me = (await net.client.from('room_players').select('*').eq('room_id', net.room.id).eq('user_id', localId).maybeSingle()).data; await net.setReady(!me?.ready);
+  });
+  $('btn-start').addEventListener('click', async () => {
+    const playersList = (await net.client.from('room_players').select('*').eq('room_id', net.room.id)).data || [];
+    const blueCount = playersList.filter(p => p.team === 'blue').length; const redCount = playersList.filter(p => p.team === 'red').length;
+    if (blueCount === 0 || redCount === 0) { toast('Need at least 1 player on each team'); return; }
+    const r = await net.startMatch(); if (!r.ok) toast('Could not start'); else enterMatch(r.match, r.players);
+  });
+  $('btn-logout').addEventListener('click', async () => { await net.logout(); location.reload(); });
+}
+
+function showRoomUI() {
+  $('lobby').classList.add('hidden'); $('room').classList.remove('hidden'); $('room-code-display').textContent = net.room.code;
+  net.subscribeRoom({ onPlayers: renderRoomPlayers, onStart: data => enterMatch(data.match, data.players), onRoomClosed: () => { toast('Room closed'); $('room').classList.add('hidden'); $('lobby').classList.remove('hidden'); } });
+}
+
+function renderRoomPlayers(list) {
+  const cap = net.room.team_size; const blue = list.filter(p => p.team === 'blue'); const red = list.filter(p => p.team === 'red');
+  const row = p => `<li class="${p.ready ? 'ready' : ''}"><div><div>${escapeHtml(p.display_name)}</div><div style="font-size:10px;opacity:.6">${escapeHtml(p.ir_id || '')}</div></div>${p.ready ? '<span class="badge">READY</span>' : ''}</li>`;
+  $('room-players').innerHTML = `
+    <div class="team-col blue"><h3>BLUE (${blue.length}/${cap})</h3><ul>${blue.map(row).join('') || '<li>—</li>'}</ul></div>
+    <div class="team-col red"><h3>RED (${red.length}/${cap})</h3><ul>${red.map(row).join('') || '<li>—</li>'}</ul></div>`;
+  const me = list.find(p => p.user_id === localId); $('btn-ready').textContent = me?.ready ? 'UNREADY' : 'READY';
+  if (net.isHost) {
+    $('btn-start').classList.remove('hidden'); const hasBothTeams = blue.length > 0 && red.length > 0;
+    $('btn-start').disabled = !hasBothTeams; $('btn-start').textContent = hasBothTeams ? 'START MATCH' : 'NEED 1+ PER TEAM';
+  } else { $('btn-start').classList.add('hidden'); }
+}
+
+/* ===== BOOT ===== */
+async function boot() {
+  const initRes = await net.init();
+  if (!initRes.ok) { $('auth-gate').classList.remove('hidden'); $('auth-msg').textContent = 'Please sign in on the main site first.'; return; }
+  localId = net.user.id; localName = net.displayName; localIrId = net.irId; $('auth-gate').classList.add('hidden');
+  initWorld(); bindInput(); bindLobby(); loop(); showLobby();
+  if ('serviceWorker' in navigator) { navigator.serviceWorker.register('./sw.js', { scope: './' }).catch(() => {}); }
+}
+
+boot();
