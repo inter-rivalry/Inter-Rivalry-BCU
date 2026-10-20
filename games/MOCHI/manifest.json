@@ -1,0 +1,11 @@
+{
+  "name": "MOCHI \u2014 Chaos Button",
+  "short_name": "MOCHI",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "landscape",
+  "background_color": "#17152f",
+  "theme_color": "#17152f",
+  "description": "A cute multiplayer party game by INTER RIVALRY."
+}
