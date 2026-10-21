@@ -1,4 +1,4 @@
-const CACHE = 'rivals-v3'; // <--- BUMPED TO v3
+const CACHE = 'rivals-v100'; // <--- BUMPED TO v3
 const ASSETS = ['./index.html', './style.css', './game.js', './net.js', './manifest.json'];
 
 self.addEventListener('install', e => {
