@@ -2,7 +2,7 @@ import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js
 
 // Your actual Supabase credentials are hardcoded here
 const SUPABASE_URL = 'https://qfkxvflyzucvkeyucbzn.supabase.co';
-const SUPABASE_ANON_KEY = '';
+const SUPABASE_ANON_KEY = 'sb_publishable_Se88Rw_onDUYfnMHxogs2g_q6WGY_3T';
 
 export class Net {
   constructor() {
