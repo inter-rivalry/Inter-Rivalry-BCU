@@ -1331,11 +1331,23 @@ function renderRoomPlayers(list) {
 
 /* ===== BOOT ===== */
 async function boot() {
-  const initRes = await net.init();
-  if (!initRes.ok) { $('auth-gate').classList.remove('hidden'); $('auth-msg').textContent = 'Please sign in on the main site first.'; return; }
-  localId = net.user.id; localName = net.displayName; localIrId = net.irId; $('auth-gate').classList.add('hidden');
-  initWorld(); bindInput(); bindLobby(); loop(); showLobby();
-  if ('serviceWorker' in navigator) { navigator.serviceWorker.register('./sw.js', { scope: './' }).catch(() => {}); }
+  try {
+    const initRes = await net.init();
+    if (!initRes.ok) { 
+      $('auth-gate').classList.remove('hidden'); 
+      $('auth-msg').textContent = initRes.reason === 'not_logged_in' ? 'Please sign in on the main site first.' : 'Error: ' + initRes.reason; 
+      return; 
+    }
+    localId = net.user.id; localName = net.displayName; localIrId = net.irId; 
+    $('auth-gate').classList.add('hidden');
+    
+    initWorld(); bindInput(); bindLobby(); loop(); showLobby();
+    
+    if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js', { scope: './' }).catch(() => {});
+  } catch (err) {
+    $('auth-gate').classList.remove('hidden');
+    $('auth-msg').textContent = '❌ Fatal Error: ' + err.message;
+    $('auth-msg').style.color = 'red';
+  }
 }
-
 boot();
