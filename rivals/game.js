@@ -7,13 +7,11 @@ const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 const wrapAngle = a => Math.atan2(Math.sin(a), Math.cos(a));
 const rand = (a, b) => a + Math.random() * (b - a);
 
-/* ===== SAFE LOCAL STORAGE (Fixes Incognito crashes) ===== */
 const store = {
   get: (k, fallback) => { try { return localStorage.getItem(k) || fallback; } catch(e) { return fallback; } },
   set: (k, v) => { try { localStorage.setItem(k, v); } catch(e) {} }
 };
 
-/* ===== LANDSCAPE LOCK ===== */
 async function lockLandscape() {
   try {
     const el = document.documentElement;
@@ -25,7 +23,6 @@ async function lockLandscape() {
   try { if (screen.orientation?.lock) await screen.orientation.lock('landscape'); } catch (_) {}
 }
 
-/* ===== CONSTANTS ===== */
 const H = 1.7, SPEED = 7.5, DASH_SPEED = 22, DASH_DUR = .15, DASH_CD = 1.5;
 const INVULN = .6, RESPAWN = 3;
 const LOCK_CONE = .20, LOCK_RANGE = 25, LOCK_PULL = 12, DRIFT_BREAK = .35;
@@ -57,7 +54,6 @@ const COLORS = {
   venom: { hex: 0x52ffb1, name: 'VENOM' },
 };
 
-/* ===== STATE ===== */
 const net = new Net();
 let scene, camera, renderer, clock, raycaster;
 let localId = null, localName = '', localIrId = '', localTeam = 'blue', isHost = false;
@@ -106,6 +102,9 @@ let gunGroup = null;
 let muzzleFlash = null;
 let ambientParticles = null;
 
+// Battlefield Animation References
+let baseBlueRing, baseRedRing, floorGrid;
+
 /* ===== UI CUSTOMIZATION ===== */
 function loadCustomLayout() {
   const saved = store.get('rivals-layout', null);
@@ -115,14 +114,16 @@ function loadCustomLayout() {
     Object.keys(layout).forEach(id => {
       const el = $(id);
       if (el) {
+        el.style.position = 'fixed';
         el.style.left = layout[id].left;
         el.style.top = layout[id].top;
         el.style.right = 'auto';
         el.style.bottom = 'auto';
-        el.style.transform = 'none'; 
+        el.style.transform = 'none';
+        el.style.margin = '0';
       }
     });
-  } catch(e) { console.log('Layout load error', e); }
+  } catch(e) {}
 }
 
 function initDragging() {
@@ -134,16 +135,26 @@ function initDragging() {
       e.preventDefault();
       el.classList.add('dragging');
       const rect = el.getBoundingClientRect();
-      startLeft = rect.left; startTop = rect.top;
-      el.style.left = startLeft + 'px'; el.style.top = startTop + 'px';
-      el.style.right = 'auto'; el.style.bottom = 'auto';
+      
+      // Detach from flexbox to allow free movement
+      el.style.position = 'fixed';
+      el.style.left = rect.left + 'px';
+      el.style.top = rect.top + 'px';
+      el.style.right = 'auto';
+      el.style.bottom = 'auto';
       el.style.transform = 'none';
-      startX = e.clientX; startY = e.clientY;
+      el.style.margin = '0';
+
+      startLeft = rect.left;
+      startTop = rect.top;
+      startX = e.clientX;
+      startY = e.clientY;
       el.setPointerCapture(e.pointerId);
     });
     el.addEventListener('pointermove', e => {
       if (!customizing || !el.classList.contains('dragging')) return;
-      const dx = e.clientX - startX; const dy = e.clientY - startY;
+      const dx = e.clientX - startX;
+      const dy = e.clientY - startY;
       el.style.left = (startLeft + dx) + 'px';
       el.style.top = (startTop + dy) + 'px';
     });
@@ -163,7 +174,7 @@ function saveCustomLayout() {
   store.set('rivals-layout', JSON.stringify(layout));
 }
 
-/* ===== UTILS ===== */
+/* ===== UTILS & HUMANOID ===== */
 function box(w, h, d, mat, x, y, z) {
   const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mat);
   m.position.set(x, y, z);
@@ -171,38 +182,27 @@ function box(w, h, d, mat, x, y, z) {
   return m;
 }
 function disposeGroup(g) {
-  g.traverse(o => {
-    if (o.geometry) o.geometry.dispose();
-    if (o.material) Array.isArray(o.material) ? o.material.forEach(m => m.dispose()) : o.material.dispose();
-  });
+  g.traverse(o => { if (o.geometry) o.geometry.dispose(); if (o.material) Array.isArray(o.material) ? o.material.forEach(m => m.dispose()) : o.material.dispose(); });
 }
-function isBlocked(x, z, margin = 0.5) {
-  return covers.some(c => Math.abs(x - c.x) < c.w / 2 + margin && Math.abs(z - c.z) < c.d / 2 + margin);
-}
+function isBlocked(x, z, margin = 0.5) { return covers.some(c => Math.abs(x - c.x) < c.w / 2 + margin && Math.abs(z - c.z) < c.d / 2 + margin); }
 function steerMove(entity, targetX, targetZ, speed, dt) {
   const px = entity.group.position.x, pz = entity.group.position.z;
   const dx = targetX - px, dz = targetZ - pz;
-  const dist = Math.hypot(dx, dz);
-  if (dist < 0.3) return false;
-  const step = Math.min(speed * dt, dist);
-  const angle0 = Math.atan2(dz, dx);
+  const dist = Math.hypot(dx, dz); if (dist < 0.3) return false;
+  const step = Math.min(speed * dt, dist); const angle0 = Math.atan2(dz, dx);
   const angles = [0, 0.4, -0.4, 0.9, -0.9, 1.4, -1.4, 2.0, -2.0, 2.6, -2.6, Math.PI];
   for (const off of angles) {
-    const a = angle0 + off;
-    const nx = clamp(px + Math.cos(a) * step, -24, 24);
-    const nz = clamp(pz + Math.sin(a) * step, -24, 24);
+    const a = angle0 + off; const nx = clamp(px + Math.cos(a) * step, -24, 24); const nz = clamp(pz + Math.sin(a) * step, -24, 24);
     if (!isBlocked(nx, nz)) { entity.group.position.x = nx; entity.group.position.z = nz; return true; }
   }
   return false;
 }
 
-/* ===== HUMANOID ===== */
 function buildHumanoid(color) {
   const g = new THREE.Group();
-  const skin = new THREE.MeshStandardMaterial({ color, roughness: .8, metalness: 0, emissive: color, emissiveIntensity: .12 });
-  const skinDark = new THREE.MeshStandardMaterial({ color, roughness: .85, metalness: 0, emissive: color, emissiveIntensity: .08 });
-  const hitParts = [];
-  const animParts = {};
+  const skin = new THREE.MeshStandardMaterial({ color, roughness: .8, emissive: color, emissiveIntensity: .1 });
+  const skinDark = new THREE.MeshStandardMaterial({ color, roughness: .85, emissive: color, emissiveIntensity: .05 });
+  const hitParts = []; const animParts = {};
   const part = (geo, m, x, y, z, isHead = false) => {
     const mesh = new THREE.Mesh(geo, m); mesh.position.set(x, y, z);
     if (isHead) mesh.userData.isHead = true;
@@ -213,7 +213,6 @@ function buildHumanoid(color) {
   const torsoPivot = new THREE.Group(); torsoPivot.position.set(0, 0.85, 0); g.add(torsoPivot);
   const torso = new THREE.Mesh(new THREE.BoxGeometry(.48, .60, .24), skin);
   torso.position.set(0, .35, 0); torsoPivot.add(torso); hitParts.push(torso); animParts.torso = torsoPivot;
-
   part(new THREE.BoxGeometry(.42, .15, .22), skinDark, 0, .825, 0);
 
   animParts.legs = [];
@@ -246,6 +245,7 @@ function updateHumanoidAnim(group, dt, isMoving, isAiming) {
   const anim = group.userData.anim;
   const parts = group.userData.animParts;
   if (!anim || !parts) return;
+  
   if (anim.spawnTimer > 0) { anim.spawnTimer -= dt; group.scale.setScalar(1 - Math.max(0, anim.spawnTimer / 0.4)); } 
   else if (group.scale.x !== 1) group.scale.setScalar(1);
 
@@ -257,21 +257,33 @@ function updateHumanoidAnim(group, dt, isMoving, isAiming) {
   }
   
   if (isMoving) {
-    anim.walkPhase += dt * 10; const swing = Math.sin(anim.walkPhase) * 0.5; const armSwing = Math.sin(anim.walkPhase + Math.PI) * 0.4;
-    if (parts.legs[0]) parts.legs[0].rotation.x = swing; if (parts.legs[1]) parts.legs[1].rotation.x = -swing;
+    anim.walkPhase += dt * 12; // Faster, visible walk
+    const swing = Math.sin(anim.walkPhase) * 0.8; // Exaggerated swing
+    const armSwing = Math.sin(anim.walkPhase + Math.PI) * 0.6;
+    const bounce = Math.abs(Math.sin(anim.walkPhase)) * 0.08; // Bouncy walk
+    
+    if (parts.legs[0]) parts.legs[0].rotation.x = swing; 
+    if (parts.legs[1]) parts.legs[1].rotation.x = -swing;
     if (parts.arms[0] && anim.aimTimer <= 0) parts.arms[0].rotation.x = armSwing;
     if (parts.arms[1] && anim.aimTimer <= 0) parts.arms[1].rotation.x = -armSwing;
-    if (parts.torso) parts.torso.rotation.z = Math.sin(anim.walkPhase * 2) * 0.03;
+    
+    if (parts.torso) {
+      parts.torso.rotation.x = -0.1; // Lean forward
+      parts.torso.rotation.z = Math.sin(anim.walkPhase * 2) * 0.05;
+    }
+    group.position.y = bounce;
   } else {
+    group.position.y = 0;
     const breath = Math.sin(performance.now() / 1000 * 2) * 0.02;
-    if (parts.torso) parts.torso.rotation.z = breath;
+    if (parts.torso) { parts.torso.rotation.z = breath; parts.torso.rotation.x = 0; }
     if (parts.legs[0]) parts.legs[0].rotation.x *= 0.9; if (parts.legs[1]) parts.legs[1].rotation.x *= 0.9;
     if (parts.arms[0] && anim.aimTimer <= 0) parts.arms[0].rotation.x *= 0.9;
     if (parts.arms[1] && anim.aimTimer <= 0) parts.arms[1].rotation.x *= 0.9;
   }
+  
   if (isAiming) anim.aimTimer = 0.3;
   if (anim.aimTimer > 0) { anim.aimTimer -= dt; if (parts.arms[1]) parts.arms[1].rotation.x = -1.4; }
-  if (anim.hitTimer > 0) { anim.hitTimer -= dt; if (parts.torso) parts.torso.rotation.x = Math.sin(anim.hitTimer * 60) * 0.08; } 
+  if (anim.hitTimer > 0) { anim.hitTimer -= dt; if (parts.torso) parts.torso.rotation.x = Math.sin(anim.hitTimer * 60) * 0.1; } 
   else if (parts.torso) parts.torso.rotation.x *= 0.85;
 }
 function triggerHitAnim(group) { if (group?.userData?.anim) group.userData.anim.hitTimer = 0.15; }
@@ -283,7 +295,7 @@ function resetHumanoidAnim(group) {
   group.userData.materials.forEach(m => { m.opacity = 1; m.transparent = false; });
 }
 
-/* ===== FLAG ===== */
+/* ===== FLAG, GUN, EFFECTS ===== */
 function buildFlag(color) {
   const g = new THREE.Group();
   const pole = new THREE.Mesh(new THREE.CylinderGeometry(.04, .04, 2.2, 6), new THREE.MeshStandardMaterial({ color: 0x888888 }));
@@ -308,7 +320,6 @@ function updateFlagWave(flagMesh, t) {
   pos.needsUpdate = true;
 }
 
-/* ===== FPS GUN ===== */
 function buildGun() {
   const g = new THREE.Group();
   const matDark = new THREE.MeshStandardMaterial({ color: 0x1a1a24, roughness: .8, metalness: .2 });
@@ -334,7 +345,6 @@ function buildGun() {
   return g;
 }
 
-/* ===== AMBIENT & EFFECTS ===== */
 function createAmbientParticles() {
   const count = 40; const geo = new THREE.BufferGeometry(); const positions = new Float32Array(count * 3); const velocities = [];
   for (let i = 0; i < count; i++) {
@@ -342,7 +352,7 @@ function createAmbientParticles() {
     velocities.push({ x: rand(-0.3, 0.3), y: rand(-0.1, 0.15), z: rand(-0.3, 0.3) });
   }
   geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-  const mat = new THREE.PointsMaterial({ color: 0xffffff, size: 0.08, transparent: true, opacity: 0.3, depthWrite: false });
+  const mat = new THREE.PointsMaterial({ color: 0xffffff, size: 0.1, transparent: true, opacity: 0.4, depthWrite: false });
   const points = new THREE.Points(geo, mat); points.userData = { velocities, count }; scene.add(points); return points;
 }
 function updateAmbientParticles(particles, dt) {
@@ -358,6 +368,12 @@ function updateAmbientParticles(particles, dt) {
 }
 
 function spawnMuzzleFlash() { if (muzzleFlash) muzzleFlash.material.opacity = 1; }
+function spawnBotFlash(x, z, color) {
+  const geo = new THREE.SphereGeometry(0.2, 8, 8);
+  const mat = new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 1 });
+  const flash = new THREE.Mesh(geo, mat); flash.position.set(x, 1.2, z);
+  scene.add(flash); effects.push({ mesh: flash, life: 0.08, maxLife: 0.08, isImpact: true });
+}
 function spawnImpact(x, y, z, color = 0xffffff) {
   const geo = new THREE.RingGeometry(.05, .15, 12); const mat = new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0.8, side: THREE.DoubleSide });
   const ring = new THREE.Mesh(geo, mat); ring.position.set(x, y, z); ring.lookAt(camera.position);
@@ -410,20 +426,35 @@ function initWorld() {
   const sun = new THREE.DirectionalLight(0xffffff, 1.8); sun.position.set(-12, 25, 15); scene.add(sun);
 
   box(50, .5, 50, new THREE.MeshStandardMaterial({ color: 0x1a2438, roughness: .9 }), 0, -.25, 0);
-  const grid = new THREE.GridHelper(50, 50, 0x48c9e8, 0x2a3d5c); grid.position.y = .01; scene.add(grid);
+  
+  // THE MOVING FLOOR GRID
+  floorGrid = new THREE.GridHelper(50, 50, 0x48c9e8, 0x2a3d5c); 
+  floorGrid.position.y = .01; scene.add(floorGrid);
 
-  const blue = new THREE.MeshStandardMaterial({ color: 0x168bd3, roughness: .85 });
-  const red = new THREE.MeshStandardMaterial({ color: 0xd93258, roughness: .85 });
+  const blue = new THREE.MeshStandardMaterial({ color: 0x168bd3, roughness: .85, emissive: 0x168bd3, emissiveIntensity: 0.2 });
+  const red = new THREE.MeshStandardMaterial({ color: 0xd93258, roughness: .85, emissive: 0xd93258, emissiveIntensity: 0.2 });
   const wallM = new THREE.MeshStandardMaterial({ color: 0x19243d, roughness: .95 });
 
   box(50, 2, .8, wallM, 0, 1, -25); box(50, 2, .8, wallM, 0, 1, 25); box(.8, 2, 50, wallM, -25, 1, 0); box(.8, 2, 50, wallM, 25, 1, 0);
   box(6, .2, 12, blue, -21, .1, 0); box(6, .2, 12, red, 21, .1, 0);
 
+  // ENERGY BASE RINGS
+  const ringGeo = new THREE.RingGeometry(3, 3.2, 32);
+  baseBlueRing = new THREE.Mesh(ringGeo, new THREE.MeshBasicMaterial({ color: 0x44d7ff, side: THREE.DoubleSide, transparent: true, opacity: 0.6 }));
+  baseBlueRing.rotation.x = -Math.PI / 2; baseBlueRing.position.set(-21, 0.25, 0); scene.add(baseBlueRing);
+  
+  baseRedRing = new THREE.Mesh(ringGeo, new THREE.MeshBasicMaterial({ color: 0xff4c73, side: THREE.DoubleSide, transparent: true, opacity: 0.6 }));
+  baseRedRing.rotation.x = -Math.PI / 2; baseRedRing.position.set(21, 0.25, 0); scene.add(baseRedRing);
+
   const coverDefs = [
     [-8, -6, 3, 2, 2], [-8, 6, 3, 2, 2], [8, -6, 3, 2, 2], [8, 6, 3, 2, 2],
     [0, -10, 2, 2.5, 2], [0, 10, 2, 2.5, 2], [-14, 0, 2, 1.8, 4], [14, 0, 2, 1.8, 4], [-4, 0, 2.5, 1.6, 2.5], [4, 0, 2.5, 1.6, 2.5],
   ];
-  for (const [x, z, w, h, d] of coverDefs) { const m = box(w, h, d, blue, x, h / 2, z); wallMeshes.push(m); covers.push({ x, z, w, d }); }
+  for (const [x, z, w, h, d] of coverDefs) { 
+    const m = box(w, h, d, blue, x, h / 2, z); 
+    m.userData.baseY = h / 2; // Store base Y for hovering
+    wallMeshes.push(m); covers.push({ x, z, w, d }); 
+  }
 
   flags.blue = { mesh: buildFlag(0x44d7ff), basePos: new THREE.Vector3(-21, 0, 0), carrier: null, team: 'blue' };
   flags.red = { mesh: buildFlag(0xff4c73), basePos: new THREE.Vector3(21, 0, 0), carrier: null, team: 'red' };
@@ -652,6 +683,9 @@ function botFire(bot) {
   const ax = target.pos.x + rand(-err, err), az = target.pos.z + rand(-err, err);
   const dx = ax - tx, dz = az - tz; const dist = Math.hypot(dx, dz) || 1;
   const vx = dx / dist * diff.projectileSpeed, vz = dz / dist * diff.projectileSpeed;
+  
+  spawnBotFlash(tx, tz, bot.team === 'blue' ? 0x44d7ff : 0xff3060); // Bot Muzzle flash!
+  
   const mesh = new THREE.Mesh(new THREE.SphereGeometry(.22, 8, 6), new THREE.MeshBasicMaterial({ color: bot.team === 'blue' ? 0x44d7ff : 0xff3060 }));
   mesh.position.set(tx, 1.2, tz); scene.add(mesh);
   projectiles.push({ mesh, vx, vz, life: 4, dmg: diff.dmg, team: bot.team });
@@ -1013,6 +1047,30 @@ function update(dt, t) {
 
   updateAmbientParticles(ambientParticles, dt);
   if (flags.blue) updateFlagWave(flags.blue.mesh, t); if (flags.red) updateFlagWave(flags.red.mesh, t);
+
+  // ===== BATTLEFIELD ANIMATIONS =====
+  // 1. Hovering and pulsing cover blocks
+  wallMeshes.forEach((mesh, index) => {
+    if (mesh.userData.baseY === undefined) mesh.userData.baseY = mesh.position.y;
+    mesh.position.y = mesh.userData.baseY + Math.sin(t * 2 + index) * 0.15;
+    if (mesh.material.emissive) {
+      mesh.material.emissiveIntensity = 0.2 + Math.sin(t * 3 + index) * 0.15;
+    }
+  });
+
+  // 2. Animate Base Zones
+  if (baseBlueRing && baseRedRing) {
+    baseBlueRing.rotation.z += dt * 0.5;
+    baseRedRing.rotation.z -= dt * 0.5;
+    const pulse = 1 + Math.sin(t * 4) * 0.05;
+    baseBlueRing.scale.set(pulse, pulse, pulse);
+    baseRedRing.scale.set(pulse, pulse, pulse);
+  }
+
+  // 3. Animate the Floor Grid
+  if (floorGrid) {
+    floorGrid.position.z = (t * 2) % 2;
+  }
 
   for (let i = effects.length - 1; i >= 0; i--) {
     const e = effects[i]; if (e === muzzleFlash) { effects.splice(i, 1); continue; }
