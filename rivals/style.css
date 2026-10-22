@@ -450,3 +450,5 @@ header {
     transition-duration: 0.001ms !important;
   }
 }
+#custom-grid { pointer-events: auto; }
+#btn-save-custom { pointer-events: auto; cursor: pointer; }
