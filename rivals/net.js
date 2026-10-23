@@ -863,22 +863,37 @@ export class Net {
       }
 
       const capacity = Number(this.room.team_size);
+const currentPlayers = players || [];
 
-      if ((players || []).length !== capacity * 2) {
-        return {
-          ok: false,
-          reason: 'players_missing',
-          message: 'The room does not have enough players.'
-        };
-      }
+const bluePlayers = currentPlayers.filter(
+  player => player.team === 'blue'
+);
 
-      if (!(players || []).every(player => player.ready)) {
-        return {
-          ok: false,
-          reason: 'players_not_ready',
-          message: 'Every player must be ready.'
-        };
-      }
+const redPlayers = currentPlayers.filter(
+  player => player.team === 'red'
+);
+
+if (
+  currentPlayers.length < 2 ||
+  bluePlayers.length === 0 ||
+  redPlayers.length === 0 ||
+  bluePlayers.length > capacity ||
+  redPlayers.length > capacity
+) {
+  return {
+    ok: false,
+    reason: 'players_missing',
+    message: 'Both teams need at least one player, within team capacity.'
+  };
+}
+
+if (!currentPlayers.every(player => player.ready === true)) {
+  return {
+    ok: false,
+    reason: 'players_not_ready',
+    message: 'Every player must be ready.'
+  };
+}
 
       const {
         data: match,
