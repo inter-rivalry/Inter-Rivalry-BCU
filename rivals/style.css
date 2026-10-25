@@ -361,3 +361,96 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible{
 @media(prefers-reduced-motion:reduce){
   *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;scroll-behavior:auto!important;transition-duration:.01ms!important}
 }
+/* =========================================================
+   RIVALS 2050 — V4: AUDIO + ENHANCED COMBAT FEEDBACK
+   Additive layer. Does not modify existing rules.
+   ========================================================= */
+
+/* Team indicator in HUD header */
+#team-badge {
+  display: none;
+  align-items: center;
+  gap: 7px;
+  align-self: center;
+  padding: 7px 13px;
+  border-radius: 5px;
+  font: 800 11px Orbitron, sans-serif;
+  letter-spacing: .18em;
+  background: linear-gradient(135deg, #14284a, #081426);
+  border: 1px solid #54efff66;
+  box-shadow: inset 0 1px #ffffff18, 0 0 12px #54efff15;
+  text-shadow: 0 0 8px currentColor;
+  white-space: nowrap;
+}
+#hud:not(.hidden) #team-badge { display: inline-flex; }
+#team-badge:before { content: "⬢"; font-size: 13px; opacity: .85; }
+#team-badge.blue { color: #54efff; border-color: #54efff88; box-shadow: inset 0 1px #ffffff18, 0 0 18px #54efff30; }
+#team-badge.red  { color: #ff5575; border-color: #ff557588; box-shadow: inset 0 1px #ffffff18, 0 0 18px #ff557530; }
+
+/* Ammo reload bar */
+.stat-ammo { min-width: 82px; }
+.reload-bar {
+  height: 3px;
+  width: 100%;
+  max-width: 82px;
+  background: #1a2540;
+  margin-top: 5px;
+  border-radius: 3px;
+  overflow: hidden;
+  box-shadow: inset 0 1px #000000aa;
+}
+.reload-bar i {
+  display: block;
+  width: 0%;
+  height: 100%;
+  background: linear-gradient(90deg, #54efff, #ffe58c);
+  box-shadow: 0 0 10px #ffe58c88;
+  transition: width .05s linear;
+}
+
+/* Mute toggle next to pause button */
+#mute-btn {
+  pointer-events: auto;
+  width: 40px;
+  height: 40px;
+  color: #fff;
+  background: #0a1426dd;
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  font-size: 16px;
+  display: grid;
+  place-items: center;
+  box-shadow: 0 0 18px #0004;
+  cursor: pointer;
+  margin-right: 6px;
+  transition: border-color .18s, background-color .18s, color .18s;
+}
+#mute-btn:hover { border-color: #54efff88; }
+#mute-btn.muted {
+  color: #ff5575;
+  border-color: #ff557588;
+  background: #1a0812dd;
+  box-shadow: 0 0 18px #ff557522;
+}
+
+/* Directional damage flashes — reuse existing .diag nodes from HTML */
+#damage-ring .diag {
+  filter: blur(7px);
+}
+#damage-ring .diag.top    { background: linear-gradient(to bottom, #ff3050ee, transparent); }
+#damage-ring .diag.bottom { background: linear-gradient(to top,    #ff3050ee, transparent); }
+#damage-ring .diag.left   { background: linear-gradient(to right,  #ff3050ee, transparent); }
+#damage-ring .diag.right  { background: linear-gradient(to left,   #ff3050ee, transparent); }
+
+/* Mobile safety */
+@media (max-width: 600px) {
+  #team-badge { padding: 4px 9px; font-size: 9px; letter-spacing: .12em; }
+  .stat-ammo { min-width: 62px; }
+  .reload-bar { max-width: 62px; }
+  #mute-btn { width: 34px; height: 34px; font-size: 14px; margin-right: 4px; }
+}
+
+/* Respect reduced-motion preference for the reload bar fill */
+@media (prefers-reduced-motion: reduce) {
+  .reload-bar i { transition-duration: 0.001ms !important; }
+}
