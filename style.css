@@ -66,6 +66,7 @@ h1, h2, h3, h4, .section-title {
   background: linear-gradient(90deg, #00aaff 0%, #ffffff 50%, #ff294f 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
+  background-clip: text;
   font-size: 28px;
   margin-bottom: 10px;
 }
@@ -200,34 +201,63 @@ input:focus, select:focus, textarea:focus {
 }
 input::placeholder, textarea::placeholder { color: #5e6f8a !important; }
 
+/* Utilities */
+.hidden { display: none !important; }
+hr { border-top: 1px solid rgba(0, 170, 255, 0.3) !important; }
+
+
 /* =========================================
-   SPECIFIC ELEMENTS (From target image)
+   🚨 FIX FOR UNREADABLE BLACK TEXT 🚨
    ========================================= */
 
-/* The Location Box (Fix the white background) */
-[style*="background:#fff"], [style*="background: #fff"], [style*="background:white"] {
+/* 1. Force all generic text inside cards to be light and readable */
+p, span, label, li, small, .description, .subtitle, .text-muted {
+  color: var(--ir-muted) !important;
+}
+
+/* 2. Override any inline black/dark-grey styles the original app is injecting */
+[style*="color: #000"], [style*="color:#000"],
+[style*="color: #111"], [style*="color:#111"],
+[style*="color: #222"], [style*="color:#222"],
+[style*="color: #333"], [style*="color:#333"],
+[style*="color: #444"], [style*="color:#444"],
+[style*="color: #555"], [style*="color:#555"],
+[style*="color: #666"], [style*="color:#666"],
+[style*="color: black"], [style*="color:black"] {
+  color: var(--ir-text) !important;
+}
+
+/* 3. Fix the "WELCOME," title specifically */
+.welcome h1, .welcome h2, .welcome h3, .welcome-title, .welcome div {
+  color: #ffffff !important;
+}
+
+/* 4. Fix the "THE IR GAMES HUB" text */
+#irGamesLaunchCard * { color: var(--ir-muted) !important; }
+#irGamesLaunchCard h2 { -webkit-text-fill-color: transparent !important; color: transparent !important; } /* Keep gradient */
+#irGamesLaunchCard button, #irGamesLaunchCard .btn { color: #ffffff !important; } /* Keep button text white */
+
+/* 5. Fix the "YOUR LOCAL PROFILE" description text */
+.profile-card * { color: var(--ir-muted) !important; }
+.profile-card h2 { -webkit-text-fill-color: transparent !important; color: transparent !important; } /* Keep gradient */
+.profile-card button, .profile-card .btn { color: #ffffff !important; }
+
+/* 6. Fix the White "Location" Box and its text */
+/* Catch all variations of white backgrounds */
+[style*="background: #fff"], [style*="background:#fff"], 
+[style*="background: #ffffff"], [style*="background:#ffffff"],
+[style*="background: white"], [style*="background:white"],
+[style*="background: rgb(255, 255, 255)"], [style*="background:rgb(255,255,255)"] {
   background: linear-gradient(135deg, #091a36, #050a14) !important;
   border: 1px solid #00aaff !important;
   box-shadow: 0 0 20px rgba(0, 170, 255, 0.2), inset 0 0 20px rgba(0, 170, 255, 0.1) !important;
   clip-path: polygon(15px 0, 100% 0, 100% calc(100% - 15px), calc(100% - 15px) 100%, 0 100%, 0 15px);
 }
-[style*="background:#fff"] div, [style*="background: #fff"] div {
+
+/* Ensure the text inside that location box is bright white */
+[style*="background: #fff"] *, [style*="background:#fff"] *,
+[style*="background: #ffffff"] *, [style*="background:#ffffff"] *,
+[style*="background: white"] *, [style*="background:white"] *,
+[style*="background: rgb(255, 255, 255)"] *, [style*="background:rgb(255,255,255)"] * {
   color: #ffffff !important;
 }
-[style*="color:#111"], [style*="color: #111"] {
-  color: #00aaff !important;
-  text-shadow: 0 0 10px rgba(0, 170, 255, 0.5);
-}
-
-/* The Top Icon inside Cards */
-.profile-card h2::before {
-  font-style: normal;
-  margin-right: 10px;
-}
-
-/* Fix images/icons inside buttons */
-button img, .btn-3d-white-glow-gold img { filter: drop-shadow(0 0 5px rgba(255,255,255,0.5)); }
-
-/* Utilities */
-.hidden { display: none !important; }
-hr { border-top: 1px solid rgba(0, 170, 255, 0.3) !important; }
