@@ -1,0 +1,170 @@
+/* INTER RIVALRY 3000 — visual upgrade layer
+   Keeps the existing HTML, Supabase logic, screen IDs, and inline handlers intact. */
+:root {
+  color-scheme: dark;
+  --ir-bg: #070a12;
+  --ir-panel: rgba(15, 21, 35, .88);
+  --ir-panel-strong: #101827;
+  --ir-border: rgba(145, 166, 202, .19);
+  --ir-text: #f3f6ff;
+  --ir-muted: #a9b5ca;
+  --ir-blue: #43a7ff;
+  --ir-blue-deep: #1769d2;
+  --ir-red: #ff4c67;
+  --ir-gold: #ffc857;
+  --ir-radius: 18px;
+  --ir-shadow: 0 18px 50px rgba(0, 0, 0, .32);
+}
+
+html { background: var(--ir-bg); scroll-behavior: smooth; }
+body {
+  color: var(--ir-text) !important;
+  background:
+    radial-gradient(ellipse at 8% 0%, rgba(32, 104, 190, .17), transparent 34rem),
+    radial-gradient(ellipse at 96% 14%, rgba(198, 42, 75, .12), transparent 32rem),
+    linear-gradient(180deg, #080c16 0%, #070a11 48%, #090b13 100%) !important;
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif !important;
+  letter-spacing: .005em;
+  -webkit-font-smoothing: antialiased;
+}
+body::before {
+  content: ""; position: fixed; inset: 0; pointer-events: none; z-index: 0;
+  opacity: .18;
+  background-image: linear-gradient(rgba(145,166,202,.045) 1px, transparent 1px), linear-gradient(90deg, rgba(145,166,202,.045) 1px, transparent 1px);
+  background-size: 42px 42px;
+  mask-image: linear-gradient(to bottom, black, transparent 80%);
+}
+body > * { position: relative; }
+button, input, select, textarea { font-family: inherit !important; }
+button { transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease, filter .18s ease; }
+button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible {
+  outline: 2px solid var(--ir-blue) !important; outline-offset: 3px;
+}
+button:active { transform: translateY(1px) scale(.99); }
+
+/* Common surfaces: consistent dark glass instead of flat or blinding panels. */
+.auth-box, .profile-card, .management-card, .college-card, .local-club-card,
+.invite-card, .challenge-card, .tournament-card, .rival-stat, .admin-stat,
+.empty-box, .modal-content, .modal-box, .card, .panel, .section-card,
+#localProfileActions, #studentProfileActions, #gymProfileActions {
+  color: var(--ir-text);
+  background: linear-gradient(145deg, rgba(20, 29, 47, .94), rgba(11, 16, 28, .96)) !important;
+  border-color: var(--ir-border) !important;
+  box-shadow: var(--ir-shadow);
+  border-radius: var(--ir-radius);
+}
+.auth-box {
+  border: 1px solid rgba(96, 153, 232, .25) !important;
+  box-shadow: 0 24px 80px rgba(0,0,0,.42), 0 0 42px rgba(38,124,231,.08) !important;
+  backdrop-filter: blur(18px);
+}
+.logo, .ir-full-logo { color: #f7f9ff; letter-spacing: .045em; }
+.tagline, .input-group label, .lbl, .club-meta, .college-location { color: var(--ir-muted) !important; }
+h1, h2, h3, h4, .section-title { color: #f5f7ff; letter-spacing: -.025em; }
+p { color: inherit; }
+
+/* Navigation and dashboard structure. */
+.navbar {
+  background: rgba(7, 11, 20, .9) !important;
+  border-bottom: 1px solid rgba(122, 153, 201, .2) !important;
+  box-shadow: 0 8px 28px rgba(0,0,0,.18);
+  backdrop-filter: blur(18px);
+}
+.nav-logo, .ir-nav-mark { color: #f7f9ff !important; }
+.role-badge, .status-pill, .category-tag, .tourn-geo-chip {
+  border: 1px solid rgba(92, 163, 255, .3) !important;
+  background: rgba(40, 113, 201, .13) !important;
+  color: #c9e4ff !important;
+  border-radius: 999px;
+}
+.container { width: min(100% - 28px, 1180px); margin-inline: auto; }
+.grid, .stat-grid { gap: 14px; }
+.profile-card, .management-card, .college-card, .local-club-card, .invite-card {
+  transition: border-color .2s ease, transform .2s ease, box-shadow .2s ease;
+}
+.profile-card:hover, .management-card:hover, .college-card:hover, .local-club-card:hover, .invite-card:hover {
+  border-color: rgba(76, 159, 255, .42) !important;
+  box-shadow: 0 18px 42px rgba(0,0,0,.34), 0 0 26px rgba(43,126,228,.08);
+}
+
+/* Button classes already used throughout the app. Keep their handlers and layout. */
+.btn-3d-white-glow, .btn-3d-sm-white-glow, .btn-3d-xs-white-glow,
+.btn-3d-white-glow-gold, .btn-3d-sm-white-glow-gold,
+.battlefield-action-btn, .local-clean-tile, .filter-btn, .mode-btn,
+.course-btn, .year-btn, .spec-btn {
+  color: #f5f8ff !important;
+  background: linear-gradient(135deg, #18263b, #101827) !important;
+  border: 1px solid rgba(122, 165, 220, .34) !important;
+  border-radius: 12px !important;
+  box-shadow: 0 5px 0 rgba(3, 7, 14, .68), 0 8px 22px rgba(0,0,0,.18) !important;
+  text-shadow: none !important;
+}
+.btn-3d-white-glow:hover, .btn-3d-sm-white-glow:hover, .btn-3d-xs-white-glow:hover,
+.battlefield-action-btn:hover, .local-clean-tile:hover, .filter-btn:hover,
+.mode-btn:hover, .course-btn:hover, .year-btn:hover, .spec-btn:hover {
+  border-color: rgba(82, 171, 255, .82) !important;
+  background: linear-gradient(135deg, #203b5d, #14243b) !important;
+  box-shadow: 0 5px 0 rgba(3,7,14,.68), 0 0 22px rgba(43,139,255,.18) !important;
+  filter: brightness(1.08);
+}
+.btn-3d-white-glow-gold, .btn-3d-sm-white-glow-gold {
+  color: #fff0c7 !important;
+  background: linear-gradient(135deg, #4c3918, #211b12) !important;
+  border-color: rgba(255, 200, 87, .5) !important;
+}
+.btn-3d-sm-white-glow-danger {
+  color: #ffe9ed !important;
+  background: linear-gradient(135deg, #56202d, #27121a) !important;
+  border: 1px solid rgba(255, 76, 103, .46) !important;
+  border-radius: 11px !important;
+  box-shadow: 0 5px 0 rgba(12,3,6,.6) !important;
+}
+.btn-3d-sm-white-glow-danger:hover { background: linear-gradient(135deg, #76283a, #35131d) !important; }
+.filter-btn.active, .mode-btn.active, .course-btn.active, .year-btn.active, .spec-btn.active {
+  color: #fff !important; border-color: var(--ir-blue) !important;
+  background: linear-gradient(135deg, #1769d2, #153b71) !important;
+  box-shadow: 0 0 0 1px rgba(67,167,255,.14), 0 0 22px rgba(43,139,255,.2) !important;
+}
+
+/* Forms and controls: readable text, clear boundaries. */
+input, select, textarea, .input-group input, .input-group select, .input-group textarea {
+  color: #f4f7ff !important;
+  background: rgba(5, 9, 17, .9) !important;
+  border: 1px solid rgba(133, 157, 195, .3) !important;
+  border-radius: 11px !important;
+}
+input::placeholder, textarea::placeholder { color: #8391a9 !important; opacity: 1; }
+select option { color: #f4f7ff; background: #101827; }
+input:focus, select:focus, textarea:focus {
+  border-color: rgba(67,167,255,.85) !important;
+  box-shadow: 0 0 0 3px rgba(67,167,255,.12) !important;
+}
+.message { border-radius: 12px; }
+.empty-box { color: var(--ir-muted) !important; border: 1px dashed rgba(133,157,195,.32) !important; }
+.hidden { display: none !important; }
+
+/* Avoid hard-coded white surfaces that make text unreadable. */
+[style*="background:#fff"], [style*="background: #fff"],
+[style*="background:white"], [style*="background: white"],
+[style*="background-color:#fff"], [style*="background-color: #fff"],
+[style*="background-color:white"], [style*="background-color: white"] {
+  background: linear-gradient(145deg, #172235, #0e1523) !important;
+  color: var(--ir-text) !important;
+  border-color: var(--ir-border) !important;
+}
+[style*="color:#000"], [style*="color: #000"], [style*="color:black"], [style*="color: black"] { color: var(--ir-text) !important; }
+
+/* Respect reduced-motion settings and keep mobile layouts comfortable. */
+@media (max-width: 640px) {
+  .container { width: min(100% - 22px, 1180px); }
+  .auth-page { padding: 16px; }
+  .auth-box { padding: 24px 18px; border-radius: 18px; }
+  .navbar { padding-inline: 12px; }
+  .grid, .stat-grid { gap: 10px; }
+  .profile-card, .management-card, .college-card, .local-club-card, .invite-card { border-radius: 15px; }
+  button { max-width: 100%; }
+  #localProfileActions .local-clean-tile { min-height: 68px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+}
