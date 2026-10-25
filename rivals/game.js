@@ -1,5 +1,6 @@
 import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js';
 import { Net } from './net.js';
+import { AudioEngine } from './audio.js';
 
 const $ = id => document.getElementById(id);
 const touch = matchMedia('(pointer:coarse)').matches || ('ontouchstart' in window);
@@ -30,6 +31,7 @@ const HEAD_CD = .8, HEAD_ACCUM = touch ? 60 : 100;
 const CAPTURES_TO_WIN = 3, BROADCAST_HZ = 15;
 const STEAL_RANGE = 4, TREASURE_RANGE = 6;
 const BOT_RETREAT_HP = 30;
+const RELOAD_DURATION = 1.15;
 
 const MODES = {
   practice: { desc: 'Practice offline. Pick a mode below.', matchTime: 999 },
@@ -55,6 +57,7 @@ const COLORS = {
 };
 
 const net = new Net();
+const audio = new AudioEngine();
 let scene, camera, renderer, clock, raycaster;
 let localId = null, localName = '', localIrId = '', localTeam = 'blue', isHost = false;
 let matchId = null;
@@ -102,15 +105,12 @@ let gunGroup = null;
 let muzzleFlash = null;
 let ambientParticles = null;
 
-// Battlefield Animation References
 let baseBlueRing, baseRedRing, floorGrid;
 const coverGlowEdges = [];
 const centerEnergyRings = [];
 const battlefieldSparks = [];
 const animeDecor = [];
 
-/* ===== UI CUSTOMIZATION ===== */
-// Use a versioned key so old saved coordinates cannot unexpectedly move buttons.
 const CUSTOM_LAYOUT_KEY = 'rivals-layout-v2';
 const FIXED_ACTION_BUTTONS = new Set(['steal-btn', 'treasure-btn']);
 
@@ -123,7 +123,6 @@ function loadCustomLayout() {
       const el = $(id);
       const pos = layout[id];
       if (!el || !pos || typeof pos.left !== 'string' || typeof pos.top !== 'string') return;
-      // Only apply coordinates created by the current customization system.
       el.style.position = 'fixed';
       el.style.left = pos.left;
       el.style.top = pos.top;
@@ -132,7 +131,7 @@ function loadCustomLayout() {
       el.style.transform = 'none';
       el.style.margin = '0';
     });
-  } catch (e) { /* Ignore corrupt saved layouts and keep the default CSS layout. */ }
+  } catch (e) { /* ignore corrupt layout */ }
 }
 
 function initDragging() {
@@ -189,7 +188,6 @@ function saveCustomLayout() {
   const layout = {};
   document.querySelectorAll('.draggable').forEach(el => {
     if (!el.id || el.classList.contains('hidden')) return;
-    // Save only elements that the player has actually placed with the current layout.
     if (el.style.position === 'fixed' && el.style.left && el.style.top) {
       layout[el.id] = { left: el.style.left, top: el.style.top };
     }
@@ -197,7 +195,7 @@ function saveCustomLayout() {
   store.set(CUSTOM_LAYOUT_KEY, JSON.stringify(layout));
 }
 
-/* ===== UTILS & HUMANOID ===== */
+/* ===== UTILS ===== */
 function box(w, h, d, mat, x, y, z) {
   const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mat);
   m.position.set(x, y, z);
@@ -237,7 +235,6 @@ function buildHumanoid(color) {
     g.add(mesh); hitParts.push(mesh); return mesh;
   };
 
-  // Anime-styled head, hair crest, visor and face highlight.
   const head = part(new THREE.SphereGeometry(.18, 16, 12), skin, 0, 1.76, 0, true);
   const hair = part(new THREE.SphereGeometry(.185, 12, 8, 0, Math.PI * 2, 0, Math.PI * .62), armor, 0, 1.82, -.015);
   hair.scale.set(1.04, .78, 1.04);
@@ -278,7 +275,6 @@ function buildHumanoid(color) {
     animParts.arms.push(armPivot);
   }
 
-  // Compact sci-fi rifle held in a stable two-handed ready pose.
   const rifle = new THREE.Group();
   const rifleBody = new THREE.Mesh(new THREE.BoxGeometry(.13, .13, .43), weaponDark); rifleBody.position.set(0, 0, -.02); rifle.add(rifleBody);
   const rifleTop = new THREE.Mesh(new THREE.BoxGeometry(.075, .035, .34), armor); rifleTop.position.set(0, .085, -.035); rifle.add(rifleTop);
@@ -300,6 +296,7 @@ function buildHumanoid(color) {
   g.scale.set(.01, .01, .01);
   return { group: g, hitParts };
 }
+
 function updateHumanoidAnim(group, dt, isMoving, isAiming, isDashing = false) {
   const anim = group.userData.anim;
   const parts = group.userData.animParts;
@@ -320,7 +317,6 @@ function updateHumanoidAnim(group, dt, isMoving, isAiming, isDashing = false) {
   }
 
   if (sliding) {
-    // Anime ground-slide / near-superman pose: chest low, legs trailing, rifle tucked sideways.
     const phase = Math.min(1, anim.dashTimer / .14);
     group.rotation.z = Math.sin((.45 - anim.dashTimer) / .45 * Math.PI) * .10;
     group.rotation.x = -1.05 * Math.sin((.45 - anim.dashTimer) / .45 * Math.PI);
@@ -339,7 +335,6 @@ function updateHumanoidAnim(group, dt, isMoving, isAiming, isDashing = false) {
       const bounce = Math.abs(Math.sin(anim.walkPhase)) * .055;
       if (parts.legs[0]) parts.legs[0].rotation.x = swing;
       if (parts.legs[1]) parts.legs[1].rotation.x = -swing;
-      // Arms remain raised in a two-handed gun-ready pose while moving.
       if (parts.arms[0]) { parts.arms[0].rotation.x = .82 + Math.sin(anim.walkPhase + Math.PI) * .12; parts.arms[0].rotation.z = -.06; }
       if (parts.arms[1]) { parts.arms[1].rotation.x = .92 + Math.sin(anim.walkPhase) * .10; parts.arms[1].rotation.z = .04; }
       if (parts.torso) { parts.torso.rotation.x = -.12; parts.torso.rotation.z = Math.sin(anim.walkPhase * 2) * .045; }
@@ -453,7 +448,7 @@ function buildGun() {
   const matAccent = new THREE.MeshStandardMaterial({ color: 0x44d7ff, emissive: 0x44d7ff, emissiveIntensity: .5 });
   const matHand = new THREE.MeshStandardMaterial({ color: 0xd9a07c, roughness: .9 });
   const matSleeve = new THREE.MeshStandardMaterial({ color: 0x168bd3, roughness: .9 });
-  
+
   const rightArm = new THREE.Mesh(new THREE.BoxGeometry(.1, .25, .4), matSleeve); rightArm.position.set(0.05, -0.15, 0.15); rightArm.rotation.x = 0.4; g.add(rightArm);
   const rightHand = new THREE.Mesh(new THREE.BoxGeometry(.1, .1, .1), matHand); rightHand.position.set(0.05, -0.08, -0.02); g.add(rightHand);
   const leftArm = new THREE.Mesh(new THREE.BoxGeometry(.1, .25, .4), matSleeve); leftArm.position.set(-0.15, -0.15, -0.25); leftArm.rotation.x = 0.6; leftArm.rotation.y = -0.2; g.add(leftArm);
@@ -548,7 +543,7 @@ function initWorld() {
   renderer.outputColorSpace = THREE.SRGBColorSpace; renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.15;
   renderer.shadowMap.enabled = false; $('game-root').appendChild(renderer.domElement);
   clock = new THREE.Clock(); raycaster = new THREE.Raycaster();
-  
+
   scene.add(new THREE.HemisphereLight(0xb6c9ff, 0x17102f, 1.75));
   const sun = new THREE.DirectionalLight(0xffd6f4, 2.0); sun.position.set(-12, 25, 15); scene.add(sun);
   const animeRimBlue = new THREE.PointLight(0x27dfff, 42, 42); animeRimBlue.position.set(-17, 5, 0); scene.add(animeRimBlue);
@@ -557,9 +552,8 @@ function initWorld() {
 
   const animeFloorMat = new THREE.MeshStandardMaterial({ map: makeAnimeFloorTexture(), color: 0xffffff, roughness: .72, metalness: .12, emissive: 0x111b3a, emissiveIntensity: .28 });
   box(50, .5, 50, animeFloorMat, 0, -.25, 0);
-  
-  // THE MOVING FLOOR GRID
-  floorGrid = new THREE.GridHelper(50, 50, 0x61eaff, 0x58417c); 
+
+  floorGrid = new THREE.GridHelper(50, 50, 0x61eaff, 0x58417c);
   floorGrid.position.y = .01; scene.add(floorGrid);
 
   const blue = new THREE.MeshStandardMaterial({ color: 0x147fc9, roughness: .48, metalness: .32, emissive: 0x087dff, emissiveIntensity: .48 });
@@ -568,7 +562,6 @@ function initWorld() {
 
   box(50, 2, .8, wallM, 0, 1, -25); box(50, 2, .8, wallM, 0, 1, 25); box(.8, 2, 50, wallM, -25, 1, 0); box(.8, 2, 50, wallM, 25, 1, 0);
   box(6, .2, 12, blue, -21, .1, 0); box(6, .2, 12, red, 21, .1, 0);
-  // Futuristic anime arena perimeter rails and faction pylons.
   const railBlue = new THREE.MeshBasicMaterial({ color: 0x35e7ff, transparent: true });
   const railPink = new THREE.MeshBasicMaterial({ color: 0xff3478, transparent: true });
   const railViolet = new THREE.MeshBasicMaterial({ color: 0x9275ff, transparent: true });
@@ -587,11 +580,10 @@ function initWorld() {
     animeDecor.push({mesh:shard,kind:'shard',phase:i*.71,baseY:shard.position.y});
   }
 
-  // ENERGY BASE RINGS
   const ringGeo = new THREE.RingGeometry(3, 3.2, 48);
   baseBlueRing = new THREE.Mesh(ringGeo, new THREE.MeshBasicMaterial({ color: 0x44d7ff, side: THREE.DoubleSide, transparent: true, opacity: 0.6 }));
   baseBlueRing.rotation.x = -Math.PI / 2; baseBlueRing.position.set(-21, 0.25, 0); scene.add(baseBlueRing);
-  
+
   baseRedRing = new THREE.Mesh(ringGeo, new THREE.MeshBasicMaterial({ color: 0xff4c73, side: THREE.DoubleSide, transparent: true, opacity: 0.6 }));
   baseRedRing.rotation.x = -Math.PI / 2; baseRedRing.position.set(21, 0.25, 0); scene.add(baseRedRing);
 
@@ -600,11 +592,9 @@ function initWorld() {
     [0, -10, 2, 2.5, 2], [0, 10, 2, 2.5, 2], [-14, 0, 2, 1.8, 4], [14, 0, 2, 1.8, 4], [-4, 0, 2.5, 1.6, 2.5], [4, 0, 2.5, 1.6, 2.5],
   ];
   for (const [x, z, w, h, d] of coverDefs) {
-    // Give every block its own material so its anime energy pulse can animate independently.
     const teamMat = x < -1 ? blue : x > 1 ? red : (z < 0 ? blue : red);
     const blockMaterial = teamMat.clone();
     const m = box(w, h, d, blockMaterial, x, h / 2, z);
-    // Layered armor caps and luminous anime sigils dress the cover while collision remains unchanged.
     const accentColor = x < -1 ? 0x35e7ff : x > 1 ? 0xff3478 : (z < 0 ? 0x35e7ff : 0xff3478);
     const cap = new THREE.Mesh(new THREE.BoxGeometry(w + .16, .12, d + .16), new THREE.MeshStandardMaterial({color:0x202747,metalness:.65,roughness:.28,emissive:accentColor,emissiveIntensity:.24}));
     cap.position.set(x, h + .05, z); scene.add(cap);
@@ -616,7 +606,6 @@ function initWorld() {
     wallMeshes.push(m);
     covers.push({ x, z, w, d });
 
-    // Neon outline makes cover readable and visibly energized without changing collision/gameplay.
     const edgeGeo = new THREE.EdgesGeometry(m.geometry);
     const edgeMat = new THREE.LineBasicMaterial({
       color: (x < 0 ? 0x44d7ff : x > 0 ? 0xff4c73 : 0x8b8cff),
@@ -630,7 +619,6 @@ function initWorld() {
     coverGlowEdges.push({ mesh: edges, material: edgeMat, phase: rand(0, Math.PI * 2) });
   }
 
-  // Concentric energy circles across the middle of the arena: purely visual, no collision.
   const centerRingSpecs = [
     { inner: 2.0, outer: 2.09, color: 0x44d7ff, speed: 0.38, phase: 0 },
     { inner: 3.0, outer: 3.07, color: 0xff4c73, speed: -0.28, phase: 1.7 },
@@ -650,7 +638,6 @@ function initWorld() {
     centerEnergyRings.push({ mesh: ring, speed: spec.speed, phase: spec.phase });
   }
 
-  // Small, low-cost energy sparks orbit the centre. Decorative only: no collision or gameplay changes.
   const sparkGeo = new THREE.SphereGeometry(0.075, 8, 6);
   const sparkMats = [
     new THREE.MeshBasicMaterial({ color: 0x44d7ff, transparent: true, opacity: 0.8, depthWrite: false }),
@@ -744,6 +731,8 @@ function onHitReceived(d) {
     health = Math.max(0, health - d.damage); invulnT = INVULN;
     cameraShake = Math.min(cameraShake + .4, .7);
     $('damage-vignette').classList.add('on'); setTimeout(() => $('damage-vignette').classList.remove('on'), 200);
+    const shooter = players.get(d.shooter);
+    if (shooter) showDamageDirection(shooter.group.position.x, shooter.group.position.z);
     updateHud(); if (health <= 0) die(d.shooter, d.headshot);
   }
 }
@@ -781,6 +770,31 @@ function onScoreUpdate(d) {
 function onKillFeed(d) { killFeed(`${escapeHtml(d.killerName)} (${escapeHtml(d.killerIr || '')}) → ${escapeHtml(d.victimName)}${d.headshot ? ' 🎯' : ''}`); }
 function onMatchEnd(d) { endMatch(d.winner || (d.blueScore > d.redScore ? 'blue' : 'red')); }
 
+/* ===== DAMAGE DIRECTION INDICATOR ===== */
+function showDamageDirection(srcX, srcZ) {
+  if (!alive) return;
+  const dx = srcX - camera.position.x;
+  const dz = srcZ - camera.position.z;
+  const len = Math.hypot(dx, dz);
+  if (len < 0.01) return;
+  const nx = dx / len, nz = dz / len;
+  const fwdX = -Math.sin(yaw), fwdZ = -Math.cos(yaw);
+  const rgtX = Math.cos(yaw), rgtZ = -Math.sin(yaw);
+  const fwdDot = nx * fwdX + nz * fwdZ;
+  const rgtDot = nx * rgtX + nz * rgtZ;
+  const angle = Math.atan2(rgtDot, fwdDot);
+  let dir;
+  if (Math.abs(angle) < Math.PI / 4) dir = 'top';
+  else if (Math.abs(angle) > Math.PI * 3 / 4) dir = 'bottom';
+  else if (angle > 0) dir = 'right';
+  else dir = 'left';
+  const el = document.querySelector(`#damage-ring .diag.${dir}`);
+  if (!el) return;
+  el.classList.add('on');
+  if (el._t) clearTimeout(el._t);
+  el._t = setTimeout(() => el.classList.remove('on'), 550);
+}
+
 function resetFlagsOnDeath(entityId) {
   for (const team of ['blue', 'red']) {
     const f = flags[team]; if (!f) continue;
@@ -794,6 +808,7 @@ function resetFlagsOnDeath(entityId) {
 /* ===== GAME ACTIONS ===== */
 function die(killerId, headshot) {
   alive = false; respawnTimer = RESPAWN; deaths++; resetFlagsOnDeath(localId);
+  audio.death();
   const killer = players.get(killerId);
   net.broadcastMatch('kill', { killer: killerId, killerName: killer?.name || '?', killerIr: killer?.irId || '', victim: localId, victimName: localName, headshot });
   toast('YOU DIED');
@@ -801,7 +816,9 @@ function die(killerId, headshot) {
 function respawn() {
   alive = true; health = 100; invulnT = INVULN * 2;
   const baseX = localTeam === 'blue' ? -20 : 20;
-  camera.position.set(baseX, H, 0); yaw = localTeam === 'blue' ? -Math.PI / 2 : Math.PI / 2; pitch = 0; updateHud();
+  camera.position.set(baseX, H, 0); yaw = localTeam === 'blue' ? -Math.PI / 2 : Math.PI / 2; pitch = 0;
+  audio.spawn();
+  updateHud();
 }
 
 function shoot() {
@@ -809,6 +826,7 @@ function shoot() {
   const now = performance.now(); if (now - lastShot < 180 || reloadT > 0) return;
   lastShot = now; if (ammo <= 0) { startReload(); return; }
   ammo--; recoil = Math.min(recoil + .06, .2); cameraShake = Math.min(cameraShake + .12, .35);
+  audio.shoot();
   if (gunGroup) gunGroup.userData.kick = 0.12; spawnMuzzleFlash();
   const ch = $('crosshair'); ch.classList.add('fired'); setTimeout(() => ch.classList.remove('fired'), 60); updateHud();
 
@@ -849,6 +867,7 @@ function shoot() {
           b.alive = false; b.respawnTimer = RESPAWN; triggerDeathAnim(b.group);
           setTimeout(() => { if (b.group) b.group.visible = false; }, 500);
           b.carrying = null; resetFlagsOnDeath(b.id); kills++; killFeed(isHead ? '🎯 HEADSHOT' : '💥 KILL');
+          audio.kill();
         }
       }
     } else {
@@ -869,10 +888,16 @@ function shoot() {
 }
 
 function showHitMarker(isHead) {
+  if (isHead) audio.headshot(); else audio.hit();
   $('hit').textContent = isHead ? '🎯' : '✕'; $('hit').classList.toggle('headshot', isHead);
   $('hit').classList.add('show'); setTimeout(() => $('hit').classList.remove('show'), 180);
 }
-function startReload() { if (reloadT > 0 || ammo === 12) return; reloadT = 1.15; toast('RELOADING'); }
+function startReload() {
+  if (reloadT > 0 || ammo === 12) return;
+  reloadT = RELOAD_DURATION;
+  audio.reloadStart();
+  toast('RELOADING');
+}
 function tryDash() {
   if (!alive || dashCd > 0 || dashT > 0) return;
   let f = (keys.KeyW || keys.ArrowUp ? 1 : 0) - (keys.KeyS || keys.ArrowDown ? 1 : 0) - my;
@@ -881,6 +906,7 @@ function tryDash() {
   const len = Math.hypot(f, s); f /= len; s /= len;
   dashDirX = -Math.sin(yaw) * f + Math.cos(yaw) * s; dashDirZ = -Math.cos(yaw) * f - Math.sin(yaw) * s;
   dashT = DASH_DUR; dashCd = DASH_CD; dashWhoosh = 0.28; dashPoseT = 0.50;
+  audio.dash();
 }
 
 /* ===== BOT AI ===== */
@@ -897,12 +923,12 @@ function botFire(bot) {
   const ax = target.pos.x + rand(-err, err), az = target.pos.z + rand(-err, err);
   const dx = ax - tx, dz = az - tz; const dist = Math.hypot(dx, dz) || 1;
   const vx = dx / dist * diff.projectileSpeed, vz = dz / dist * diff.projectileSpeed;
-  
-  spawnBotFlash(tx, tz, bot.team === 'blue' ? 0x44d7ff : 0xff3060); // Bot Muzzle flash!
-  
+
+  spawnBotFlash(tx, tz, bot.team === 'blue' ? 0x44d7ff : 0xff3060);
+
   const mesh = new THREE.Mesh(new THREE.SphereGeometry(.22, 8, 6), new THREE.MeshBasicMaterial({ color: bot.team === 'blue' ? 0x44d7ff : 0xff3060 }));
   mesh.position.set(tx, 1.2, tz); scene.add(mesh);
-  projectiles.push({ mesh, vx, vz, life: 4, dmg: diff.dmg, team: bot.team });
+  projectiles.push({ mesh, vx, vz, life: 4, dmg: diff.dmg, team: bot.team, srcX: tx, srcZ: tz });
 }
 function rangeTargetFire(target) {
   if (!alive) return;
@@ -913,7 +939,7 @@ function rangeTargetFire(target) {
   const vx = dx / dl * RANGE_PROJ_SPEED, vz = dz / dl * RANGE_PROJ_SPEED;
   const mesh = new THREE.Mesh(new THREE.SphereGeometry(.2, 8, 6), new THREE.MeshBasicMaterial({ color: 0xff3060 }));
   mesh.position.set(tx, 1.2, tz); scene.add(mesh);
-  projectiles.push({ mesh, vx, vz, life: 4, dmg: RANGE_DMG, team: 'red' });
+  projectiles.push({ mesh, vx, vz, life: 4, dmg: RANGE_DMG, team: 'red', srcX: tx, srcZ: tz });
 }
 
 function updateBots(dt, t) {
@@ -982,8 +1008,10 @@ function updateProjectiles(dt) {
       const dx = p.mesh.position.x - camera.position.x; const dz = p.mesh.position.z - camera.position.z;
       if (dx * dx + dz * dz < 1.2) {
         health = Math.max(0, health - p.dmg); invulnT = INVULN; cameraShake = Math.min(cameraShake + .4, .7);
-        $('damage-vignette').classList.add('on'); setTimeout(() => $('damage-vignette').classList.remove('on'), 200); updateHud();
-        if (health <= 0) { if (practiceMode) { alive = false; respawnTimer = RESPAWN; resetFlagsOnDeath(localId); toast('KILLED'); } else die(null, false); }
+        $('damage-vignette').classList.add('on'); setTimeout(() => $('damage-vignette').classList.remove('on'), 200);
+        if (p.srcX !== undefined) showDamageDirection(p.srcX, p.srcZ);
+        updateHud();
+        if (health <= 0) { if (practiceMode) { alive = false; respawnTimer = RESPAWN; resetFlagsOnDeath(localId); toast('KILLED'); audio.death(); } else die(null, false); }
         scene.remove(p.mesh); p.mesh.geometry.dispose(); p.mesh.material.dispose(); projectiles.splice(i, 1); continue;
       }
     }
@@ -1075,6 +1103,7 @@ function endMatch(winner) {
   $('go-title').className = winner === localTeam ? 'win' : 'lose';
   $('go-blue').textContent = scoreBlue; $('go-red').textContent = scoreRed;
   $('gameover').classList.remove('hidden'); $('hud').classList.add('hidden');
+  if (winner === localTeam) audio.victory(); else audio.defeat();
   if (net.user && !practiceMode) { net.recordStats(matchId, [{ user_id: net.user.id, display_name: localName, ir_id: localIrId, team: localTeam, kills, deaths, captures, headshots }]).catch(() => {}); }
 }
 function leaveMatch() {
@@ -1092,8 +1121,8 @@ function doSteal() {
   if (!f || f.carrier) return;
   const dx = camera.position.x - f.mesh.position.x, dz = camera.position.z - f.mesh.position.z;
   if (dx * dx + dz * dz > STEAL_RANGE * STEAL_RANGE) return;
-  if (practiceMode) { f.carrier = localId; toast('FLAG STOLEN'); }
-  else { net.broadcastMatch('flag', { type: 'steal', team: enemyTeam, stealer: localId }); toast('STEALING'); }
+  if (practiceMode) { f.carrier = localId; toast('FLAG STOLEN'); audio.dash(); }
+  else { net.broadcastMatch('flag', { type: 'steal', team: enemyTeam, stealer: localId }); toast('STEALING'); audio.dash(); }
 }
 function doTreasure() {
   const enemyTeam = localTeam === 'blue' ? 'red' : 'blue'; const f = flags[enemyTeam];
@@ -1103,12 +1132,12 @@ function doTreasure() {
   if (practiceMode) {
     if (localTeam === 'blue') scoreBlue++; else scoreRed++;
     f.carrier = null; f.mesh.position.copy(f.basePos); captures++; toast('TREASURED'); updateHud();
+    audio.capture();
     if (scoreBlue >= CAPTURES_TO_WIN || scoreRed >= CAPTURES_TO_WIN) endMatch(scoreBlue >= CAPTURES_TO_WIN ? 'blue' : 'red');
-  } else { net.broadcastMatch('flag', { type: 'capture', team: enemyTeam, carrier: localId }); toast('TREASURING'); }
+  } else { net.broadcastMatch('flag', { type: 'capture', team: enemyTeam, carrier: localId }); toast('TREASURING'); audio.capture(); }
 }
 function updateFlagButtons() {
   const stealBtn = $('steal-btn'), treasureBtn = $('treasure-btn');
-  // Keep both action buttons visible in customization so they can be repositioned.
   if (customizing) {
     stealBtn.classList.remove('hidden');
     treasureBtn.classList.remove('hidden');
@@ -1125,6 +1154,11 @@ function updateFlagButtons() {
 /* ===== HUD ===== */
 function updateHud() {
   $('health').textContent = Math.ceil(health); $('healthbar').style.width = health + '%'; $('ammo').innerHTML = ammo + ' <em>/ 12</em>';
+  const reloadBar = $('reloadbar');
+  if (reloadBar) {
+    const progress = reloadT > 0 ? (1 - reloadT / RELOAD_DURATION) * 100 : 0;
+    reloadBar.style.width = progress + '%';
+  }
   if (scoreBlue !== lastScoreBlue || scoreRed !== lastScoreRed) {
     const el = $('score-blue'), el2 = $('score-red');
     el.style.transform = 'scale(1.4)'; el.style.transition = 'none'; el2.style.transform = 'scale(1.4)'; el2.style.transition = 'none';
@@ -1136,6 +1170,7 @@ function updateHud() {
   if (practiceMode) { timerEl.textContent = '∞'; timerEl.classList.remove('low'); }
   else { const m = Math.floor(Math.max(0, roundTime) / 60); const s = Math.floor(Math.max(0, roundTime) % 60).toString().padStart(2, '0'); timerEl.textContent = `${m}:${s}`; timerEl.classList.toggle('low', roundTime < 30); }
   $('damage-vignette').classList.toggle('low-health', health > 0 && health < 25);
+  if (alive && health > 0 && health < 25) audio.lowHealth();
 }
 function toast(s) { $('toast').textContent = s; setTimeout(() => { if ($('toast').textContent === s) $('toast').textContent = ''; }, 1400); }
 function killFeed(text) {
@@ -1147,13 +1182,17 @@ function escapeHtml(s) { return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp
 
 /* ===== INPUT ===== */
 function bindInput() {
+  const unlockAudio = () => { audio.init(); audio.resume(); };
+  document.addEventListener('pointerdown', unlockAudio);
+  document.addEventListener('keydown', unlockAudio);
+
   document.addEventListener('keydown', e => {
     keys[e.code] = true;
     if (['Space', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.code)) e.preventDefault();
     if (e.code === 'KeyR') startReload();
     if (e.code === 'KeyE') doSteal();
     if (e.code === 'KeyQ') doTreasure();
-    if (e.code === 'Space' && !e.repeat) jump = true;
+    if (e.code === 'Space' && !e.repeat) { jump = true; if (alive) audio.jump(); }
     if ((e.code === 'ShiftLeft' || e.code === 'ShiftRight') && !e.repeat) tryDash();
     if (e.code === 'Escape' && running && !customizing) { paused = !paused; $('pause').classList.toggle('hidden', !paused); }
   });
@@ -1182,7 +1221,7 @@ function bindInput() {
   });
   const stopAim = e => { if (e.pointerId === aimId) aimId = null; };
   renderer.domElement.addEventListener('pointerup', stopAim); renderer.domElement.addEventListener('pointercancel', stopAim);
-  
+
   const zone = $('joy-zone'), base = $('joy-base'), knob = $('joy-knob');
   zone.addEventListener('pointerdown', e => {
     if (!running || paused || customizing) return;
@@ -1191,29 +1230,47 @@ function bindInput() {
   zone.addEventListener('pointermove', e => { if (e.pointerId === joyId && !customizing) joystickMove(e, base, knob); });
   const stopJoy = e => { if (e.pointerId === joyId) { joyId = null; mx = my = 0; knob.style.transform = 'translate(0,0)'; } };
   zone.addEventListener('pointerup', stopJoy); zone.addEventListener('pointercancel', stopJoy);
-  
+
   const fireBtn = $('fire-btn');
   fireBtn.addEventListener('pointerdown', e => { if(customizing) return; e.preventDefault(); fire = true; try { fireBtn.setPointerCapture(e.pointerId); } catch (_) {} });
   ['pointerup', 'pointercancel', 'lostpointercapture'].forEach(t => fireBtn.addEventListener(t, () => fire = false));
-  
-  $('jump-btn').addEventListener('pointerdown', e => { if(customizing) return; e.preventDefault(); jump = true; });
+
+  $('jump-btn').addEventListener('pointerdown', e => { if(customizing) return; e.preventDefault(); jump = true; if (alive) audio.jump(); });
   $('reload-btn').addEventListener('pointerdown', e => { if(customizing) return; e.preventDefault(); startReload(); });
   $('dash-btn').addEventListener('pointerdown', e => { if(customizing) return; e.preventDefault(); tryDash(); });
   $('steal-btn').addEventListener('click', () => { if(!customizing) doSteal(); });
   $('treasure-btn').addEventListener('click', () => { if(!customizing) doTreasure(); });
-  
+
   $('pause-btn').addEventListener('click', () => { paused = true; $('pause').classList.remove('hidden'); document.exitPointerLock?.(); });
   $('resume-btn').addEventListener('click', () => { paused = false; $('pause').classList.add('hidden'); if (!touch) renderer.domElement.requestPointerLock?.(); });
-  
+
   $('customize-btn').addEventListener('click', () => {
     customizing = true; $('pause').classList.add('hidden'); $('custom-grid').classList.remove('hidden'); $('mobile').classList.remove('hidden');
   });
   $('btn-save-custom').addEventListener('click', () => {
     saveCustomLayout(); customizing = false; $('custom-grid').classList.add('hidden'); $('pause').classList.remove('hidden');
   });
-  
+
   $('leave-match-btn').addEventListener('click', () => leaveMatch());
   $('go-lobby').addEventListener('click', () => leaveMatch());
+
+  // Audio mute toggle
+  const muteBtn = $('mute-btn');
+  if (muteBtn) {
+    const applyMuteState = () => {
+      const enabled = store.get('rivals-muted', '0') !== '1';
+      audio.setEnabled(enabled);
+      muteBtn.textContent = enabled ? '🔊' : '🔇';
+      muteBtn.classList.toggle('muted', !enabled);
+    };
+    applyMuteState();
+    muteBtn.addEventListener('click', () => {
+      const currentlyEnabled = store.get('rivals-muted', '0') !== '1';
+      store.set('rivals-muted', currentlyEnabled ? '1' : '0');
+      applyMuteState();
+      audio.uiClick();
+    });
+  }
 }
 function joystickMove(e, b, k) {
   const r = b.getBoundingClientRect(); let x = e.clientX - (r.left + r.width / 2); let y = e.clientY - (r.top + r.height / 2);
@@ -1274,8 +1331,6 @@ function update(dt, t) {
   updateAmbientParticles(ambientParticles, dt);
   if (flags.blue) updateFlagWave(flags.blue.mesh, t); if (flags.red) updateFlagWave(flags.red.mesh, t);
 
-  // ===== ANIME-STYLE BATTLEFIELD ANIMATIONS =====
-  // Blocks keep their exact gameplay positions and collision sizes; glow and outline pulse.
   wallMeshes.forEach((mesh, index) => {
     if (mesh.material && 'emissiveIntensity' in mesh.material) {
       mesh.material.emissiveIntensity = 0.18 + (Math.sin(t * 3.2 + index * 0.8) + 1) * 0.24;
@@ -1286,7 +1341,6 @@ function update(dt, t) {
     material.opacity = 0.38 + wave * 0.58;
   });
 
-  // Center battlefield rings rotate in opposite directions and breathe with light.
   centerEnergyRings.forEach(({ mesh, speed, phase }) => {
     mesh.rotation.z += dt * speed;
     const pulse = 1 + Math.sin(t * 2.7 + phase) * 0.045;
@@ -1294,7 +1348,6 @@ function update(dt, t) {
     mesh.material.opacity = 0.2 + (Math.sin(t * 3.4 + phase) + 1) * 0.24;
   });
 
-  // Smooth orbiting energy sparks add motion while keeping the arena lightweight on mobile.
   battlefieldSparks.forEach(({ mesh, angle, radius, speed, phase, height }) => {
     const a = angle + t * speed;
     mesh.position.set(Math.cos(a) * radius, height + (Math.sin(t * 2.4 + phase) + 1) * 0.22, Math.sin(a) * radius);
@@ -1303,7 +1356,6 @@ function update(dt, t) {
     mesh.material.opacity = 0.38 + (Math.sin(t * 3.5 + phase) + 1) * 0.28;
   });
 
-  // Rotating, pulsing team energy rings.
   if (baseBlueRing && baseRedRing) {
     baseBlueRing.rotation.z += dt * 0.5;
     baseRedRing.rotation.z -= dt * 0.5;
@@ -1314,7 +1366,6 @@ function update(dt, t) {
     baseRedRing.material.opacity = 0.42 + (Math.sin(t * 3 + Math.PI) + 1) * 0.12;
   }
 
-  // Flowing floor-grid motion with a stronger travelling light pulse.
   if (floorGrid) {
     floorGrid.position.z = (t * 1.2) % 2;
     floorGrid.position.x = Math.sin(t * 0.32) * 0.22;
@@ -1325,7 +1376,6 @@ function update(dt, t) {
     }
   }
 
-  // Ambient scenery animation: floating shards, glowing armor markings and perimeter energy.
   animeDecor.forEach(({mesh,kind,phase,baseY}) => {
     if (kind === 'pylon') { mesh.rotation.y += dt * .7; mesh.rotation.x += dt * .22; }
     else if (kind === 'shard') { mesh.rotation.x += dt * .35; mesh.rotation.y += dt * .55; mesh.position.y = baseY + Math.sin(t * 1.8 + phase) * .22; }
@@ -1347,8 +1397,11 @@ function update(dt, t) {
   }
 
   if (fire && alive) shoot();
-  if (reloadT > 0) { reloadT -= dt; if (reloadT <= 0) { ammo = 12; updateHud(); toast('RELOADED'); } }
-  
+  if (reloadT > 0) {
+    reloadT -= dt;
+    if (reloadT <= 0) { ammo = 12; updateHud(); toast('RELOADED'); audio.reloadEnd(); }
+  }
+
   for (const p of players.values()) {
     p.prevPos = p.prevPos || new THREE.Vector3().copy(p.group.position);
     p.group.position.lerp(p.targetPos, Math.min(1, dt * 10)); p.group.position.y = 0; p.group.rotation.y = p.yaw;
@@ -1413,11 +1466,15 @@ function enterMatch(match, allPlayers) {
   let myTeam = 'blue';
   for (const p of allPlayers) { if (p.user_id === localId) { myTeam = p.team; continue; } addPlayer(p.user_id, p.display_name, p.ir_id || '', p.team); }
   localTeam = myTeam; flags.blue.mesh.position.copy(flags.blue.basePos); flags.red.mesh.position.copy(flags.red.basePos); flags.blue.carrier = flags.red.carrier = null;
+
+  const tb = $('team-badge');
+  if (tb) { tb.textContent = localTeam === 'blue' ? 'BLUE' : 'RED'; tb.className = 'team-badge ' + localTeam; }
+
   const baseX = localTeam === 'blue' ? -20 : 20; camera.position.set(baseX, H, 0); lastPlayerPos.copy(camera.position); yaw = localTeam === 'blue' ? -Math.PI / 2 : Math.PI / 2; pitch = 0;
   health = 100; alive = true; ammo = 12; reloadT = 0; invulnT = 1;
   net.subscribeMatch(matchId, {
     onState: onMatchState, onShot: onShotFired, onHit: onHitReceived, onFlag: onFlagUpdate, onScore: onScoreUpdate, onKill: onKillFeed, onEnd: onMatchEnd,
-    onJoined: () => { running = true; if (!touch) renderer.domElement.requestPointerLock?.(); },
+    onJoined: () => { running = true; if (!touch) renderer.domElement.requestPointerLock?.(); audio.spawn(); },
   });
   updateHud();
 }
@@ -1426,12 +1483,17 @@ function enterPractice(variant) {
   lockLandscape(); practiceMode = true; practiceVariant = variant; gameOver = false; running = true; paused = false; matchId = null;
   localTeam = 'blue'; scoreBlue = scoreRed = 0; lastScoreBlue = 0; lastScoreRed = 0; kills = deaths = captures = headshots = 0; matchElapsed = 0;
   $('lobby').classList.add('hidden'); $('room').classList.add('hidden'); $('hud').classList.remove('hidden'); if (touch) $('mobile').classList.remove('hidden');
+
+  const tb = $('team-badge');
+  if (tb) { tb.textContent = 'BLUE'; tb.className = 'team-badge blue'; }
+
   clearBotsAndProjectiles(); clearTargets();
   if (variant === 'range') { for (let i = 0; i < 6; i++) addRangeTarget(); }
   else { addBot('Blue 1', 'blue'); addBot('Blue 2', 'blue'); addBot('Red 1', 'red'); addBot('Red 2', 'red'); addBot('Red 3', 'red'); }
   flags.blue.mesh.position.copy(flags.blue.basePos); flags.red.mesh.position.copy(flags.red.basePos); flags.blue.carrier = flags.red.carrier = null;
   camera.position.set(-20, H, 0); lastPlayerPos.copy(camera.position); yaw = -Math.PI / 2; pitch = 0;
   health = 100; alive = true; ammo = 12; reloadT = 0; invulnT = 1; updateHud();
+  audio.spawn();
   if (!touch) renderer.domElement.requestPointerLock?.();
 }
 
@@ -1441,7 +1503,9 @@ function showLobby() {
   $('lobby').classList.remove('hidden'); $('hud').classList.add('hidden'); $('pause').classList.add('hidden'); $('gameover').classList.add('hidden'); $('custom-grid').classList.add('hidden');
   $('sens-slider').value = aim.sensitivity; $('sens-val').textContent = aim.sensitivity.toFixed(1);
   $('assist-slider').value = Math.round(aim.assistStrength * 100); $('assist-val').textContent = Math.round(aim.assistStrength * 100) + '%';
-  $('vol-slider').value = Math.round((+(store.get('rivals-vol', 50)))); $('vol-val').textContent = $('vol-slider').value + '%';
+  const volVal = Math.round((+(store.get('rivals-vol', 50))));
+  $('vol-slider').value = volVal; $('vol-val').textContent = volVal + '%';
+  audio.setVolume(volVal / 100);
   $('lobby-name').textContent = `${localName} · ${localIrId}`;
   document.querySelectorAll('.mode-tabs .tab').forEach(t => t.classList.toggle('active', t.dataset.mode === gameMode));
   $('mode-desc').textContent = MODES[gameMode].desc;
@@ -1453,18 +1517,20 @@ function showLobby() {
 }
 
 function bindLobby() {
-  $('lobby').addEventListener('pointerdown', () => { lockLandscape(); }, { once: true });
+  $('lobby').addEventListener('pointerdown', () => { lockLandscape(); audio.init(); audio.resume(); }, { once: true });
   document.querySelectorAll('.mode-tabs .tab').forEach(btn => {
     btn.addEventListener('click', () => {
+      audio.uiClick();
       gameMode = btn.dataset.mode; document.querySelectorAll('.mode-tabs .tab').forEach(b => b.classList.remove('active')); btn.classList.add('active');
       $('mode-desc').textContent = MODES[gameMode].desc; $('practice-panel').classList.toggle('hidden', gameMode !== 'practice'); $('match-panel').classList.toggle('hidden', gameMode === 'practice');
     });
   });
   document.querySelectorAll('.diff-tab').forEach(btn => {
-    btn.addEventListener('click', () => { practiceDifficulty = btn.dataset.diff; document.querySelectorAll('.diff-tab').forEach(b => b.classList.remove('active')); btn.classList.add('active'); });
+    btn.addEventListener('click', () => { audio.uiClick(); practiceDifficulty = btn.dataset.diff; document.querySelectorAll('.diff-tab').forEach(b => b.classList.remove('active')); btn.classList.add('active'); });
   });
   document.querySelectorAll('.swatch').forEach(btn => {
     btn.addEventListener('click', () => {
+      audio.uiClick();
       playerColorKey = btn.dataset.color; store.set('rivals-color', playerColorKey);
       document.querySelectorAll('.swatch').forEach(b => b.classList.remove('active')); btn.classList.add('active');
       $('color-name').textContent = COLORS[playerColorKey].name; if (lobbyPreview) lobbyPreview.setColor(COLORS[playerColorKey].hex);
@@ -1472,21 +1538,27 @@ function bindLobby() {
   });
   $('sens-slider').addEventListener('input', e => { aim.sensitivity = +e.target.value; store.set('rivals-sens', aim.sensitivity); $('sens-val').textContent = aim.sensitivity.toFixed(1); });
   $('assist-slider').addEventListener('input', e => { aim.assistStrength = +e.target.value / 100; store.set('rivals-assist', aim.assistStrength); $('assist-val').textContent = e.target.value + '%'; });
-  $('vol-slider').addEventListener('input', e => { store.set('rivals-vol', e.target.value); $('vol-val').textContent = e.target.value + '%'; });
+  $('vol-slider').addEventListener('input', e => {
+    store.set('rivals-vol', e.target.value);
+    $('vol-val').textContent = e.target.value + '%';
+    audio.setVolume(e.target.value / 100);
+  });
   let teamSize = 3;
-  document.querySelectorAll('.size-tab').forEach(t => { t.addEventListener('click', () => { teamSize = +t.dataset.size; document.querySelectorAll('.size-tab').forEach(x => x.classList.remove('active')); t.classList.add('active'); }); });
-  
-  $('btn-range').addEventListener('click', () => enterPractice('range'));
-  $('btn-botmatch').addEventListener('click', () => enterPractice('botmatch'));
-  $('btn-create').addEventListener('click', async () => { const r = await net.createRoom(teamSize, gameMode); if (!r.ok) return toast('Could not create room'); showRoomUI(); });
-  $('btn-find').addEventListener('click', async () => { const r = await net.findMatch(teamSize, gameMode); if (!r.ok) return toast('No match available'); showRoomUI(); });
-  $('btn-join').addEventListener('click', () => $('join-row').classList.toggle('hidden'));
+  document.querySelectorAll('.size-tab').forEach(t => { t.addEventListener('click', () => { audio.uiClick(); teamSize = +t.dataset.size; document.querySelectorAll('.size-tab').forEach(x => x.classList.remove('active')); t.classList.add('active'); }); });
+
+  $('btn-range').addEventListener('click', () => { audio.uiClick(); enterPractice('range'); });
+  $('btn-botmatch').addEventListener('click', () => { audio.uiClick(); enterPractice('botmatch'); });
+  $('btn-create').addEventListener('click', async () => { audio.uiClick(); const r = await net.createRoom(teamSize, gameMode); if (!r.ok) return toast('Could not create room'); showRoomUI(); });
+  $('btn-find').addEventListener('click', async () => { audio.uiClick(); const r = await net.findMatch(teamSize, gameMode); if (!r.ok) return toast('No match available'); showRoomUI(); });
+  $('btn-join').addEventListener('click', () => { audio.uiClick(); $('join-row').classList.toggle('hidden'); });
   $('btn-join-go').addEventListener('click', async () => {
+    audio.uiClick();
     const code = $('join-code').value.trim().toUpperCase(); if (!code) return;
     const r = await net.joinRoom(code); if (!r.ok) return toast(r.reason === 'not_found' ? 'Room not found' : 'Could not join'); showRoomUI();
   });
-  $('btn-leave').addEventListener('click', async () => { await net.leaveRoom(); $('room').classList.add('hidden'); $('lobby').classList.remove('hidden'); });
+  $('btn-leave').addEventListener('click', async () => { audio.uiClick(); await net.leaveRoom(); $('room').classList.add('hidden'); $('lobby').classList.remove('hidden'); });
   $('btn-ready').addEventListener('click', async () => {
+    audio.uiClick();
     const me = (await net.client.from('room_players').select('*').eq('room_id', net.room.id).eq('user_id', localId).maybeSingle()).data; await net.setReady(!me?.ready);
   });
   $('btn-start').addEventListener('click', async () => {
@@ -1495,6 +1567,7 @@ function bindLobby() {
     btn.dataset.starting = '1';
     btn.disabled = true;
     btn.textContent = 'STARTING…';
+    audio.uiClick();
     showRoomMessage('Starting match…');
     try {
       if (!net.room || !net.isHost) throw new Error('Only the room host can start this match.');
@@ -1516,13 +1589,11 @@ function bindLobby() {
       btn.textContent = 'TRY START AGAIN';
     } finally {
       delete btn.dataset.starting;
-      // Do not re-enable a button after the room has already switched to the match.
       if (!$('room').classList.contains('hidden')) btn.disabled = false;
     }
   });
-  $('btn-logout').addEventListener('click', async () => { await net.logout(); location.reload(); });
+  $('btn-logout').addEventListener('click', async () => { audio.uiClick(); await net.logout(); location.reload(); });
 }
-
 
 function showRoomMessage(message) {
   let el = $('room-start-message');
@@ -1544,7 +1615,6 @@ function showRoomUI() {
     onPlayers: renderRoomPlayers,
     onStart: data => { if (data?.match && data?.players) enterMatch(data.match, data.players); },
     onRoomUpdate: async room => {
-      // Backup path for clients that miss the realtime start broadcast.
       if (room?.status !== 'playing' || !net.room || room.id !== net.room.id || running) return;
       try {
         const { data: match, error } = await net.client.from('matches').select('*').eq('room_id', room.id).eq('status', 'active').limit(1).maybeSingle();
@@ -1565,7 +1635,7 @@ function renderRoomPlayers(list) {
   const row = p => `<li class="${p.ready ? 'ready' : ''}"><div><div>${escapeHtml(p.display_name)}</div><div style="font-size:10px;opacity:.6">${escapeHtml(p.ir_id || '')}</div></div>${p.ready ? '<span class="badge">READY</span>' : ''}</li>`;
   $('room-players').innerHTML = `
     <div class="team-col blue"><h3>BLUE (${blue.length}/${cap})</h3><ul>${blue.map(row).join('') || '<li>—</li>'}</ul></div>
-    <div class="team-col red"><h3>RED (${red.length}/${cap})</h3><ul>${red.map(row).join('') || '<li>—</li>'}</ul></div>`;
+    <div class="team-col red"><h3>RED (${cap - red.length > 0 ? red.length : red.length}/${cap})</h3><ul>${red.map(row).join('') || '<li>—</li>'}</ul></div>`;
   const me = list.find(p => p.user_id === localId); $('btn-ready').textContent = me?.ready ? 'UNREADY' : 'READY';
   if (net.isHost) {
     $('btn-start').classList.remove('hidden'); const hasBothTeams = blue.length > 0 && red.length > 0;
@@ -1573,29 +1643,28 @@ function renderRoomPlayers(list) {
   } else { $('btn-start').classList.add('hidden'); }
 }
 
-/* ===== BOOT WITH TIMEOUT ===== */
+/* ===== BOOT ===== */
 async function boot() {
   try {
     const msgEl = $('auth-msg');
     if (msgEl) msgEl.textContent = 'Connecting to Supabase...';
 
-    // ✅ 8 SECOND TIMEOUT FIX
-    const timeoutPromise = new Promise((_, reject) => 
+    const timeoutPromise = new Promise((_, reject) =>
       setTimeout(() => reject(new Error("Connection timed out. Is your Supabase project paused?")), 8000)
     );
 
     const initRes = await Promise.race([net.init(), timeoutPromise]);
-    
-    if (!initRes.ok) { 
-      $('auth-gate').classList.remove('hidden'); 
-      $('auth-msg').textContent = '❌ ' + initRes.reason; 
+
+    if (!initRes.ok) {
+      $('auth-gate').classList.remove('hidden');
+      $('auth-msg').textContent = '❌ ' + initRes.reason;
       $('auth-msg').style.color = 'red';
-      return; 
+      return;
     }
-    
-    localId = net.user.id; localName = net.displayName; localIrId = net.irId; 
+
+    localId = net.user.id; localName = net.displayName; localIrId = net.irId;
     $('auth-gate').classList.add('hidden');
-    
+
     initWorld(); bindInput(); bindLobby(); loop(); showLobby();
     if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js', { scope: './' }).catch(() => {});
   } catch (err) {
