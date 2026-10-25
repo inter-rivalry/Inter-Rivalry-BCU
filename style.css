@@ -1,307 +1,233 @@
-/* INTER RIVALRY 3000 — visual upgrade layer
-   Keeps the existing HTML, Supabase logic, screen IDs, and inline handlers intact. */
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Rajdhani:wght@500;600;700&display=swap');
+
+/* ===== INTER RIVALRY 3000 — CYBERPUNK ESPORTS SYSTEM ===== */
 :root {
   color-scheme: dark;
-  --ir-bg: #070a12;
-  --ir-panel: rgba(15, 21, 35, .88);
-  --ir-panel-strong: #101827;
-  --ir-border: rgba(145, 166, 202, .19);
-  --ir-text: #f3f6ff;
+  --ir-bg: #03050a;
+  --ir-panel: rgba(8, 14, 26, 0.95);
+  --ir-panel-strong: #0a1122;
+  --ir-border-blue: #00aaff;
+  --ir-border-red: #ff0033;
+  --ir-text: #f4f7ff;
   --ir-muted: #a9b5ca;
-  --ir-blue: #43a7ff;
-  --ir-blue-deep: #1769d2;
-  --ir-red: #ff4c67;
+  --ir-blue: #19a9ff;
+  --ir-red: #ff294f;
   --ir-gold: #ffc857;
-  --ir-radius: 18px;
-  --ir-shadow: 0 18px 50px rgba(0, 0, 0, .32);
 }
 
+/* Base Body & Background */
 html { background: var(--ir-bg); scroll-behavior: smooth; }
 body {
   color: var(--ir-text) !important;
+  /* Cyberpunk energy background */
   background:
-    radial-gradient(ellipse at 8% 0%, rgba(32, 104, 190, .17), transparent 34rem),
-    radial-gradient(ellipse at 96% 14%, rgba(198, 42, 75, .12), transparent 32rem),
-    linear-gradient(180deg, #080c16 0%, #070a11 48%, #090b13 100%) !important;
-  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif !important;
-  letter-spacing: .005em;
+    radial-gradient(ellipse at 0% 50%, rgba(0, 140, 255, 0.15), transparent 40rem),
+    radial-gradient(ellipse at 100% 50%, rgba(255, 0, 50, 0.15), transparent 40rem),
+    linear-gradient(180deg, #050811 0%, #020306 100%) !important;
+  font-family: 'Rajdhani', ui-sans-serif, system-ui, sans-serif !important;
+  letter-spacing: 0.02em;
   -webkit-font-smoothing: antialiased;
 }
+
 body::before {
   content: ""; position: fixed; inset: 0; pointer-events: none; z-index: 0;
-  opacity: .18;
-  background-image: linear-gradient(rgba(145,166,202,.045) 1px, transparent 1px), linear-gradient(90deg, rgba(145,166,202,.045) 1px, transparent 1px);
-  background-size: 42px 42px;
-  mask-image: linear-gradient(to bottom, black, transparent 80%);
+  opacity: 0.15;
+  background-image: linear-gradient(rgba(0, 170, 255, 0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 0, 50, 0.1) 1px, transparent 1px);
+  background-size: 50px 50px;
+  mask-image: linear-gradient(to bottom, black, transparent 90%);
 }
-body > * { position: relative; }
-button, input, select, textarea { font-family: inherit !important; }
-button { transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease, filter .18s ease; }
-button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible {
-  outline: 2px solid var(--ir-blue) !important; outline-offset: 3px;
-}
-button:active { transform: translateY(1px) scale(.99); }
+body > * { position: relative; z-index: 1; }
 
-/* Common surfaces: consistent dark glass instead of flat or blinding panels. */
+/* Typography */
+h1, h2, h3, h4, .section-title {
+  font-family: 'Orbitron', sans-serif !important;
+  font-weight: 900 !important;
+  text-transform: uppercase;
+  font-style: italic;
+  letter-spacing: 0.05em;
+  color: #ffffff !important;
+  text-shadow: 0 0 15px rgba(0, 170, 255, 0.4);
+}
+
+/* Gradient Text for specific elements */
+.welcome h1 span,
+.profile-card h2,
+.ir-shop-title {
+  background: linear-gradient(90deg, #ffffff 0%, #ff294f 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  color: transparent !important;
+  text-shadow: none;
+}
+
+/* Make the "Choose Your Game" text look like the image */
+#irGamesLaunchCard h2 {
+  background: linear-gradient(90deg, #00aaff 0%, #ffffff 50%, #ff294f 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  font-size: 28px;
+  margin-bottom: 10px;
+}
+
+/* =========================================
+   THE CYBERPUNK CARDS (Angled & Glowing)
+   ========================================= */
 .auth-box, .profile-card, .management-card, .college-card, .local-club-card,
 .invite-card, .challenge-card, .tournament-card, .rival-stat, .admin-stat,
-.empty-box, .modal-content, .modal-box, .card, .panel, .section-card,
-#localProfileActions, #studentProfileActions, #gymProfileActions {
-  color: var(--ir-text);
-  background: linear-gradient(145deg, rgba(20, 29, 47, .94), rgba(11, 16, 28, .96)) !important;
-  border-color: var(--ir-border) !important;
-  box-shadow: var(--ir-shadow);
-  border-radius: var(--ir-radius);
+.empty-box, .modal-content, .modal-box, .card, .panel, .section-card {
+  position: relative;
+  background: linear-gradient(135deg, rgba(6, 12, 24, 0.95), rgba(13, 17, 33, 0.95)) !important;
+  border: none !important;
+  /* Cut off the corners */
+  clip-path: polygon(20px 0, 100% 0, 100% calc(100% - 20px), calc(100% - 20px) 100%, 0 100%, 0 20px);
+  padding: 24px !important;
+  box-shadow: none !important;
 }
-.auth-box {
-  border: 1px solid rgba(96, 153, 232, .25) !important;
-  box-shadow: 0 24px 80px rgba(0,0,0,.42), 0 0 42px rgba(38,124,231,.08) !important;
-  backdrop-filter: blur(18px);
-}
-.logo, .ir-full-logo { color: #f7f9ff; letter-spacing: .045em; }
-.tagline, .input-group label, .lbl, .club-meta, .college-location { color: var(--ir-muted) !important; }
-h1, h2, h3, h4, .section-title { color: #f5f7ff; letter-spacing: -.025em; }
-p { color: inherit; }
 
-/* Navigation and dashboard structure. */
+/* This pseudo-element creates the glowing blue/red border */
+.auth-box::before, .profile-card::before, .management-card::before, 
+.college-card::before, .local-club-card::before, .invite-card::before, 
+.challenge-card::before, .tournament-card::before, .rival-stat::before, 
+.admin-stat::before, .empty-box::before, .card::before, .panel::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(135deg, var(--ir-border-blue) 0%, transparent 40%, transparent 60%, var(--ir-border-red) 100%);
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  padding: 2px; /* Border thickness */
+  z-index: 10;
+}
+
+/* Hover effect for cards */
+.profile-card:hover, .management-card:hover, .college-card:hover {
+  transform: translateY(-3px);
+  filter: brightness(1.1);
+  transition: all 0.3s ease;
+}
+
+/* Navbar */
 .navbar {
-  background: rgba(7, 11, 20, .9) !important;
-  border-bottom: 1px solid rgba(122, 153, 201, .2) !important;
-  box-shadow: 0 8px 28px rgba(0,0,0,.18);
-  backdrop-filter: blur(18px);
+  background: rgba(3, 6, 12, 0.95) !important;
+  border-bottom: 2px solid rgba(0, 170, 255, 0.5) !important;
+  box-shadow: 0 5px 25px rgba(0, 170, 255, 0.2) !important;
+  backdrop-filter: blur(10px);
 }
-.nav-logo, .ir-nav-mark { color: #f7f9ff !important; }
-.role-badge, .status-pill, .category-tag, .tourn-geo-chip {
-  border: 1px solid rgba(92, 163, 255, .3) !important;
-  background: rgba(40, 113, 201, .13) !important;
-  color: #c9e4ff !important;
-  border-radius: 999px;
-}
-.container { width: min(100% - 28px, 1180px); margin-inline: auto; }
-.grid, .stat-grid { gap: 14px; }
-.profile-card, .management-card, .college-card, .local-club-card, .invite-card {
-  transition: border-color .2s ease, transform .2s ease, box-shadow .2s ease;
-}
-.profile-card:hover, .management-card:hover, .college-card:hover, .local-club-card:hover, .invite-card:hover {
-  border-color: rgba(76, 159, 255, .42) !important;
-  box-shadow: 0 18px 42px rgba(0,0,0,.34), 0 0 26px rgba(43,126,228,.08);
+.nav-logo span { font-family: 'Orbitron', sans-serif; font-style: italic; }
+.role-badge {
+  background: rgba(0, 170, 255, 0.1) !important;
+  border: 1px solid #00aaff !important;
+  color: #00aaff !important;
+  font-weight: 800;
+  box-shadow: 0 0 10px rgba(0, 170, 255, 0.3);
 }
 
-/* Button classes already used throughout the app. Keep their handlers and layout. */
+/* =========================================
+   CYBERPUNK BUTTONS
+   ========================================= */
+button, .btn, .btn-primary, .btn-secondary,
 .btn-3d-white-glow, .btn-3d-sm-white-glow, .btn-3d-xs-white-glow,
 .btn-3d-white-glow-gold, .btn-3d-sm-white-glow-gold,
 .battlefield-action-btn, .local-clean-tile, .filter-btn, .mode-btn,
 .course-btn, .year-btn, .spec-btn {
-  color: #f5f8ff !important;
-  background: linear-gradient(135deg, #18263b, #101827) !important;
-  border: 1px solid rgba(122, 165, 220, .34) !important;
-  border-radius: 12px !important;
-  box-shadow: 0 5px 0 rgba(3, 7, 14, .68), 0 8px 22px rgba(0,0,0,.18) !important;
-  text-shadow: none !important;
-}
-.btn-3d-white-glow:hover, .btn-3d-sm-white-glow:hover, .btn-3d-xs-white-glow:hover,
-.battlefield-action-btn:hover, .local-clean-tile:hover, .filter-btn:hover,
-.mode-btn:hover, .course-btn:hover, .year-btn:hover, .spec-btn:hover {
-  border-color: rgba(82, 171, 255, .82) !important;
-  background: linear-gradient(135deg, #203b5d, #14243b) !important;
-  box-shadow: 0 5px 0 rgba(3,7,14,.68), 0 0 22px rgba(43,139,255,.18) !important;
-  filter: brightness(1.08);
-}
-.btn-3d-white-glow-gold, .btn-3d-sm-white-glow-gold {
-  color: #fff0c7 !important;
-  background: linear-gradient(135deg, #4c3918, #211b12) !important;
-  border-color: rgba(255, 200, 87, .5) !important;
-}
-.btn-3d-sm-white-glow-danger {
-  color: #ffe9ed !important;
-  background: linear-gradient(135deg, #56202d, #27121a) !important;
-  border: 1px solid rgba(255, 76, 103, .46) !important;
-  border-radius: 11px !important;
-  box-shadow: 0 5px 0 rgba(12,3,6,.6) !important;
-}
-.btn-3d-sm-white-glow-danger:hover { background: linear-gradient(135deg, #76283a, #35131d) !important; }
-.filter-btn.active, .mode-btn.active, .course-btn.active, .year-btn.active, .spec-btn.active {
-  color: #fff !important; border-color: var(--ir-blue) !important;
-  background: linear-gradient(135deg, #1769d2, #153b71) !important;
-  box-shadow: 0 0 0 1px rgba(67,167,255,.14), 0 0 22px rgba(43,139,255,.2) !important;
-}
-
-/* Forms and controls: readable text, clear boundaries. */
-input, select, textarea, .input-group input, .input-group select, .input-group textarea {
-  color: #f4f7ff !important;
-  background: rgba(5, 9, 17, .9) !important;
-  border: 1px solid rgba(133, 157, 195, .3) !important;
-  border-radius: 11px !important;
-}
-input::placeholder, textarea::placeholder { color: #8391a9 !important; opacity: 1; }
-select option { color: #f4f7ff; background: #101827; }
-input:focus, select:focus, textarea:focus {
-  border-color: rgba(67,167,255,.85) !important;
-  box-shadow: 0 0 0 3px rgba(67,167,255,.12) !important;
-}
-.message { border-radius: 12px; }
-.empty-box { color: var(--ir-muted) !important; border: 1px dashed rgba(133,157,195,.32) !important; }
-.hidden { display: none !important; }
-
-/* Avoid hard-coded white surfaces that make text unreadable. */
-[style*="background:#fff"], [style*="background: #fff"],
-[style*="background:white"], [style*="background: white"],
-[style*="background-color:#fff"], [style*="background-color: #fff"],
-[style*="background-color:white"], [style*="background-color: white"] {
-  background: linear-gradient(145deg, #172235, #0e1523) !important;
-  color: var(--ir-text) !important;
-  border-color: var(--ir-border) !important;
-}
-[style*="color:#000"], [style*="color: #000"], [style*="color:black"], [style*="color: black"] { color: var(--ir-text) !important; }
-
-/* Respect reduced-motion settings and keep mobile layouts comfortable. */
-@media (max-width: 640px) {
-  .container { width: min(100% - 22px, 1180px); }
-  .auth-page { padding: 16px; }
-  .auth-box { padding: 24px 18px; border-radius: 18px; }
-  .navbar { padding-inline: 12px; }
-  .grid, .stat-grid { gap: 10px; }
-  .profile-card, .management-card, .college-card, .local-club-card, .invite-card { border-radius: 15px; }
-  button { max-width: 100%; }
-  #localProfileActions .local-clean-tile { min-height: 68px; }
-}
-@media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
-}
-
-/* ===== INTER RIVALRY 3000 — angular esports system ===== */
-:root {
-  --ir-blue: #19a9ff;
-  --ir-blue-deep: #0758bd;
-  --ir-red: #ff294f;
-  --ir-panel: rgba(8, 15, 31, .94);
-  --ir-panel-strong: #0b1223;
-  --ir-border: rgba(91, 159, 255, .42);
-  --ir-text: #f4f7ff;
-  --ir-muted: #b7c4dc;
-}
-body {
-  background:
-    radial-gradient(ellipse at -8% 16%, rgba(0, 115, 255, .20), transparent 34rem),
-    radial-gradient(ellipse at 108% 25%, rgba(255, 24, 65, .17), transparent 34rem),
-    #050811 !important;
-  color: #f4f7ff !important;
-}
-/* Correct low-contrast inherited text without overriding deliberate status colors. */
-h1,h2,h3,h4,h5,h6,
-.profile-card h1,.profile-card h2,.profile-card h3,
-.management-card h1,.management-card h2,.management-card h3,
-.college-card h1,.college-card h2,.college-card h3,
-#homeScreen h1,#homeScreen h2,#homeScreen h3 {
-  color: #f5f8ff !important;
-  text-shadow: 0 0 22px rgba(32, 132, 255, .12);
-}
-p, label, small, .subtitle, .description, .muted, .hint,
-.profile-card p,.management-card p,.college-card p {
-  color: #c0cbe0;
-}
-/* Most cards: dark, layered, sharp-edged panels with blue/red edge lighting. */
-.profile-card,.management-card,.college-card,.local-club-card,.invite-card,
-.auth-box,.stat-card,.rank-card,.tournament-card,.challenge-card,
-#irGamesLaunchCard,.empty-box {
   position: relative;
-  isolation: isolate;
-  color: #f4f7ff !important;
-  background:
-    linear-gradient(135deg, rgba(17, 32, 58, .97), rgba(7, 12, 25, .97) 60%, rgba(29, 10, 24, .93)) !important;
-  border: 1px solid rgba(74, 148, 255, .48) !important;
-  border-radius: 17px 8px 17px 8px !important;
-  box-shadow: 0 0 0 1px rgba(255,255,255,.025) inset, 0 12px 32px rgba(0,0,0,.3), -3px 0 18px rgba(0,136,255,.07), 3px 0 18px rgba(255,35,73,.06) !important;
+  font-family: 'Rajdhani', sans-serif !important;
+  font-weight: 800 !important;
+  font-style: italic;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: #ffffff !important;
+  background: linear-gradient(90deg, #0a1f3d, #220511) !important;
+  border: none !important;
+  /* Angled button shape */
+  clip-path: polygon(12px 0, 100% 0, 100% calc(100% - 12px), calc(100% - 12px) 100%, 0 100%, 0 12px);
+  padding: 12px 24px !important;
+  box-shadow: none !important;
+  transition: all 0.2s ease-in-out;
 }
-.profile-card::before,.management-card::before,.college-card::before,
-#irGamesLaunchCard::before {
+
+/* Button Glowing Borders */
+button::before, .btn-3d-white-glow::before, .btn-3d-white-glow-gold::before, 
+.local-clean-tile::before, .battlefield-action-btn::before {
   content: "";
   position: absolute;
-  pointer-events: none;
   inset: 0;
-  border-radius: inherit;
-  padding: 1px;
-  background: linear-gradient(115deg, rgba(0,170,255,.72), transparent 35%, transparent 65%, rgba(255,35,76,.68));
-  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  pointer-events: none;
+  background: linear-gradient(90deg, var(--ir-border-blue), transparent 50%, var(--ir-border-red));
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
   -webkit-mask-composite: xor;
-  mask-composite: exclude;
-  opacity: .75;
-  z-index: -1;
+  padding: 2px; /* Thickness */
+  z-index: 10;
 }
-/* Angular button family; keep existing classes and onclick handlers untouched. */
-button,.btn,.btn-primary,.btn-secondary,
-.btn-3d-white-glow,.btn-3d-sm-white-glow,
-.btn-3d-sm-white-glow-danger,
-#localProfileActions .local-clean-tile,
-a.button,a.btn {
-  color: #f7faff !important;
-  background: linear-gradient(110deg, rgba(7,35,68,.98), rgba(10,15,29,.98) 48%, rgba(57,8,27,.98)) !important;
-  border: 1px solid rgba(76,169,255,.9) !important;
-  border-radius: 11px 4px 11px 4px !important;
-  box-shadow: 0 0 0 1px rgba(255,255,255,.035) inset, 0 4px 0 #073e78, 0 0 17px rgba(0,145,255,.14) !important;
-  font-weight: 800;
-  letter-spacing: .025em;
-  text-shadow: 0 1px 2px rgba(0,0,0,.65);
-  transition: transform .16s ease, box-shadow .16s ease, filter .16s ease;
-}
-button:hover,.btn:hover,.btn-primary:hover,.btn-secondary:hover,
-.btn-3d-white-glow:hover,.btn-3d-sm-white-glow:hover,
-.btn-3d-sm-white-glow-danger:hover,
-#localProfileActions .local-clean-tile:hover,a.button:hover,a.btn:hover {
-  filter: brightness(1.16);
+
+button:hover, .btn-3d-white-glow:hover, .btn-3d-white-glow-gold:hover {
+  background: linear-gradient(90deg, #0d2a54, #380a1c) !important;
   transform: translateY(-2px);
-  border-color: #ff4264 !important;
-  box-shadow: 0 0 0 1px rgba(255,255,255,.05) inset, 0 4px 0 #8d1533, 0 0 22px rgba(255,35,75,.22) !important;
+  filter: brightness(1.2) drop-shadow(0 0 10px rgba(255, 0, 51, 0.4));
 }
-button:active,.btn:active,a.btn:active { transform: translateY(1px); }
-button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible {
-  outline: 2px solid #54c2ff !important;
-  outline-offset: 3px;
+
+button:active { transform: translateY(1px); }
+
+/* Logout/Danger Buttons */
+.btn-3d-sm-white-glow-danger, button[onclick*="logout"] {
+  background: linear-gradient(90deg, #3b0d1c, #140b17) !important;
 }
-/* Logout/danger actions stay unmistakably red. */
-.btn-3d-sm-white-glow-danger,[class*="danger"],button[onclick*="logout"] {
-  border-color: rgba(255,65,91,.92) !important;
-  background: linear-gradient(115deg, #3b0d1c, #140b17 54%, #400a1b) !important;
-  box-shadow: 0 4px 0 #85132c, 0 0 18px rgba(255,35,73,.18) !important;
+.btn-3d-sm-white-glow-danger::before, button[onclick*="logout"]::before {
+  background: linear-gradient(90deg, #ff294f, #ff294f);
 }
-/* Forms remain dark and legible. */
-input,select,textarea {
-  color: #f5f8ff !important;
-  background: rgba(5,10,21,.94) !important;
-  border: 1px solid rgba(109,157,221,.48) !important;
-  border-radius: 9px 4px 9px 4px !important;
+
+/* =========================================
+   FORMS & INPUTS
+   ========================================= */
+input, select, textarea, .input-group input, .input-group select, .input-group textarea {
+  color: #ffffff !important;
+  background: rgba(3, 7, 15, 0.9) !important;
+  border: 1px solid rgba(0, 170, 255, 0.4) !important;
+  border-radius: 4px !important;
+  font-family: 'Rajdhani', sans-serif !important;
+  font-size: 16px !important;
+  padding: 12px 14px !important;
+  clip-path: polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px);
+  transition: all 0.2s ease;
 }
-input::placeholder,textarea::placeholder { color: #9aaac5 !important; opacity: 1; }
-select option { background: #0b1223; color: #f5f8ff; }
-/* Inline white surfaces caused the screenshot's white location panel. */
-[style*="background:#fff"],[style*="background: #fff"],
-[style*="background:white"],[style*="background: white"],
-[style*="background-color:#fff"],[style*="background-color: #fff"],
-[style*="background-color:white"],[style*="background-color: white"] {
-  color: #f4f7ff !important;
-  background: linear-gradient(135deg,#111e35,#090f1e) !important;
-  border-color: rgba(77,159,255,.62) !important;
+input:focus, select:focus, textarea:focus {
+  border-color: #00aaff !important;
+  box-shadow: 0 0 15px rgba(0, 170, 255, 0.3) !important;
+  outline: none !important;
 }
-[style*="color:#000"],[style*="color: #000"],[style*="color:black"],[style*="color: black"] { color: #f4f7ff !important; }
-/* Header: compact, crisp, and safe on small screens. */
-.navbar,nav {
-  border-bottom: 1px solid rgba(52,143,255,.4);
+input::placeholder, textarea::placeholder { color: #5e6f8a !important; }
+
+/* =========================================
+   SPECIFIC ELEMENTS (From target image)
+   ========================================= */
+
+/* The Location Box (Fix the white background) */
+[style*="background:#fff"], [style*="background: #fff"], [style*="background:white"] {
+  background: linear-gradient(135deg, #091a36, #050a14) !important;
+  border: 1px solid #00aaff !important;
+  box-shadow: 0 0 20px rgba(0, 170, 255, 0.2), inset 0 0 20px rgba(0, 170, 255, 0.1) !important;
+  clip-path: polygon(15px 0, 100% 0, 100% calc(100% - 15px), calc(100% - 15px) 100%, 0 100%, 0 15px);
 }
-.navbar {
-  background: rgba(5,8,17,.94) !important;
-  box-shadow: 0 5px 24px rgba(0,0,0,.3), 0 1px 0 rgba(255,35,75,.12);
-  backdrop-filter: blur(16px);
+[style*="background:#fff"] div, [style*="background: #fff"] div {
+  color: #ffffff !important;
 }
-.role-badge { color: #dceaff !important; border-color: rgba(67,167,255,.45) !important; }
-hr { border-color: rgba(112,158,218,.34) !important; }
-a { color: #79caff; }
-@media (max-width: 640px) {
-  .profile-card,.management-card,.college-card,.local-club-card,.invite-card,
-  #irGamesLaunchCard { padding: 18px !important; }
-  .navbar { gap: 8px; }
-  .navbar button { padding: 9px 11px !important; font-size: 12px !important; }
-  h1 { overflow-wrap: anywhere; }
+[style*="color:#111"], [style*="color: #111"] {
+  color: #00aaff !important;
+  text-shadow: 0 0 10px rgba(0, 170, 255, 0.5);
 }
-@media (prefers-reduced-motion: reduce) {
-  *,*::before,*::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
+
+/* The Top Icon inside Cards */
+.profile-card h2::before {
+  font-style: normal;
+  margin-right: 10px;
 }
+
+/* Fix images/icons inside buttons */
+button img, .btn-3d-white-glow-gold img { filter: drop-shadow(0 0 5px rgba(255,255,255,0.5)); }
+
+/* Utilities */
+.hidden { display: none !important; }
+hr { border-top: 1px solid rgba(0, 170, 255, 0.3) !important; }
