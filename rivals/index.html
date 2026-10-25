@@ -1,194 +1,617 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-  <meta name="theme-color" content="#080b16">
-  <meta name="color-scheme" content="dark">
-  <meta name="mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="description" content="INTER RIVALRY: RIVALS — enter the arena, master your skills, and fight for the flag.">
-  <title>INTER RIVALRY: RIVALS — Year 3000</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="./style.css">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover" />
+  <meta name="theme-color" content="#080b16" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <title>RIVALS — Flag Wars · IR-OS 3000</title>
+  <link rel="stylesheet" href="./style.css" />
+
+  <!-- ═══════════════════════════════════════════════════════
+       NEW "YEAR 3000" DECORATIVE LAYER
+       These rules only touch NEW elements. Existing CSS is
+       untouched. When style.css is upgraded in the next step
+       this block can be migrated out of <head>.
+       ═══════════════════════════════════════════════════════ -->
+  <style>
+    /* ── Global atmosphere ── */
+    .scanline-overlay {
+      position: fixed; inset: 0; pointer-events: none; z-index: 3;
+      background: repeating-linear-gradient(0deg,
+        transparent 0 2px,
+        rgba(84, 239, 255, 0.018) 2px 4px);
+      mix-blend-mode: screen;
+    }
+
+    /* ── Corner brackets on panels ── */
+    .corner-bracket {
+      position: absolute; width: 22px; height: 22px; pointer-events: none;
+      border: 1px solid #54efff; opacity: .75;
+      filter: drop-shadow(0 0 6px #54efffaa);
+      z-index: 2;
+    }
+    .corner-bracket.tl { top: 8px; left: 8px; border-right: 0; border-bottom: 0; }
+    .corner-bracket.tr { top: 8px; right: 8px; border-left: 0; border-bottom: 0; }
+    .corner-bracket.bl { bottom: 8px; left: 8px; border-right: 0; border-top: 0; }
+    .corner-bracket.br { bottom: 8px; right: 8px; border-left: 0; border-top: 0; }
+
+    /* ── Top & bottom telemetry bars (lobby) ── */
+    .top-telemetry, .bottom-telemetry {
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 12px; padding: 8px 4px;
+      font: 700 10px "Orbitron", monospace;
+      letter-spacing: .16em; color: #a5bad4; text-transform: uppercase;
+      border-top: 1px solid #54efff33; border-bottom: 1px solid #54efff33;
+    }
+    .top-telemetry { margin-bottom: 14px; }
+    .bottom-telemetry { margin-top: 16px; }
+    .telemetry-left, .telemetry-center, .telemetry-right,
+    .telemetry-seg { display: flex; align-items: center; gap: 6px; }
+    .telemetry-seg.right { margin-left: auto; }
+    .telemetry-dot {
+      display: inline-block; width: 7px; height: 7px; border-radius: 50%;
+      background: #54efff; box-shadow: 0 0 8px #54efff;
+      animation: tele-dot 1.6s ease-in-out infinite;
+    }
+    @keyframes tele-dot { 50% { opacity: .35; } }
+    .telemetry-label { color: #54efff; }
+    .telemetry-value { color: #fff; }
+    .telemetry-divider { color: #54efff44; }
+    .version-stamp { color: #ffe58c; letter-spacing: .22em; font-size: 9px; }
+    .seg-label { color: #54efff; }
+    .seg-value { color: #fff; }
+
+    /* ── Terminal auth panel ── */
+    .panel.terminal-panel { padding: 0; overflow: hidden; border: 1px solid #54efff66; border-radius: 6px; }
+    .terminal-header {
+      display: flex; align-items: center; gap: 8px; padding: 10px 14px;
+      background: linear-gradient(180deg, #0c1f36, #061021);
+      border-bottom: 1px solid #54efff33;
+      font: 700 10px "Orbitron", monospace; letter-spacing: .18em;
+    }
+    .term-dot { width: 9px; height: 9px; border-radius: 50%; }
+    .term-dot.red { background: #ff5575; box-shadow: 0 0 6px #ff557588; }
+    .term-dot.yellow { background: #ffe58c; box-shadow: 0 0 6px #ffe58c88; }
+    .term-dot.green { background: #62ffc2; box-shadow: 0 0 6px #62ffc288; }
+    .term-title { color: #a5bad4; letter-spacing: .14em; margin-left: 6px; }
+    .term-status {
+      margin-left: auto; color: #62ffc2; text-shadow: 0 0 8px #62ffc288;
+      animation: tele-dot 1.2s ease-in-out infinite;
+    }
+    .terminal-body { padding: 22px 24px 20px; }
+    .boot-progress {
+      margin: 14px 0 10px; height: 4px; background: #0a1424; border-radius: 2px;
+      overflow: hidden; border: 1px solid #54efff33; position: relative;
+    }
+    .boot-bar {
+      height: 100%; background: linear-gradient(90deg, #54efff, #62ffc2, #ffe58c);
+      box-shadow: 0 0 12px #54efff88; animation: boot-scan 1.8s ease-in-out infinite alternate;
+    }
+    @keyframes boot-scan { from { width: 20%; } to { width: 55%; } }
+    .terminal-footer {
+      display: flex; justify-content: space-between; margin-top: 12px;
+      padding-top: 10px; border-top: 1px dashed #54efff33;
+      font: 700 9px "Orbitron", monospace; color: #7e9ab8; letter-spacing: .14em;
+    }
+
+    /* ── Lobby head ornament ── */
+    .head-decor {
+      display: flex; align-items: center; justify-content: center; gap: 12px;
+      margin: 8px auto 0; max-width: 360px;
+    }
+    .head-decor span {
+      flex: 1; height: 1px;
+      background: linear-gradient(90deg, transparent, #54efff, transparent);
+    }
+    .head-decor b { color: #54efff; font-size: 10px; text-shadow: 0 0 10px #54efff; }
+
+    /* ── Holographic preview frame ── */
+    .holo-frame { position: relative; display: block; width: 100%; }
+    .holo-frame #lobby-canvas { position: relative; z-index: 1; }
+    .holo-ring {
+      position: absolute; inset: 0; margin: auto; border-radius: 50%;
+      pointer-events: none; border: 1px dashed #54efff44; z-index: 0;
+    }
+    .holo-ring.outer { width: 92%; height: 92%; animation: spin-slow 40s linear infinite; }
+    .holo-ring.inner {
+      width: 68%; height: 68%; border-style: dotted;
+      border-color: #ff557566; animation: spin-slow 22s linear infinite reverse;
+    }
+    @keyframes spin-slow { to { transform: rotate(360deg); } }
+    .holo-axis { position: absolute; pointer-events: none; background: #54efff22; z-index: 0; }
+    .holo-axis.h { left: 4%; right: 4%; top: 50%; height: 1px; }
+    .holo-axis.v { top: 4%; bottom: 4%; left: 50%; width: 1px; }
+    .holo-tag {
+      position: absolute; font: 700 8px "Orbitron", monospace; color: #54efff;
+      letter-spacing: .2em; padding: 3px 6px; background: #04081399;
+      border: 1px solid #54efff44; z-index: 2;
+    }
+    .holo-tag.tl { top: 6px; left: 6px; }
+    .holo-tag.br { bottom: 6px; right: 6px; color: #ff5575; border-color: #ff557566; }
+
+    /* ── Data strip under preview ── */
+    .data-strip { display: flex; gap: 6px; width: 100%; margin: 10px 0; }
+    .data-cell {
+      flex: 1; display: flex; flex-direction: column; gap: 3px;
+      padding: 8px 10px; background: #071021;
+      border: 1px solid #54efff33; border-radius: 3px;
+    }
+    .dk { font: 700 8px "Orbitron", monospace; color: #54efff; letter-spacing: .16em; }
+    .dv { font: 700 11px "Orbitron", monospace; color: #fff; }
+
+    /* ── Mission select block ── */
+    .mission-block {
+      border: 1px solid #54efff33; border-radius: 5px; padding: 10px 12px 12px;
+      background: #050b19b8; margin-bottom: 10px;
+    }
+    .block-head {
+      display: flex; align-items: center; justify-content: center; gap: 10px;
+      font: 700 9px "Orbitron", monospace; color: #54efff; letter-spacing: .22em;
+      margin-bottom: 8px; padding-bottom: 8px; border-bottom: 1px dashed #54efff33;
+    }
+
+    /* ── Operator card ── */
+    .operator-card {
+      display: flex; align-items: center; gap: 12px; padding: 10px 12px;
+      margin-top: 12px; background: linear-gradient(90deg, #54efff0d, transparent);
+      border-left: 2px solid #54efff; border-radius: 3px;
+    }
+    .operator-avatar {
+      flex-shrink: 0; width: 34px; height: 34px; display: grid; place-items: center;
+      border-radius: 50%; background: #071021; border: 1px solid #54efff;
+      color: #54efff; font-size: 16px; box-shadow: 0 0 12px #54efff44;
+    }
+    .operator-info { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+    .operator-role { font: 700 8px "Orbitron", monospace; color: #54efff; letter-spacing: .2em; }
+    .operator-info b {
+      color: #fff; font: 600 12px Rajdhani, sans-serif;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+
+    /* ── Signal bars ── */
+    .signal-bars { display: inline-flex; gap: 2px; align-items: flex-end; margin-left: 6px; }
+    .signal-bars i {
+      display: inline-block; width: 3px; background: #54efff;
+      box-shadow: 0 0 4px #54efff; border-radius: 1px;
+    }
+    .signal-bars i:nth-child(1) { height: 4px; }
+    .signal-bars i:nth-child(2) { height: 7px; }
+    .signal-bars i:nth-child(3) { height: 10px; }
+    .signal-bars i:nth-child(4) { height: 13px; animation: sig-pulse 1.4s ease-in-out infinite; }
+    @keyframes sig-pulse { 50% { opacity: .4; } }
+
+    /* ── HUD ornaments (corners, rails, radar) ── */
+    .hud-ornaments { position: absolute; inset: 0; pointer-events: none; z-index: 1; }
+    .hud-corner {
+      position: absolute; width: 16px; height: 16px; border: 1px solid #54efff;
+      filter: drop-shadow(0 0 4px #54efffaa); opacity: .55;
+    }
+    .hud-corner.tl { top: 10px; left: 10px; border-right: 0; border-bottom: 0; }
+    .hud-corner.tr { top: 10px; right: 10px; border-left: 0; border-bottom: 0; }
+    .hud-corner.bl { bottom: 10px; left: 10px; border-right: 0; border-top: 0; }
+    .hud-corner.br { bottom: 10px; right: 10px; border-left: 0; border-top: 0; }
+    .hud-rail {
+      position: absolute; top: 150px; bottom: 110px; width: 14px;
+      display: flex; flex-direction: column; justify-content: space-between; padding: 4px 0;
+    }
+    .hud-rail.left { left: 10px; }
+    .hud-rail.right { right: 10px; align-items: flex-end; }
+    .hud-tick { height: 1px; width: 8px; background: #54efff55; box-shadow: 0 0 4px #54efff55; }
+    .hud-tick.major { width: 14px; height: 2px; background: #54efffaa; }
+    .hud-radar {
+      position: absolute; top: 100px; left: 20px; width: 68px; height: 68px;
+      border: 1px solid #54efff44; border-radius: 50%;
+      background: radial-gradient(circle, #54efff0d, transparent 70%);
+      box-shadow: inset 0 0 12px #54efff11, 0 0 8px #54efff22;
+    }
+    .hud-radar:before, .hud-radar:after { content: ""; position: absolute; background: #54efff33; }
+    .hud-radar:before { top: 50%; left: 4%; right: 4%; height: 1px; }
+    .hud-radar:after { left: 50%; top: 4%; bottom: 4%; width: 1px; }
+    .hud-radar .sweep {
+      position: absolute; inset: 0; border-radius: 50%;
+      background: conic-gradient(from 0deg, #54efff00 0deg, #54efff00 300deg, #54efff55 360deg);
+      animation: radar-sweep 3s linear infinite;
+    }
+    @keyframes radar-sweep { to { transform: rotate(360deg); } }
+    .hud-radar .blip {
+      position: absolute; width: 4px; height: 4px; border-radius: 50%;
+      background: #ff5575; box-shadow: 0 0 6px #ff5575;
+    }
+
+    /* ── Room panel header bar ── */
+    .panel-header-bar {
+      display: flex; justify-content: space-between; align-items: center;
+      margin: -8px 0 14px; padding-bottom: 10px;
+      border-bottom: 1px dashed #54efff33;
+      font: 700 9px "Orbitron", monospace; color: #54efff; letter-spacing: .2em;
+    }
+
+    /* ── Mobile safety ── */
+    @media (max-width: 780px) {
+      .top-telemetry, .bottom-telemetry { font-size: 8px; gap: 6px; padding: 6px 2px; }
+      .top-telemetry .telemetry-center { display: none; }
+      .bottom-telemetry .telemetry-seg:nth-child(1) { display: none; }
+      .version-stamp { font-size: 8px; }
+      .data-strip { flex-wrap: wrap; }
+      .data-cell { min-width: 30%; }
+      .hud-rail, .hud-radar { display: none; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .holo-ring.outer, .holo-ring.inner, .hud-radar .sweep,
+      .telemetry-dot, .term-status, .signal-bars i,
+      .boot-bar { animation: none !important; }
+    }
+  </style>
 </head>
 <body>
-  <!-- Ambient universe layers: visual effects are styled in style.css. -->
-  <div class="universe-backdrop" aria-hidden="true">
-    <div class="universe-grid"></div><div class="universe-orb universe-orb-blue"></div>
-    <div class="universe-orb universe-orb-red"></div><div class="universe-scanline"></div>
+
+<div class="scanline-overlay" aria-hidden="true"></div>
+<div id="game-root"></div>
+
+<!-- ═══════════════════════════════════════════════════════
+     AUTH GATE — TERMINAL BOOT SEQUENCE
+     ═══════════════════════════════════════════════════════ -->
+<section id="auth-gate" class="overlay">
+  <div class="panel compact terminal-panel">
+    <div class="terminal-header">
+      <span class="term-dot red"></span>
+      <span class="term-dot yellow"></span>
+      <span class="term-dot green"></span>
+      <span class="term-title">// IR-OS · SECURE HANDSHAKE</span>
+      <span class="term-status">LINKING</span>
+    </div>
+    <div class="terminal-body">
+      <div class="eyebrow">RIVALS · INTER RIVALRY NODE</div>
+      <h2>CHECKING LOGIN…</h2>
+      <p id="auth-msg">Please wait</p>
+      <div class="boot-progress"><div class="boot-bar"></div></div>
+      <div class="terminal-footer">
+        <span>CHANNEL · ENCRYPTED</span>
+        <span>PROTOCOL · RIVALS-v3.0</span>
+      </div>
+    </div>
+    <span class="corner-bracket tl"></span>
+    <span class="corner-bracket tr"></span>
+    <span class="corner-bracket bl"></span>
+    <span class="corner-bracket br"></span>
   </div>
+</section>
 
-  <!-- Boot-sequence scaffold. Hidden until game.js is updated to control it. -->
-  <section id="boot-sequence" class="overlay hidden" aria-label="RIVALS system startup" aria-hidden="true">
-    <div class="boot-core">
-      <div class="boot-mark">IR<span>//</span></div><p class="boot-kicker">INTER RIVALRY NETWORK</p>
-      <h1>RIVALS<span class="boot-period">.</span></h1><div class="boot-progress"><i></i></div>
-      <p class="boot-status" id="boot-status">INITIALIZING BATTLE SYSTEM</p>
-      <div class="boot-coordinates">SECTOR 03 · YEAR 3000 · ONLINE</div>
-    </div>
-  </section>
+<!-- ═══════════════════════════════════════════════════════
+     LOBBY — TACTICAL COMMAND CENTER
+     ═══════════════════════════════════════════════════════ -->
+<section id="lobby" class="overlay hidden">
+  <div class="lobby-wrap">
 
-  <div id="game-root"></div>
-
-  <!-- AUTH GATE: existing IDs retained -->
-  <section id="auth-gate" class="overlay">
-    <div class="panel compact">
-      <div class="eyebrow">INTER RIVALRY NETWORK <span class="status-pip"></span></div>
-      <h2>CHECKING LOGIN<span class="loading-dots">…</span></h2>
-      <p id="auth-msg">Establishing secure connection. Please wait.</p>
-      <div class="system-readout" aria-hidden="true"><span>AUTH NODE <b>IR-09</b></span><span>SECURITY <b>ACTIVE</b></span></div>
-    </div>
-  </section>
-
-  <!-- COMMAND CENTER / LOBBY -->
-  <section id="lobby" class="overlay hidden">
-    <div class="lobby-wrap">
-      <div class="command-strip" aria-hidden="true">
-        <div class="command-brand"><span class="command-emblem">IR</span><span>INTER RIVALRY <b>NETWORK</b></span></div>
-        <div class="command-status"><i></i> ARENA SYSTEMS ONLINE</div>
-        <div class="command-sector">SECTOR <b>03</b><span>//</span> YEAR <b>3000</b></div>
+    <!-- TOP TELEMETRY -->
+    <div class="top-telemetry">
+      <div class="telemetry-left">
+        <span class="telemetry-dot"></span>
+        <span class="telemetry-label">NET</span>
+        <span class="telemetry-value">ONLINE</span>
+        <span class="telemetry-divider">/</span>
+        <span class="telemetry-label">SECTOR</span>
+        <span class="telemetry-value">ARENA-07</span>
       </div>
-      <div class="lobby-head">
-        <div class="eyebrow"><span class="eyebrow-line"></span> INTER RIVALRY PRESENTS <span class="eyebrow-line"></span></div>
-        <h1>RIVALS <span>// FLAG WARS</span></h1>
-        <p class="subtitle">STEAL <i>·</i> ESCAPE <i>·</i> SCORE</p>
-        <div class="lobby-tagline">YOUR ARENA. YOUR ALLIANCE. YOUR LEGACY.</div>
+      <div class="telemetry-center">
+        <span class="version-stamp">IR-OS v3.0.0 · RIVALS COMMAND</span>
       </div>
+      <div class="telemetry-right">
+        <span class="telemetry-label">CHRONO</span>
+        <span class="telemetry-value" id="chrono-clock">00:00:00</span>
+      </div>
+    </div>
 
-      <div class="lobby-grid">
-        <div class="lobby-left">
-          <div class="warrior-frame">
-            <div class="frame-corner frame-corner-tl"></div><div class="frame-corner frame-corner-tr"></div>
-            <div class="frame-corner frame-corner-bl"></div><div class="frame-corner frame-corner-br"></div>
-            <div class="warrior-label"><span>PLAYER AVATAR</span><b>HOLO / 01</b></div>
-            <canvas id="lobby-canvas"></canvas>
-            <div class="warrior-scan" aria-hidden="true"></div>
-            <div class="warrior-floor-label" aria-hidden="true">COMBAT SIMULATION // STANDBY</div>
-          </div>
-          <div class="identity-panel">
-            <div class="identity-heading"><span>CHOOSE YOUR SIGNAL</span><span class="identity-divider"></span><b>01 — 04</b></div>
-            <div class="swatch-row">
-              <button class="swatch active" data-color="azure" style="--c:#44d7ff" aria-label="Azure"></button>
-              <button class="swatch" data-color="crimson" style="--c:#ff4c73" aria-label="Crimson"></button>
-              <button class="swatch" data-color="gold" style="--c:#ffe38b" aria-label="Gold"></button>
-              <button class="swatch" data-color="venom" style="--c:#52ffb1" aria-label="Venom"></button>
-            </div>
-            <div class="color-name" id="color-name">AZURE</div>
-          </div>
-          <div class="player-signal" aria-hidden="true"><span class="signal-icon">✦</span><div><small>WARRIOR STATUS</small><b>READY FOR DEPLOYMENT</b></div><span class="signal-pulse"></span></div>
+    <!-- HEAD -->
+    <div class="lobby-head">
+      <div class="eyebrow">INTER RIVALRY · TACTICAL COMMAND</div>
+      <h1>RIVALS <span>// FLAG WARS</span></h1>
+      <p class="subtitle">STEAL · ESCAPE · SCORE</p>
+      <div class="head-decor"><span></span><b>◆</b><span></span></div>
+    </div>
+
+    <!-- GRID -->
+    <div class="lobby-grid">
+      <!-- LEFT — OPERATOR HOLO PREVIEW -->
+      <div class="lobby-left">
+        <div class="holo-frame">
+          <canvas id="lobby-canvas"></canvas>
+          <div class="holo-ring outer"></div>
+          <div class="holo-ring inner"></div>
+          <div class="holo-axis h"></div>
+          <div class="holo-axis v"></div>
+          <span class="holo-tag tl">SUBJECT-01</span>
+          <span class="holo-tag br">SCAN ACTIVE</span>
         </div>
 
-        <div class="lobby-right">
-          <div class="section-heading"><div><span class="section-index">01 / DEPLOYMENT</span><h2>CHOOSE YOUR <b>BATTLEFIELD</b></h2></div><span class="heading-mark" aria-hidden="true">╱╱</span></div>
-          <div class="mode-tabs" role="tablist" aria-label="Game mode">
-            <button class="tab active" data-mode="practice" type="button" role="tab" aria-selected="true">PRACTICE</button>
-            <button class="tab" data-mode="standard" type="button" role="tab" aria-selected="false">STANDARD</button>
-            <button class="tab" data-mode="hardcore" type="button" role="tab" aria-selected="false">HARDCORE</button>
+        <div class="data-strip">
+          <div class="data-cell"><span class="dk">CLASS</span><span class="dv">VANGUARD</span></div>
+          <div class="data-cell"><span class="dk">RANK</span><span class="dv">V-II</span></div>
+          <div class="data-cell"><span class="dk">LOADOUT</span><span class="dv">S-7</span></div>
+        </div>
+
+        <div class="swatch-row">
+          <button class="swatch active" data-color="azure" style="--c:#44d7ff" aria-label="Azure"></button>
+          <button class="swatch" data-color="crimson" style="--c:#ff4c73" aria-label="Crimson"></button>
+          <button class="swatch" data-color="gold" style="--c:#ffe38b" aria-label="Gold"></button>
+          <button class="swatch" data-color="venom" style="--c:#52ffb1" aria-label="Venom"></button>
+        </div>
+        <div class="color-name" id="color-name">AZURE</div>
+      </div>
+
+      <!-- RIGHT — MISSION PANEL -->
+      <div class="lobby-right">
+
+        <div class="mission-block">
+          <div class="block-head"><span>◈</span> MISSION SELECT <span>◈</span></div>
+          <div class="mode-tabs">
+            <button class="tab active" data-mode="practice">PRACTICE</button>
+            <button class="tab" data-mode="standard">STANDARD</button>
+            <button class="tab" data-mode="hardcore">HARDCORE</button>
           </div>
           <p class="mode-desc" id="mode-desc">Practice offline. Pick a mode below.</p>
+        </div>
 
-          <div id="practice-panel">
-            <div class="portal-heading"><span>SIMULATION PORTALS</span><span>LOCAL / OFFLINE</span></div>
-            <div class="practice-btns">
-              <button id="btn-range" class="primary practice-btn" type="button">
-                <span class="pb-icon">🎯</span><span class="pb-copy"><span class="pb-title">SHOOTING RANGE</span><span class="pb-sub">AIM TRAINING <i>·</i> FLAG PRACTICE</span></span><span class="pb-arrow" aria-hidden="true">↗</span>
-              </button>
-              <button id="btn-botmatch" class="primary practice-btn" type="button">
-                <span class="pb-icon">🤖</span><span class="pb-copy"><span class="pb-title">BOT MATCH</span><span class="pb-sub">3V3 <i>·</i> AI COMBAT</span></span><span class="pb-arrow" aria-hidden="true">↗</span>
-              </button>
+        <div id="practice-panel">
+          <div class="practice-btns">
+            <button id="btn-range" class="primary practice-btn" type="button">
+              <span class="pb-icon">🎯</span>
+              <span class="pb-title">SHOOTING RANGE</span>
+              <span class="pb-sub">Aim + flags · No bots</span>
+            </button>
+            <button id="btn-botmatch" class="primary practice-btn" type="button">
+              <span class="pb-icon">🤖</span>
+              <span class="pb-title">BOT MATCH</span>
+              <span class="pb-sub">3v3 with AI</span>
+            </button>
+          </div>
+          <div class="size-row">
+            <span>BOT DIFFICULTY</span>
+            <div class="size-tabs">
+              <button class="diff-tab" data-diff="easy" type="button">EASY</button>
+              <button class="diff-tab active" data-diff="medium" type="button">MEDIUM</button>
+              <button class="diff-tab" data-diff="hard" type="button">HARD</button>
             </div>
-            <div class="size-row"><span>BOT DIFFICULTY</span><div class="size-tabs">
-              <button class="diff-tab" data-diff="easy" type="button">EASY</button><button class="diff-tab active" data-diff="medium" type="button">MEDIUM</button><button class="diff-tab" data-diff="hard" type="button">HARD</button>
-            </div></div>
-          </div>
-
-          <div id="match-panel" class="hidden">
-            <div class="portal-heading"><span>MULTIPLAYER PORTALS</span><span>ONLINE / NETWORK</span></div>
-            <div class="size-row"><span>TEAM CONFIGURATION</span><div class="size-tabs">
-              <button class="size-tab active" data-size="3" type="button">3V3</button><button class="size-tab" data-size="5" type="button">5V5</button>
-            </div></div>
-            <button id="btn-create" class="primary" type="button"><span>＋</span> CREATE ROOM <i>↗</i></button>
-            <button id="btn-find" class="primary" type="button"><span>⌁</span> FIND MATCH <i>↗</i></button>
-            <button id="btn-join" class="secondary" type="button"><span>⌘</span> JOIN WITH CODE <i>↗</i></button>
-            <div id="join-row" class="hidden"><input id="join-code" type="text" placeholder="ENTER ROOM CODE" maxlength="8" autocomplete="off" aria-label="Room code"><button id="btn-join-go" class="primary" type="button">JOIN <i>↗</i></button></div>
-          </div>
-
-          <div class="settings-module">
-            <div class="module-heading"><span>02 / COMBAT CALIBRATION</span><span class="module-toggle-mark">+</span></div>
-            <div class="sliders">
-              <div class="slider-row"><label for="sens-slider">SENSITIVITY</label><input type="range" id="sens-slider" min="0.3" max="2.5" step="0.1" value="1.0"><span id="sens-val">1.0</span></div>
-              <div class="slider-row"><label for="assist-slider">AIM ASSIST</label><input type="range" id="assist-slider" min="0" max="100" step="5" value="90"><span id="assist-val">90%</span></div>
-              <div class="slider-row"><label for="vol-slider">VOLUME</label><input type="range" id="vol-slider" min="0" max="100" step="5" value="50"><span id="vol-val">50%</span></div>
-            </div>
-          </div>
-          <div class="lobby-account">
-            <div class="account-emblem">IR</div><div class="account-copy"><span>CONNECTED WARRIOR</span><p class="lobby-name">PLAYING AS <b id="lobby-name">…</b></p></div>
-            <button id="btn-logout" class="link-btn" type="button">SIGN OUT <span>↗</span></button>
           </div>
         </div>
+
+        <div id="match-panel" class="hidden">
+          <div class="size-row">
+            <span>TEAM SIZE</span>
+            <div class="size-tabs">
+              <button class="size-tab active" data-size="3" type="button">3v3</button>
+              <button class="size-tab" data-size="5" type="button">5v5</button>
+            </div>
+          </div>
+          <button id="btn-create" class="primary" type="button">CREATE ROOM</button>
+          <button id="btn-find" class="primary" type="button">FIND MATCH</button>
+          <button id="btn-join" class="secondary" type="button">JOIN WITH CODE</button>
+          <div id="join-row" class="hidden">
+            <input id="join-code" type="text" placeholder="CODE" maxlength="8" autocomplete="off" />
+            <button id="btn-join-go" class="primary" type="button">JOIN</button>
+          </div>
+        </div>
+
+        <div class="sliders">
+          <div class="slider-row">
+            <label>SENSITIVITY</label>
+            <input type="range" id="sens-slider" min="0.3" max="2.5" step="0.1" value="1.0">
+            <span id="sens-val">1.0</span>
+          </div>
+          <div class="slider-row">
+            <label>AIM ASSIST</label>
+            <input type="range" id="assist-slider" min="0" max="100" step="5" value="90">
+            <span id="assist-val">90%</span>
+          </div>
+          <div class="slider-row">
+            <label>VOLUME</label>
+            <input type="range" id="vol-slider" min="0" max="100" step="5" value="50">
+            <span id="vol-val">50%</span>
+          </div>
+        </div>
+
+        <div class="operator-card">
+          <div class="operator-avatar">⬢</div>
+          <div class="operator-info">
+            <span class="operator-role">OPERATOR</span>
+            <b id="lobby-name">…</b>
+          </div>
+          <button id="btn-logout" class="link-btn" type="button">SIGN OUT</button>
+        </div>
       </div>
-      <div class="lobby-footer" aria-hidden="true"><span><i></i> SYSTEM NOMINAL</span><span>INTER RIVALRY // RIVALS</span><span>CHOOSE YOUR BATTLEFIELD <b>▰▰▱</b></span></div>
     </div>
-  </section>
 
-  <!-- MULTIPLAYER ROOM -->
-  <section id="room" class="overlay hidden">
-    <div class="panel room-panel">
-      <div class="eyebrow"><span class="status-pip"></span> MULTIPLAYER COMMAND</div>
-      <h2>SQUAD <span class="room-title-light">ASSEMBLY</span></h2>
-      <div class="room-code-block"><span>ROOM ACCESS CODE</span><strong id="room-code-display" class="code">-----</strong></div>
-      <p class="subtitle">SHARE THE CODE WITH YOUR SQUAD</p>
-      <div class="room-players-heading"><span>DEPLOYMENT ROSTER</span><span>PLAYER STATUS</span></div>
-      <div id="room-players" class="room-players"></div>
-      <button id="btn-ready" class="primary" type="button">CONFIRM READY <span>↗</span></button>
-      <button id="btn-start" class="primary hidden" type="button">START MATCH <span>↗</span></button>
-      <button id="btn-leave" class="secondary" type="button">LEAVE ROOM <span>←</span></button>
+    <!-- BOTTOM TELEMETRY -->
+    <div class="bottom-telemetry">
+      <div class="telemetry-seg">
+        <span class="seg-label">POS</span>
+        <span class="seg-value">00.00 / 00.00</span>
+      </div>
+      <div class="telemetry-seg">
+        <span class="seg-label">SIGNAL</span>
+        <span class="signal-bars"><i></i><i></i><i></i><i></i></span>
+      </div>
+      <div class="telemetry-seg">
+        <span class="seg-label">PROTO</span>
+        <span class="seg-value">TLS-3K</span>
+      </div>
+      <div class="telemetry-seg right">
+        <span class="seg-label">© INTER RIVALRY · 3000</span>
+      </div>
     </div>
-  </section>
 
-  <!-- GAME HUD: all original gameplay IDs retained -->
-  <div id="hud" class="hidden" aria-live="polite">
-    <header>
-      <div class="brand"><b>IR</b><span>RIVALS<small>FLAG WARS</small></span></div>
-      <div class="stat">HEALTH<strong id="health">100</strong><div class="meter"><i id="healthbar"></i></div></div>
-      <div class="stat stat-ammo">AMMO<strong id="ammo">12 <em>/ 12</em></strong><div class="reload-bar"><i id="reloadbar"></i></div></div>
-      <div class="team-badge" id="team-badge">BLUE</div><button id="mute-btn" type="button" aria-label="Toggle sound">🔊</button><button id="pause-btn" type="button" aria-label="Pause">Ⅱ</button>
-    </header>
-    <div class="score-bar"><span class="team-blue">🔵 <b id="score-blue">0</b></span><span class="timer" id="timer">∞</span><span class="team-red"><b id="score-red">0</b> 🔴</span></div>
-    <div id="killfeed"></div><div id="name-tags"></div>
-    <div id="crosshair" aria-hidden="true"><i></i><i></i><i></i><i></i><b></b><span id="snap-hint">↑</span></div>
-    <div id="hit" aria-hidden="true">✕</div><div id="toast" role="status" aria-live="polite"></div>
-    <div id="damage-vignette"></div><div id="damage-ring"><div class="diag top"></div><div class="diag right"></div><div class="diag bottom"></div><div class="diag left"></div></div>
-    <button id="steal-btn" class="hidden draggable" type="button">🚩 STEAL</button><button id="treasure-btn" class="hidden draggable" type="button">💎 TREASURE</button>
-    <div id="mobile" class="hidden">
-      <div id="joy-zone" class="draggable"><div id="joy-base"><div id="joy-knob"></div></div></div>
-      <div class="actions"><div class="actions-col"><button id="dash-btn" class="draggable" type="button">DASH</button><button id="reload-btn" class="draggable" type="button">↻</button></div><button id="jump-btn" class="draggable" type="button">JUMP</button><button id="fire-btn" class="draggable" type="button">FIRE</button></div>
+    <span class="corner-bracket tl"></span>
+    <span class="corner-bracket tr"></span>
+    <span class="corner-bracket bl"></span>
+    <span class="corner-bracket br"></span>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════
+     ROOM — TACTICAL LOBBY
+     ═══════════════════════════════════════════════════════ -->
+<section id="room" class="overlay hidden">
+  <div class="panel">
+    <div class="panel-header-bar">
+      <span>◈ ENCRYPTED CHANNEL</span>
+      <span>TLS-3K</span>
     </div>
-    <div id="custom-grid" class="hidden"><div class="grid-overlay"></div><div class="custom-header">DRAG BUTTONS TO CUSTOMIZE <button id="btn-save-custom" type="button">SAVE LAYOUT</button></div></div>
-    <div id="hint">AIM TO LOCK · FLICK UP FOR HEADSHOT · E STEAL · Q TREASURE · WASD MOVE · SHIFT DASH · R RELOAD</div>
+    <div class="eyebrow">ROOM · TACTICAL LOBBY</div>
+    <h2>WAITING <span id="room-code-display" class="code">-----</span></h2>
+    <p class="subtitle">SHARE THE CODE WITH FRIENDS</p>
+    <div id="room-players" class="room-players"></div>
+    <button id="btn-ready" class="primary" type="button">READY</button>
+    <button id="btn-start" class="primary hidden" type="button">START MATCH</button>
+    <button id="btn-leave" class="secondary" type="button">LEAVE ROOM</button>
+    <span class="corner-bracket tl"></span>
+    <span class="corner-bracket tr"></span>
+    <span class="corner-bracket bl"></span>
+    <span class="corner-bracket br"></span>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════
+     HUD — TACTICAL OVERLAY
+     ═══════════════════════════════════════════════════════ -->
+<div id="hud" class="hidden" aria-live="polite">
+  <header>
+    <div class="brand"><b>IR</b><span>RIVALS<small>FLAG WARS · v3.0</small></span></div>
+    <div class="stat">HEALTH<strong id="health">100</strong><div class="meter"><i id="healthbar"></i></div></div>
+    <div class="stat">AMMO<strong id="ammo">12 <em>/ 12</em></strong></div>
+    <button id="pause-btn" type="button" aria-label="Pause">Ⅱ</button>
+  </header>
+
+  <!-- Decorative ornaments (pointer-events: none, never block gameplay) -->
+  <div class="hud-ornaments" aria-hidden="true">
+    <span class="hud-corner tl"></span>
+    <span class="hud-corner tr"></span>
+    <span class="hud-corner bl"></span>
+    <span class="hud-corner br"></span>
+
+    <div class="hud-rail left">
+      <span class="hud-tick"></span><span class="hud-tick major"></span><span class="hud-tick"></span>
+      <span class="hud-tick"></span><span class="hud-tick major"></span><span class="hud-tick"></span>
+      <span class="hud-tick"></span><span class="hud-tick major"></span><span class="hud-tick"></span>
+    </div>
+    <div class="hud-rail right">
+      <span class="hud-tick"></span><span class="hud-tick major"></span><span class="hud-tick"></span>
+      <span class="hud-tick"></span><span class="hud-tick major"></span><span class="hud-tick"></span>
+      <span class="hud-tick"></span><span class="hud-tick major"></span><span class="hud-tick"></span>
+    </div>
+
+    <div class="hud-radar">
+      <div class="sweep"></div>
+      <div class="blip" style="top: 30%; left: 60%;"></div>
+      <div class="blip" style="top: 70%; left: 35%;"></div>
+    </div>
   </div>
 
-  <!-- PAUSE -->
-  <section id="pause" class="overlay hidden">
-    <div class="panel compact"><div class="eyebrow">SYSTEM PAUSED</div><h2>RECALIBRATE, <span>WARRIOR.</span></h2>
-      <button id="resume-btn" class="primary" type="button">RESUME BATTLE <span>↗</span></button>
-      <button id="customize-btn" class="secondary" type="button">⚙ CUSTOMIZE CONTROLS</button>
-      <button id="leave-match-btn" class="secondary" type="button">LEAVE MATCH <span>←</span></button>
-    </div>
-  </section>
+  <div class="score-bar">
+    <span class="team-blue">🔵 <b id="score-blue">0</b></span>
+    <span class="timer" id="timer">∞</span>
+    <span class="team-red"><b id="score-red">0</b> 🔴</span>
+  </div>
 
-  <!-- MATCH RESULTS -->
-  <section id="gameover" class="overlay hidden">
-    <div class="panel compact results-panel"><div class="eyebrow" id="go-eyebrow">MATCH OVER</div><h2 id="go-title" class="win">BLUE WINS</h2>
-      <div class="results-divider"><span>FINAL SCORE</span></div>
-      <div class="go-stats"><div><span>BLUE</span><b id="go-blue">0</b></div><div><span>RED</span><b id="go-red">0</b></div></div>
-      <button id="go-lobby" class="primary" type="button">RETURN TO COMMAND CENTER <span>↗</span></button>
+  <div id="killfeed"></div>
+  <div id="name-tags"></div>
+
+  <div id="crosshair" aria-hidden="true">
+    <i></i><i></i><i></i><i></i><b></b>
+    <span id="snap-hint">↑</span>
+  </div>
+  <div id="hit" aria-hidden="true">✕</div>
+  <div id="toast" role="status" aria-live="polite"></div>
+
+  <div id="damage-vignette"></div>
+  <div id="damage-ring">
+    <div class="diag top"></div><div class="diag right"></div>
+    <div class="diag bottom"></div><div class="diag left"></div>
+  </div>
+
+  <button id="steal-btn" class="hidden draggable" type="button">🚩 STEAL</button>
+  <button id="treasure-btn" class="hidden draggable" type="button">💎 TREASURE</button>
+
+  <!-- Mobile Controls -->
+  <div id="mobile" class="hidden">
+    <div id="joy-zone" class="draggable"><div id="joy-base"><div id="joy-knob"></div></div></div>
+    <div class="actions">
+      <div class="actions-col">
+        <button id="dash-btn" class="draggable" type="button">DASH</button>
+        <button id="reload-btn" class="draggable" type="button">↻</button>
+      </div>
+      <button id="jump-btn" class="draggable" type="button">JUMP</button>
+      <button id="fire-btn" class="draggable" type="button">FIRE</button>
     </div>
-  </section>
-  <script type="module" src="./game.js"></script>
+  </div>
+
+  <!-- Customization Grid (Hidden by default) -->
+  <div id="custom-grid" class="hidden">
+    <div class="grid-overlay"></div>
+    <div class="custom-header">
+      DRAG BUTTONS TO CUSTOMIZE
+      <button id="btn-save-custom" type="button">SAVE LAYOUT</button>
+    </div>
+  </div>
+
+  <div id="hint">AIM TO LOCK · FLICK UP FOR HEADSHOT · E STEAL · Q TREASURE · WASD MOVE · SHIFT DASH · R RELOAD</div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     PAUSE — SIMULATION SUSPENDED
+     ═══════════════════════════════════════════════════════ -->
+<section id="pause" class="overlay hidden">
+  <div class="panel compact">
+    <div class="eyebrow">SYSTEM PAUSED</div>
+    <h2>TAKE A BREATHER</h2>
+    <p class="subtitle">SIMULATION SUSPENDED</p>
+    <button id="resume-btn" class="primary" type="button">RESUME</button>
+    <button id="customize-btn" class="secondary" type="button">⚙️ CUSTOMIZE CONTROLS</button>
+    <button id="leave-match-btn" class="secondary" type="button">LEAVE</button>
+    <span class="corner-bracket tl"></span>
+    <span class="corner-bracket tr"></span>
+    <span class="corner-bracket bl"></span>
+    <span class="corner-bracket br"></span>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════
+     GAME OVER — TACTICAL REPORT
+     ═══════════════════════════════════════════════════════ -->
+<section id="gameover" class="overlay hidden">
+  <div class="panel compact">
+    <div class="eyebrow" id="go-eyebrow">MISSION COMPLETE</div>
+    <h2 id="go-title" class="win">BLUE WINS</h2>
+    <p class="subtitle">TACTICAL REPORT</p>
+    <div class="go-stats">
+      <div><span>BLUE</span><b id="go-blue">0</b></div>
+      <div><span>RED</span><b id="go-red">0</b></div>
+    </div>
+    <button id="go-lobby" class="primary" type="button">BACK TO LOBBY</button>
+    <span class="corner-bracket tl"></span>
+    <span class="corner-bracket tr"></span>
+    <span class="corner-bracket bl"></span>
+    <span class="corner-bracket br"></span>
+  </div>
+</section>
+
+<!-- Chrono clock — cosmetic, only updates the lobby timer readout -->
+<script>
+  (function () {
+    const el = document.getElementById('chrono-clock');
+    if (!el) return;
+    const start = Date.now();
+    setInterval(() => {
+      const s = Math.floor((Date.now() - start) / 1000);
+      const h = String(Math.floor(s / 3600)).padStart(2, '0');
+      const m = String(Math.floor((s % 3600) / 60)).padStart(2, '0');
+      const sec = String(s % 60).padStart(2, '0');
+      el.textContent = `${h}:${m}:${sec}`;
+    }, 1000);
+  })();
+</script>
+
+<script type="module" src="./game.js"></script>
 </body>
 </html>
