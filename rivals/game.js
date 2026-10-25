@@ -359,7 +359,7 @@ let modelBase = null;
 const loader = new GLTFLoader();
 let modelLoaded = false;
 
-loader.load('./f9cf39fd-9825-4c9a-9ba2-410d1b95651c_white_mesh.glb', (gltf) => {
+loader.load('./c9ba1a92-8a33-4533-a2a1-4017f53e8c02_white_mesh.glb', (gltf) => {
   modelBase = gltf.scene;
   modelLoaded = true;
   console.log("✅ 3D Character Model Loaded!");
