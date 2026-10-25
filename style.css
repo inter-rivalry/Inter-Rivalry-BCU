@@ -53,20 +53,21 @@ h1, h2, h3, h4, .section-title {
 .welcome h1 span,
 .profile-card h2,
 .ir-shop-title {
-  background: linear-gradient(90deg, #ffffff 0%, #ff294f 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  background: linear-gradient(90deg, #ffffff 0%, #ff294f 100%) !important;
+  -webkit-background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  background-clip: text !important;
   color: transparent !important;
-  text-shadow: none;
+  text-shadow: none !important;
 }
 
 /* Make the "Choose Your Game" text look like the image */
 #irGamesLaunchCard h2 {
-  background: linear-gradient(90deg, #00aaff 0%, #ffffff 50%, #ff294f 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  background: linear-gradient(90deg, #00aaff 0%, #ffffff 50%, #ff294f 100%) !important;
+  -webkit-background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  background-clip: text !important;
+  color: transparent !important;
   font-size: 28px;
   margin-bottom: 10px;
 }
@@ -207,15 +208,17 @@ hr { border-top: 1px solid rgba(0, 170, 255, 0.3) !important; }
 
 
 /* =========================================
-   🚨 FIX FOR UNREADABLE BLACK TEXT 🚨
+   🚨 FINAL OVERRIDES: FORCE ALL TEXT WHITE & BOX DARK 🚨
    ========================================= */
 
-/* 1. Force all generic text inside cards to be light and readable */
-p, span, label, li, small, .description, .subtitle, .text-muted {
-  color: var(--ir-muted) !important;
+/* 1. Force ALL text elements (p, span, div, small, etc.) to be white */
+p, span, label, small, li, 
+#irGamesLaunchCard div, .profile-card div, .card div {
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
 }
 
-/* 2. Override any inline black/dark-grey styles the original app is injecting */
+/* 2. Catch any hidden dark inline text colors injected by the app */
 [style*="color: #000"], [style*="color:#000"],
 [style*="color: #111"], [style*="color:#111"],
 [style*="color: #222"], [style*="color:#222"],
@@ -224,26 +227,11 @@ p, span, label, li, small, .description, .subtitle, .text-muted {
 [style*="color: #555"], [style*="color:#555"],
 [style*="color: #666"], [style*="color:#666"],
 [style*="color: black"], [style*="color:black"] {
-  color: var(--ir-text) !important;
-}
-
-/* 3. Fix the "WELCOME," title specifically */
-.welcome h1, .welcome h2, .welcome h3, .welcome-title, .welcome div {
   color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
 }
 
-/* 4. Fix the "THE IR GAMES HUB" text */
-#irGamesLaunchCard * { color: var(--ir-muted) !important; }
-#irGamesLaunchCard h2 { -webkit-text-fill-color: transparent !important; color: transparent !important; } /* Keep gradient */
-#irGamesLaunchCard button, #irGamesLaunchCard .btn { color: #ffffff !important; } /* Keep button text white */
-
-/* 5. Fix the "YOUR LOCAL PROFILE" description text */
-.profile-card * { color: var(--ir-muted) !important; }
-.profile-card h2 { -webkit-text-fill-color: transparent !important; color: transparent !important; } /* Keep gradient */
-.profile-card button, .profile-card .btn { color: #ffffff !important; }
-
-/* 6. Fix the White "Location" Box and its text */
-/* Catch all variations of white backgrounds */
+/* 3. Target that Location Box: Make it dark with a glowing border (No shapes broken) */
 [style*="background: #fff"], [style*="background:#fff"], 
 [style*="background: #ffffff"], [style*="background:#ffffff"],
 [style*="background: white"], [style*="background:white"],
@@ -251,13 +239,40 @@ p, span, label, li, small, .description, .subtitle, .text-muted {
   background: linear-gradient(135deg, #091a36, #050a14) !important;
   border: 1px solid #00aaff !important;
   box-shadow: 0 0 20px rgba(0, 170, 255, 0.2), inset 0 0 20px rgba(0, 170, 255, 0.1) !important;
-  clip-path: polygon(15px 0, 100% 0, 100% calc(100% - 15px), calc(100% - 15px) 100%, 0 100%, 0 15px);
+  /* Keep the angled shape */
+  clip-path: polygon(15px 0, 100% 0, 100% calc(100% - 15px), calc(100% - 15px) 100%, 0 100%, 0 15px) !important;
 }
 
-/* Ensure the text inside that location box is bright white */
+/* 4. Ensure text inside that dark location box is bright white */
 [style*="background: #fff"] *, [style*="background:#fff"] *,
 [style*="background: #ffffff"] *, [style*="background:#ffffff"] *,
 [style*="background: white"] *, [style*="background:white"] *,
 [style*="background: rgb(255, 255, 255)"] *, [style*="background:rgb(255,255,255)"] * {
   color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+}
+
+/* 5. Double-Protect the Gradient Titles from the blanket white rule above */
+.welcome h1 span,
+.profile-card h2,
+.ir-shop-title {
+  background: linear-gradient(90deg, #ffffff 0%, #ff294f 100%) !important;
+  -webkit-background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  background-clip: text !important;
+  color: transparent !important;
+}
+
+#irGamesLaunchCard h2 {
+  background: linear-gradient(90deg, #00aaff 0%, #ffffff 50%, #ff294f 100%) !important;
+  -webkit-background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  background-clip: text !important;
+  color: transparent !important;
+}
+
+/* 6. Ensure Buttons and their text stay strictly pure white */
+button, .btn, button *, .btn * {
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
 }
