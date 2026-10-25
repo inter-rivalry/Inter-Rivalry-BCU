@@ -236,6 +236,9 @@ const beaconPillars = [];
 const dataStreams = [];
 const orbitalRings = [];
 const nebulas = [];
+const skyTraffic = [];
+const cyberMonoliths = [];
+let holoScanRing = null;
 const LITE_BATTLEFIELD = touch;
 
 const CUSTOM_LAYOUT_KEY = 'rivals-layout-v2';
@@ -348,50 +351,46 @@ function steerMove(entity, targetX, targetZ, speed, dt) {
 }
 
 /* =========================================================
-   BUILD HUMANOID — Year 3000 edition
-   Angular helmet, crest fin, glowing core, thruster pods,
-   layered rifle. All animParts / hitParts / materials
-   preserved for the animation system.
+   BUILD HUMANOID — Year 3000 Cyberpunk Streetwear
    ========================================================= */
 function buildHumanoid(color) {
   const g = new THREE.Group();
   const teamColor = new THREE.Color(color);
 
-  const skin = new THREE.MeshStandardMaterial({
-    color, roughness: .5, metalness: .35,
-    emissive: color, emissiveIntensity: .18,
+  const hoodieMat = new THREE.MeshStandardMaterial({ 
+    color: 0x0a0a0c, roughness: .85, metalness: .1,
+    emissive: color, emissiveIntensity: .05
   });
-  const skinDark = new THREE.MeshStandardMaterial({
-    color: teamColor.clone().multiplyScalar(.42),
-    roughness: .7, metalness: .3,
-    emissive: color, emissiveIntensity: .08,
+  const pantsMat = new THREE.MeshStandardMaterial({ 
+    color: 0x070709, roughness: .9, metalness: .05 
   });
-  const armor = new THREE.MeshStandardMaterial({
-    color: 0x0b0d14, metalness: .88, roughness: .24,
-    emissive: color, emissiveIntensity: .12,
+  const maskMat = new THREE.MeshStandardMaterial({ 
+    color: 0x050505, roughness: .95, metalness: .05 
   });
-  const armorMid = new THREE.MeshStandardMaterial({
-    color: 0x1a2033, metalness: .72, roughness: .34,
-    emissive: color, emissiveIntensity: .16,
+  const hairMat = new THREE.MeshStandardMaterial({ 
+    color: 0x0f111a, roughness: .7, metalness: .2,
+    emissive: color, emissiveIntensity: .15
   });
-  const glow = new THREE.MeshStandardMaterial({
-    color, emissive: color, emissiveIntensity: 1.9,
-    metalness: .3, roughness: .18,
+  const skinMat = new THREE.MeshStandardMaterial({ 
+    color: 0xe0b8a0, roughness: .6, metalness: .1 
   });
-  const white = new THREE.MeshStandardMaterial({
-    color: 0xdce6f5, metalness: .55, roughness: .3,
-    emissive: 0xffffff, emissiveIntensity: .08,
+  
+  const accentMat = new THREE.MeshStandardMaterial({ 
+    color: teamColor, emissive: color, emissiveIntensity: 1.2, roughness: .4 
   });
-  const gold = new THREE.MeshStandardMaterial({
-    color: 0xc9a860, metalness: .95, roughness: .22,
-    emissive: 0xffd77a, emissiveIntensity: .3,
+  const whiteMat = new THREE.MeshStandardMaterial({ 
+    color: 0xffffff, roughness: .5, metalness: .1 
   });
-  const weaponDark = new THREE.MeshStandardMaterial({
-    color: 0x05070c, metalness: .92, roughness: .18,
+  const soleMat = new THREE.MeshStandardMaterial({ 
+    color: 0xf0f0f0, roughness: .6, metalness: .2 
   });
-  const weaponGlow = new THREE.MeshStandardMaterial({
-    color: 0x8df7ff, emissive: 0x35dfff, emissiveIntensity: 2.1,
-    metalness: .4, roughness: .14,
+  const weaponMat = new THREE.MeshStandardMaterial({ 
+    color: 0x111111, metalness: .8, roughness: .3 
+  });
+
+  const crownTex = makeCrownTexture();
+  const crownMat = new THREE.MeshBasicMaterial({ 
+    map: crownTex, transparent: true, depthWrite: false 
   });
 
   const hitParts = [];
@@ -409,87 +408,91 @@ function buildHumanoid(color) {
     parent.add(mesh); return mesh;
   };
 
-  const head = part(new THREE.IcosahedronGeometry(.19, 1), armorMid, 0, 1.76, 0, true);
-  head.scale.set(1, 1.05, .96);
+  const head = part(new THREE.SphereGeometry(.18, 16, 16), skinMat, 0, 1.76, 0, true);
+  
+  const mask = part(new THREE.CylinderGeometry(.185, .16, .12, 8), maskMat, 0, 1.7, -.02, true);
+  mask.scale.z = 0.9;
 
-  part(new THREE.BoxGeometry(.25, .15, .045), white, 0, 1.73, -.165, true);
-  part(new THREE.BoxGeometry(.23, .05, .025), glow, 0, 1.755, -.19, true);
-
-  for (const side of [-1, 1]) {
-    const cheek = part(new THREE.BoxGeometry(.05, .13, .14), armor, side * .155, 1.72, -.04, true);
-    cheek.rotation.z = side * -.08;
+  const hairGroup = new THREE.Group();
+  hairGroup.position.set(0, 1.82, 0);
+  g.add(hairGroup);
+  
+  const spikeGeo = new THREE.ConeGeometry(.08, .22, 4);
+  const hairSpikes = [
+    [0, .1, -.05, -.4, 0],
+    [-.1, .08, 0, 0, -.4],
+    [.1, .08, 0, 0, .4],
+    [0, .05, .12, .6, 0],
+    [-.12, -.02, -.06, -.6, -.5],
+    [.12, -.02, -.06, -.6, .5],
+    [-.08, 0, .1, .3, -.3],
+    [.08, 0, .1, .3, .3],
+    [0, .12, .06, .8, 0],
+  ];
+  
+  for (const [x, y, z, rx, rz] of hairSpikes) {
+    const spike = new THREE.Mesh(spikeGeo, hairMat);
+    spike.position.set(x, y, z);
+    spike.rotation.x = rx;
+    spike.rotation.z = rz;
+    hairGroup.add(spike);
   }
-
-  const crest = deco(g, new THREE.ConeGeometry(.06, .26, 4), armor, 0, 1.94, -.02);
-  crest.rotation.x = -.32; crest.scale.z = 1.4;
-  const crestGlow = deco(g, new THREE.ConeGeometry(.025, .14, 4), glow, 0, 1.96, .02);
-  crestGlow.rotation.x = -.32; crestGlow.scale.z = 1.3;
-
-  deco(g, new THREE.CylinderGeometry(.07, .09, .08, 8), weaponDark, 0, 1.6, 0);
 
   const torsoPivot = new THREE.Group();
   torsoPivot.position.set(0, .85, 0);
   g.add(torsoPivot);
 
-  const torso = new THREE.Mesh(new THREE.BoxGeometry(.44, .58, .24), armorMid);
+  const torso = new THREE.Mesh(new THREE.CylinderGeometry(.26, .3, .58, 8), hoodieMat);
   torso.position.set(0, .35, 0);
   torsoPivot.add(torso); hitParts.push(torso);
   animParts.torso = torsoPivot;
 
-  deco(torsoPivot, new THREE.BoxGeometry(.36, .32, .08), armor, 0, .42, -.16);
-  deco(torsoPivot, new THREE.BoxGeometry(.28, .14, .06), armor, 0, .18, -.15);
-  deco(torsoPivot, new THREE.OctahedronGeometry(.08, 0), glow, 0, .44, -.21);
+  deco(torsoPivot, new THREE.BoxGeometry(.32, .15, .06), hoodieMat, 0, .22, -.25);
 
-  const coreRing = deco(torsoPivot, new THREE.TorusGeometry(.09, .008, 6, 16), glow, 0, .44, -.2);
-  coreRing.rotation.x = Math.PI / 2;
+  const hood = deco(torsoPivot, new THREE.TorusGeometry(.18, .09, 6, 12, Math.PI), hoodieMat, 0, .62, .1);
+  hood.rotation.x = Math.PI / 2;
+  hood.rotation.z = Math.PI;
 
-  for (const side of [-1, 1])
-    deco(torsoPivot, new THREE.BoxGeometry(.015, .28, .02), glow, side * .14, .44, -.155);
+  deco(torsoPivot, new THREE.CylinderGeometry(.01, .01, .2, 4), accentMat, -.1, .4, -.25);
+  deco(torsoPivot, new THREE.CylinderGeometry(.01, .01, .2, 4), accentMat, .1, .4, -.25);
 
-  for (const side of [-1, 1]) {
-    const pauldron = deco(torsoPivot, new THREE.OctahedronGeometry(.14, 0), armor, side * .3, .52, 0);
-    pauldron.scale.set(1, .82, 1.1);
-    deco(torsoPivot, new THREE.BoxGeometry(.14, .02, .08), glow, side * .3, .56, -.08);
-  }
-
-  deco(torsoPivot, new THREE.BoxGeometry(.46, .1, .26), weaponDark, 0, .06, 0);
-  deco(torsoPivot, new THREE.OctahedronGeometry(.05, 0), gold, 0, .06, -.14);
+  deco(torsoPivot, new THREE.PlaneGeometry(.15, .15), crownMat, -.12, .45, -.26);
+  const backLogo = deco(torsoPivot, new THREE.PlaneGeometry(.25, .25), crownMat, 0, .4, .26);
+  backLogo.rotation.y = Math.PI;
 
   for (const side of [-1, 1]) {
-    const thruster = deco(torsoPivot, new THREE.CylinderGeometry(.05, .06, .22, 6), weaponDark, side * .12, .38, .18);
-    thruster.rotation.x = .25;
-    const tGlow = deco(torsoPivot, new THREE.CylinderGeometry(.03, .04, .04, 6), glow, side * .12, .26, .22);
-    tGlow.rotation.x = .25;
+    const zig = deco(torsoPivot, new THREE.BoxGeometry(.08, .12, .02), whiteMat, side * .25, .3, -.18);
+    zig.rotation.z = side * 0.4;
+    const zigColor = deco(torsoPivot, new THREE.BoxGeometry(.04, .12, .02), accentMat, side * .3, .45, -.15);
+    zigColor.rotation.z = side * 0.4;
   }
-
-  const collar = deco(torsoPivot, new THREE.TorusGeometry(.1, .015, 6, 16), white, 0, .62, 0);
-  collar.rotation.x = Math.PI / 2;
 
   animParts.legs = [];
   for (const side of [-1, 1]) {
     const legPivot = new THREE.Group();
-    legPivot.position.set(side * .11, .775, 0);
+    legPivot.position.set(side * .14, .78, 0);
     g.add(legPivot);
 
-    const upper = new THREE.Mesh(new THREE.BoxGeometry(.16, .40, .16), armorMid);
-    upper.position.set(0, -.2, 0);
+    const upper = new THREE.Mesh(new THREE.CylinderGeometry(.14, .16, .42, 8), pantsMat);
+    upper.position.set(0, -.21, 0);
     legPivot.add(upper); hitParts.push(upper);
 
-    deco(legPivot, new THREE.BoxGeometry(.14, .22, .06), armor, 0, -.16, -.09);
-    deco(legPivot, new THREE.BoxGeometry(.02, .18, .02), glow, 0, -.16, -.12);
+    if (side === 1) {
+      deco(legPivot, new THREE.BoxGeometry(.08, .12, .06), pantsMat, .1, -.2, 0);
+      const strap = deco(legPivot, new THREE.BoxGeometry(.04, .25, .02), accentMat, .12, -.35, -.05);
+      strap.rotation.x = 0.1;
+      deco(legPivot, new THREE.BoxGeometry(.03, .03, .03), whiteMat, .12, -.48, -.06);
+    }
 
-    const knee = deco(legPivot, new THREE.OctahedronGeometry(.09, 0), glow, 0, -.38, -.03);
-    knee.scale.set(1, .82, 1.1);
-
-    const lower = new THREE.Mesh(new THREE.BoxGeometry(.14, .35, .14), armorMid);
+    const lower = new THREE.Mesh(new THREE.CylinderGeometry(.13, .11, .35, 8), pantsMat);
     lower.position.set(0, -.55, 0);
     legPivot.add(lower); hitParts.push(lower);
 
-    deco(legPivot, new THREE.BoxGeometry(.12, .26, .05), armor, 0, -.55, -.09);
-    deco(legPivot, new THREE.BoxGeometry(.17, .12, .26), weaponDark, 0, -.71, -.04);
-
-    const toe = deco(legPivot, new THREE.ConeGeometry(.06, .12, 4), armor, 0, -.71, -.19);
-    toe.rotation.x = Math.PI / 2; toe.scale.z = .6;
+    const shoeUpper = deco(legPivot, new THREE.BoxGeometry(.16, .14, .26), hoodieMat, 0, -.74, -.04);
+    const sole = deco(legPivot, new THREE.BoxGeometry(.17, .08, .28), soleMat, 0, -.83, -.04);
+    deco(legPivot, new THREE.BoxGeometry(.17, .04, .12), accentMat, 0, -.74, -.04);
+    const shoeLogo = deco(legPivot, new THREE.PlaneGeometry(.06, .06), crownMat, 0, -.72, -.17);
+    shoeLogo.rotation.x = -Math.PI / 2;
 
     animParts.legs.push(legPivot);
   }
@@ -497,55 +500,52 @@ function buildHumanoid(color) {
   animParts.arms = [];
   for (const side of [-1, 1]) {
     const armPivot = new THREE.Group();
-    armPivot.position.set(side * .3, 1.44, 0);
+    armPivot.position.set(side * .28, 1.42, 0);
     g.add(armPivot);
 
-    deco(armPivot, new THREE.SphereGeometry(.1, 10, 8), armor, 0, -.02, 0);
-
-    const upper = new THREE.Mesh(new THREE.BoxGeometry(.10, .32, .10), armorMid);
-    upper.position.set(0, -.2, 0);
+    const upper = new THREE.Mesh(new THREE.CylinderGeometry(.09, .1, .34, 8), hoodieMat);
+    upper.position.set(0, -.18, 0);
     armPivot.add(upper); hitParts.push(upper);
 
-    deco(armPivot, new THREE.BoxGeometry(.02, .20, .02), glow, side * .055, -.2, 0);
-    deco(armPivot, new THREE.OctahedronGeometry(.055, 0), white, 0, -.38, 0);
+    deco(armPivot, new THREE.CylinderGeometry(.1, .1, .04, 8), whiteMat, 0, -.15, 0);
 
-    const lower = new THREE.Mesh(new THREE.BoxGeometry(.09, .30, .09), armorMid);
-    lower.position.set(0, -.53, 0);
+    const lower = new THREE.Mesh(new THREE.CylinderGeometry(.08, .08, .28, 8), hoodieMat);
+    lower.position.set(0, -.5, 0);
     armPivot.add(lower); hitParts.push(lower);
 
-    deco(armPivot, new THREE.BoxGeometry(.11, .16, .05), armor, 0, -.52, -.06);
-    deco(armPivot, new THREE.BoxGeometry(.015, .22, .015), glow, 0, -.52, -.09);
-    deco(armPivot, new THREE.BoxGeometry(.13, .10, .13), weaponDark, 0, -.66, 0);
-    deco(armPivot, new THREE.BoxGeometry(.075, .09, .075), skin, 0, -.73, 0);
+    deco(armPivot, new THREE.BoxGeometry(.08, .1, .08), pantsMat, 0, -.68, 0);
+    deco(armPivot, new THREE.BoxGeometry(.075, .04, .075), skinMat, 0, -.73, 0);
 
-    armPivot.rotation.x = side < 0 ? .82 : .92;
+    armPivot.rotation.x = side < 0 ? 1.05 : 1.15; 
+    armPivot.rotation.y = side < 0 ? 0.35 : -0.15;
+    armPivot.rotation.z = side * -0.1; 
+    
     animParts.arms.push(armPivot);
   }
 
   const rifle = new THREE.Group();
-
-  deco(rifle, new THREE.BoxGeometry(.09, .10, .46), weaponDark, 0, 0, -.05);
-  deco(rifle, new THREE.BoxGeometry(.06, .03, .36), armor, 0, .07, -.05);
-  deco(rifle, new THREE.BoxGeometry(.07, .07, .18), armorMid, 0, 0, -.36);
-
-  const barrel = deco(rifle, new THREE.CylinderGeometry(.02, .022, .34, 8), weaponDark, 0, .01, -.48);
+  deco(rifle, new THREE.BoxGeometry(.09, .10, .46), weaponMat, 0, 0, -.05);
+  deco(rifle, new THREE.BoxGeometry(.06, .03, .36), accentMat, 0, .07, -.05);
+  deco(rifle, new THREE.BoxGeometry(.07, .07, .18), weaponMat, 0, 0, -.36);
+  
+  const barrel = deco(rifle, new THREE.CylinderGeometry(.02, .022, .34, 8), weaponMat, 0, .01, -.48);
   barrel.rotation.x = Math.PI / 2;
-  const muzzle = deco(rifle, new THREE.CylinderGeometry(.035, .028, .06, 8), glow, 0, .01, -.62);
+  const muzzle = deco(rifle, new THREE.CylinderGeometry(.035, .028, .06, 8), accentMat, 0, .01, -.62);
   muzzle.rotation.x = Math.PI / 2;
 
-  deco(rifle, new THREE.BoxGeometry(.055, .05, .16), weaponDark, 0, .11, -.05);
-  const scopeLens = deco(rifle, new THREE.CylinderGeometry(.022, .022, .02, 8), glow, 0, .11, -.13);
+  deco(rifle, new THREE.BoxGeometry(.055, .05, .16), weaponMat, 0, .11, -.05);
+  const scopeLens = deco(rifle, new THREE.CylinderGeometry(.022, .022, .02, 8), accentMat, 0, .11, -.13);
   scopeLens.rotation.x = Math.PI / 2;
 
-  const magazine = deco(rifle, new THREE.BoxGeometry(.07, .18, .10), weaponDark, 0, -.13, -.02);
+  const magazine = deco(rifle, new THREE.BoxGeometry(.07, .18, .10), weaponMat, 0, -.13, -.02);
   magazine.rotation.x = -.15;
-  const magLine = deco(rifle, new THREE.BoxGeometry(.02, .14, .02), weaponGlow, 0, -.13, -.04);
+  const magLine = deco(rifle, new THREE.BoxGeometry(.02, .14, .02), accentMat, 0, -.13, -.04);
   magLine.rotation.x = -.15;
 
-  deco(rifle, new THREE.BoxGeometry(.08, .10, .18), armor, 0, -.02, .22);
+  deco(rifle, new THREE.BoxGeometry(.08, .10, .18), weaponMat, 0, -.02, .22);
 
-  rifle.position.set(.18, .38, -.30);
-  rifle.rotation.x = -.03;
+  rifle.position.set(.15, .28, -.48); 
+  rifle.rotation.x = -.05;
   torsoPivot.add(rifle);
   animParts.rifle = rifle;
   animParts.rifleBaseZ = rifle.position.z;
@@ -561,7 +561,7 @@ function buildHumanoid(color) {
 
   g.userData.anim = { walkPhase: 0, aimTimer: 0, hitTimer: 0, deathTimer: 0, spawnTimer: .4, dashTimer: 0, recoil: 0 };
   g.userData.animParts = animParts;
-  g.userData.materials = [skin, skinDark, armor, armorMid, glow, white, gold, weaponDark, weaponGlow];
+  g.userData.materials = [hoodieMat, pantsMat, maskMat, hairMat, skinMat, accentMat, whiteMat, soleMat];
   g.scale.set(.01, .01, .01);
   return { group: g, hitParts };
 }
@@ -604,8 +604,10 @@ function updateHumanoidAnim(group, dt, isMoving, isAiming, isDashing = false) {
       const bounce = Math.abs(Math.sin(anim.walkPhase)) * .055;
       if (parts.legs[0]) parts.legs[0].rotation.x = swing;
       if (parts.legs[1]) parts.legs[1].rotation.x = -swing;
-      if (parts.arms[0]) { parts.arms[0].rotation.x = .82 + Math.sin(anim.walkPhase + Math.PI) * .12; parts.arms[0].rotation.z = -.06; }
-      if (parts.arms[1]) { parts.arms[1].rotation.x = .92 + Math.sin(anim.walkPhase) * .10; parts.arms[1].rotation.z = .04; }
+      
+      if (parts.arms[0]) { parts.arms[0].rotation.x = 1.05 + Math.sin(anim.walkPhase + Math.PI) * .05; parts.arms[0].rotation.z = -.06; }
+      if (parts.arms[1]) { parts.arms[1].rotation.x = 1.15 + Math.sin(anim.walkPhase) * .05; parts.arms[1].rotation.z = .04; }
+      
       if (parts.torso) { parts.torso.rotation.x = -.12; parts.torso.rotation.z = Math.sin(anim.walkPhase * 2) * .045; }
       group.position.y = bounce;
     } else {
@@ -614,12 +616,13 @@ function updateHumanoidAnim(group, dt, isMoving, isAiming, isDashing = false) {
       if (parts.torso) { parts.torso.rotation.z = breath; parts.torso.rotation.x = 0; }
       if (parts.legs[0]) parts.legs[0].rotation.x *= .82;
       if (parts.legs[1]) parts.legs[1].rotation.x *= .82;
-      if (parts.arms[0]) { parts.arms[0].rotation.x += (.82 - parts.arms[0].rotation.x) * Math.min(1, dt * 8); parts.arms[0].rotation.z *= .8; }
-      if (parts.arms[1]) { parts.arms[1].rotation.x += (.92 - parts.arms[1].rotation.x) * Math.min(1, dt * 8); parts.arms[1].rotation.z *= .8; }
+      
+      if (parts.arms[0]) { parts.arms[0].rotation.x += (1.05 - parts.arms[0].rotation.x) * Math.min(1, dt * 8); parts.arms[0].rotation.z *= .8; }
+      if (parts.arms[1]) { parts.arms[1].rotation.x += (1.15 - parts.arms[1].rotation.x) * Math.min(1, dt * 8); parts.arms[1].rotation.z *= .8; }
     }
     if (parts.rifle) {
       parts.rifle.position.z += (parts.rifleBaseZ - parts.rifle.position.z) * Math.min(1, dt * 12);
-      parts.rifle.rotation.x += ((isAiming ? -.10 : -.03) - parts.rifle.rotation.x) * Math.min(1, dt * 10);
+      parts.rifle.rotation.x += ((isAiming ? -.10 : -.05) - parts.rifle.rotation.x) * Math.min(1, dt * 10);
       parts.rifle.rotation.z *= .78;
     }
   }
@@ -627,9 +630,9 @@ function updateHumanoidAnim(group, dt, isMoving, isAiming, isDashing = false) {
   if (isAiming) anim.aimTimer = .18;
   if (anim.aimTimer > 0 && !sliding) {
     anim.aimTimer -= dt;
-    if (parts.arms[0]) parts.arms[0].rotation.x = 1.00;
-    if (parts.arms[1]) parts.arms[1].rotation.x = 1.08;
-    if (parts.rifle) parts.rifle.rotation.x = -.14;
+    if (parts.arms[0]) parts.arms[0].rotation.x = 1.25; 
+    if (parts.arms[1]) parts.arms[1].rotation.x = 1.35; 
+    if (parts.rifle) parts.rifle.rotation.x = -.10;
   }
   if (anim.hitTimer > 0) { anim.hitTimer -= dt; if (parts.torso) parts.torso.rotation.x = Math.sin(anim.hitTimer * 60) * .1; }
   else if (parts.torso && !sliding) parts.torso.rotation.x *= .85;
@@ -642,13 +645,44 @@ function resetHumanoidAnim(group) {
   group.userData.anim.deathTimer = 0; group.userData.anim.dashTimer = 0;
   group.userData.anim.spawnTimer = 0.4; group.scale.set(0.01, 0.01, 0.01);
   const ap = group.userData.animParts;
-  if (ap?.rifle) { ap.rifle.position.z = ap.rifleBaseZ; ap.rifle.rotation.set(-.03, 0, 0); }
+  if (ap?.rifle) { ap.rifle.position.z = ap.rifleBaseZ; ap.rifle.rotation.set(-.05, 0, 0); }
   group.userData.materials.forEach(m => { m.opacity = 1; m.transparent = false; });
 }
 
 /* =========================================================
-   TEXTURES — floor, flag, city sky, holo panel, soft glow
+   TEXTURES — floor, flag, city sky, holo panel, soft glow, crown
    ========================================================= */
+function makeCrownTexture() {
+  const c = document.createElement('canvas');
+  c.width = 128; c.height = 128;
+  const ctx = c.getContext('2d');
+  ctx.clearRect(0, 0, 128, 128);
+  
+  ctx.fillStyle = '#ffffff';
+  ctx.beginPath();
+  ctx.moveTo(24, 84);
+  ctx.lineTo(104, 84);
+  ctx.lineTo(104, 96);
+  ctx.lineTo(24, 96);
+  ctx.closePath();
+  ctx.fill();
+  
+  ctx.beginPath();
+  ctx.moveTo(24, 84);
+  ctx.lineTo(16, 40);
+  ctx.lineTo(48, 64);
+  ctx.lineTo(64, 24);
+  ctx.lineTo(80, 64);
+  ctx.lineTo(112, 40);
+  ctx.lineTo(104, 84);
+  ctx.closePath();
+  ctx.fill();
+
+  const tex = new THREE.CanvasTexture(c);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  return tex;
+}
+
 function makeAnimeFloorTexture() {
   const c = document.createElement('canvas'); c.width = c.height = 1024;
   const ctx = c.getContext('2d');
@@ -1156,6 +1190,89 @@ function buildBattlefield3000() {
       nebulas.push({ mesh: neb, phase: Math.random() * Math.PI * 2 });
     }
   }
+
+  /* ── SKY TRAFFIC (Flying Cars) ───────────────────────── */
+  const carGeo = new THREE.BoxGeometry(0.6, 0.1, 1.2);
+  const carMats = [
+    new THREE.MeshBasicMaterial({ color: 0x54efff, transparent: true, opacity: 0.9, fog: false }),
+    new THREE.MeshBasicMaterial({ color: 0xff4c73, transparent: true, opacity: 0.9, fog: false }),
+    new THREE.MeshBasicMaterial({ color: 0xffe38b, transparent: true, opacity: 0.9, fog: false })
+  ];
+
+  const trafficCount = LITE_BATTLEFIELD ? 6 : 16;
+  for (let i = 0; i < trafficCount; i++) {
+    const car = new THREE.Mesh(carGeo, carMats[i % 3]);
+    const y = 18 + Math.random() * 15;
+    const z = (Math.random() - 0.5) * 60;
+    const xStart = (Math.random() - 0.5) * 120;
+    const speed = (Math.random() * 8 + 6) * (Math.random() < 0.5 ? 1 : -1);
+    
+    car.position.set(xStart, y, z);
+    car.rotation.y = speed > 0 ? 0 : Math.PI;
+    
+    const tailLight = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.1, 0.2), new THREE.MeshBasicMaterial({ color: 0xffffff, fog: false }));
+    tailLight.position.set(0, 0, 0.7);
+    car.add(tailLight);
+
+    scene.add(car);
+    skyTraffic.push({ mesh: car, speed, xMin: -80, xMax: 80 });
+  }
+
+  /* ── CYBER MONOLITHS ─────────────────────────────────── */
+  const monolithPositions = [
+    [-40, -40, 0x54efff], [40, -40, 0xff4c73],
+    [-40, 40, 0x54efff],  [40, 40, 0xff4c73]
+  ];
+  
+  for (const [x, z, color] of monolithPositions) {
+    const monolith = new THREE.Group();
+    monolith.position.set(x, 0, z);
+
+    const obelisk = new THREE.Mesh(
+      new THREE.BoxGeometry(4, 22, 4),
+      new THREE.MeshStandardMaterial({ color: 0x02040a, metalness: 0.9, roughness: 0.1 })
+    );
+    obelisk.position.y = 11;
+    monolith.add(obelisk);
+
+    const edges = new THREE.LineSegments(
+      new THREE.EdgesGeometry(obelisk.geometry),
+      new THREE.LineBasicMaterial({ color, transparent: true, opacity: 0.6 })
+    );
+    edges.position.copy(obelisk.position);
+    monolith.add(edges);
+
+    const ring = new THREE.Mesh(
+      new THREE.TorusGeometry(3.5, 0.05, 6, 32),
+      new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0.8, fog: false })
+    );
+    ring.position.y = 22;
+    ring.rotation.x = Math.PI / 2;
+    monolith.add(ring);
+
+    scene.add(monolith);
+    cyberMonoliths.push({ group: monolith, ring, phase: Math.random() * Math.PI * 2 });
+  }
+
+  /* ── HOLOGRAPHIC SCAN RING ───────────────────────────── */
+  const scanGeo = new THREE.TorusGeometry(24, 0.06, 8, 64);
+  const scanMat = new THREE.MeshBasicMaterial({
+    color: 0x54efff, transparent: true, opacity: 0.25, side: THREE.DoubleSide, fog: false
+  });
+  holoScanRing = new THREE.Mesh(scanGeo, scanMat);
+  holoScanRing.rotation.x = Math.PI / 2;
+  scene.add(holoScanRing);
+
+  /* ── NEON WALL RIMS ──────────────────────────────────── */
+  const rimGeo = new THREE.BoxGeometry(50, 0.1, 0.1);
+  const rimBlue = new THREE.MeshBasicMaterial({ color: 0x54efff, transparent: true, opacity: 0.8 });
+  const rimRed = new THREE.MeshBasicMaterial({ color: 0xff4c73, transparent: true, opacity: 0.8 });
+  
+  const wallTopY = 2.05; 
+  const rimN = new THREE.Mesh(rimGeo, rimBlue); rimN.position.set(0, wallTopY, -24.9); scene.add(rimN);
+  const rimS = new THREE.Mesh(rimGeo, rimBlue); rimS.position.set(0, wallTopY, 24.9); scene.add(rimS);
+  const rimW = new THREE.Mesh(rimGeo, rimRed);  rimW.position.set(-24.9, wallTopY, 0); rimW.rotation.y = Math.PI/2; scene.add(rimW);
+  const rimE = new THREE.Mesh(rimGeo, rimRed);  rimE.position.set(24.9, wallTopY, 0);  rimE.rotation.y = Math.PI/2; scene.add(rimE);
 }
 
 /* =========================================================
@@ -2419,6 +2536,28 @@ function update(dt, t) {
   nebulas.forEach(({ mesh, phase }) => {
     mesh.material.opacity = 0.5 + Math.sin(t * 0.8 + phase) * 0.15;
   });
+
+  // Sky Traffic Animation
+  skyTraffic.forEach(car => {
+    car.mesh.position.x += car.speed * dt;
+    if (car.speed > 0 && car.mesh.position.x > car.xMax) car.mesh.position.x = car.xMin;
+    if (car.speed < 0 && car.mesh.position.x < car.xMin) car.mesh.position.x = car.xMax;
+  });
+
+  // Cyber Monoliths Animation
+  cyberMonoliths.forEach(({ group, ring, phase }) => {
+    ring.rotation.z += dt * 0.5;
+    ring.position.y = 22 + Math.sin(t * 2 + phase) * 0.5;
+    group.children[1].material.opacity = 0.4 + (Math.sin(t * 3 + phase) + 1) * 0.3;
+  });
+
+  // Holographic Scan Ring Animation
+  if (holoScanRing) {
+    holoScanRing.position.y = 5 + Math.sin(t * 0.6) * 4; 
+    holoScanRing.rotation.z += dt * 0.1;
+    const scanPulse = (Math.sin(t * 0.6) + 1) * 0.5;
+    holoScanRing.material.opacity = 0.1 + scanPulse * 0.2;
+  }
 
   if (baseBlueRing && baseRedRing) {
     baseBlueRing.rotation.z += dt * 0.5;
