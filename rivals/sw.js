@@ -5,7 +5,7 @@
    Cache version bump drops stale caches on activate.
    ========================================================= */
 
-const CACHE = 'rivals-v101';
+const CACHE = 'rivals-v102';
 
 const ASSETS = [
   './index.html',
