@@ -1899,3 +1899,87 @@ input[type=range]::-moz-range-thumb {
   .telemetry-dot, .term-status, .signal-bars i,
   .boot-bar { animation: none !important; }
 }
+/* =========================================================
+   RIVALS 3000 — V6 UI OVERHAUL
+   ========================================================= */
+
+/* Make the Lobby Preview glow */
+#lobby-canvas {
+  box-shadow: inset 0 0 80px rgba(84, 239, 255, 0.15), 0 0 40px rgba(84, 239, 255, 0.2) !important;
+  border: 1px solid rgba(84, 239, 255, 0.6) !important;
+  background: radial-gradient(circle at center, #0d2848 0%, #02040a 100%) !important;
+}
+
+/* Add a scanning line effect to the preview */
+#lobby-canvas::after {
+  content: "";
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: linear-gradient(to bottom, transparent 50%, rgba(84, 239, 255, 0.1) 51%, transparent 52%);
+  background-size: 100% 10px;
+  pointer-events: none;
+  animation: scanline 8s linear infinite;
+  z-index: 10;
+}
+
+@keyframes scanline {
+  0% { background-position: 0 0; }
+  100% { background-position: 0 100vh; }
+}
+
+/* Make the mode tabs look like futuristic console buttons */
+.mode-tabs .tab, .size-tab, .diff-tab {
+  background: linear-gradient(180deg, rgba(20, 40, 70, 0.8), rgba(5, 10, 20, 0.9)) !important;
+  border: 1px solid rgba(84, 239, 255, 0.3) !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.1), 0 4px 10px rgba(0,0,0,0.5) !important;
+  position: relative;
+  overflow: hidden;
+}
+
+.mode-tabs .tab:hover, .size-tab:hover, .diff-tab:hover {
+  border-color: rgba(84, 239, 255, 0.8) !important;
+  box-shadow: inset 0 0 15px rgba(84, 239, 255, 0.2), 0 0 15px rgba(84, 239, 255, 0.2) !important;
+}
+
+.mode-tabs .tab.active, .size-tab.active, .diff-tab.active {
+  background: linear-gradient(180deg, rgba(84, 239, 255, 0.3), rgba(84, 239, 255, 0.05)) !important;
+  border-color: #54efff !important;
+  color: #fff !important;
+  text-shadow: 0 0 10px #54efff;
+  box-shadow: inset 0 0 20px rgba(84, 239, 255, 0.4), 0 0 20px rgba(84, 239, 255, 0.3) !important;
+}
+
+/* Upgrade the primary buttons (Create Room, Start Match) */
+.primary {
+  background: linear-gradient(135deg, #54efff, #2a7bff) !important;
+  color: #000 !important;
+  font-weight: 900 !important;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  box-shadow: 0 0 20px rgba(84, 239, 255, 0.4), inset 0 2px 0 rgba(255,255,255,0.8) !important;
+  border: none !important;
+  transition: all 0.2s ease;
+}
+
+.primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 0 30px rgba(84, 239, 255, 0.8), inset 0 2px 0 rgba(255,255,255,0.8) !important;
+}
+
+/* Make the health and ammo bars glow */
+.meter { background: #000 !important; box-shadow: inset 0 0 5px #000; border: 1px solid #333; }
+.meter i { box-shadow: 0 0 10px #52ffb1, inset 0 0 5px #fff; }
+
+/* Ammo counter glowing text */
+.stat strong { color: #fff !important; text-shadow: 0 0 15px #54efff; }
+
+/* Make the player name tags look like high-tech HUD elements */
+.name-tag {
+  background: rgba(2, 6, 15, 0.8) !important;
+  backdrop-filter: blur(4px);
+  border: 1px solid rgba(84, 239, 255, 0.4) !important;
+  box-shadow: 0 0 10px rgba(84, 239, 255, 0.2);
+  clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
+}
+.name-tag.blue { border-color: #54efff !important; color: #54efff !important; }
+.name-tag.red { border-color: #ff4c73 !important; color: #ff4c73 !important; }
