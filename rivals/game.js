@@ -229,7 +229,6 @@ const centerEnergyRings = [];
 const battlefieldSparks = [];
 const animeDecor = [];
 
-/* Year 3000 battlefield additions */
 let skyDome = null;
 let energyDome = null;
 const holoPanels = [];
@@ -269,48 +268,33 @@ function initDragging() {
   document.querySelectorAll('.draggable').forEach(el => {
     let startX = 0, startY = 0, startLeft = 0, startTop = 0, pointerId = null;
     el.style.touchAction = 'none';
-
     el.addEventListener('pointerdown', e => {
       if (!customizing || el.classList.contains('hidden')) return;
       e.preventDefault(); e.stopPropagation();
       const rect = el.getBoundingClientRect();
-      pointerId = e.pointerId;
-      el.classList.add('dragging');
-      el.style.position = 'fixed';
-      el.style.left = rect.left + 'px';
-      el.style.top = rect.top + 'px';
-      el.style.right = 'auto';
-      el.style.bottom = 'auto';
-      el.style.transform = 'none';
-      el.style.margin = '0';
-      startLeft = rect.left; startTop = rect.top;
-      startX = e.clientX; startY = e.clientY;
+      pointerId = e.pointerId; el.classList.add('dragging');
+      el.style.position = 'fixed'; el.style.left = rect.left + 'px'; el.style.top = rect.top + 'px';
+      el.style.right = 'auto'; el.style.bottom = 'auto'; el.style.transform = 'none'; el.style.margin = '0';
+      startLeft = rect.left; startTop = rect.top; startX = e.clientX; startY = e.clientY;
       try { el.setPointerCapture(e.pointerId); } catch (_) {}
     });
-
     el.addEventListener('pointermove', e => {
       if (!customizing || !el.classList.contains('dragging') || e.pointerId !== pointerId) return;
       e.preventDefault();
       const rect = el.getBoundingClientRect();
       const maxLeft = Math.max(0, window.innerWidth - rect.width);
       const maxTop = Math.max(0, window.innerHeight - rect.height);
-      const left = clamp(startLeft + e.clientX - startX, 0, maxLeft);
-      const top = clamp(startTop + e.clientY - startY, 0, maxTop);
-      el.style.left = left + 'px';
-      el.style.top = top + 'px';
+      el.style.left = clamp(startLeft + e.clientX - startX, 0, maxLeft) + 'px';
+      el.style.top = clamp(startTop + e.clientY - startY, 0, maxTop) + 'px';
     });
-
     const finishDrag = e => {
       if (pointerId !== null && e.pointerId !== pointerId) return;
-      const wasDragging = el.classList.contains('dragging');
       el.classList.remove('dragging');
       try { if (el.hasPointerCapture(e.pointerId)) el.releasePointerCapture(e.pointerId); } catch (_) {}
       pointerId = null;
-      if (wasDragging && customizing) saveCustomLayout();
+      if (customizing) saveCustomLayout();
     };
-    el.addEventListener('pointerup', finishDrag);
-    el.addEventListener('pointercancel', finishDrag);
-    el.addEventListener('lostpointercapture', finishDrag);
+    el.addEventListener('pointerup', finishDrag); el.addEventListener('pointercancel', finishDrag); el.addEventListener('lostpointercapture', finishDrag);
   });
 }
 
@@ -318,35 +302,22 @@ function saveCustomLayout() {
   const layout = {};
   document.querySelectorAll('.draggable').forEach(el => {
     if (!el.id || el.classList.contains('hidden')) return;
-    if (el.style.position === 'fixed' && el.style.left && el.style.top)
-      layout[el.id] = { left: el.style.left, top: el.style.top };
+    if (el.style.position === 'fixed' && el.style.left && el.style.top) layout[el.id] = { left: el.style.left, top: el.style.top };
   });
   store.set(CUSTOM_LAYOUT_KEY, JSON.stringify(layout));
 }
 
-function box(w, h, d, mat, x, y, z) {
-  const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mat);
-  m.position.set(x, y, z); scene.add(m); return m;
-}
-function disposeGroup(g) {
-  g.traverse(o => {
-    if (o.geometry) o.geometry.dispose();
-    if (o.material) Array.isArray(o.material) ? o.material.forEach(m => m.dispose()) : o.material.dispose();
-  });
-}
-function isBlocked(x, z, margin = 0.5) {
-  return covers.some(c => Math.abs(x - c.x) < c.w / 2 + margin && Math.abs(z - c.z) < c.d / 2 + margin);
-}
+function box(w, h, d, mat, x, y, z) { const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mat); m.position.set(x, y, z); scene.add(m); return m; }
+function disposeGroup(g) { g.traverse(o => { if (o.geometry) o.geometry.dispose(); if (o.material) Array.isArray(o.material) ? o.material.forEach(m => m.dispose()) : o.material.dispose(); }); }
+function isBlocked(x, z, margin = 0.5) { return covers.some(c => Math.abs(x - c.x) < c.w / 2 + margin && Math.abs(z - c.z) < c.d / 2 + margin); }
 function steerMove(entity, targetX, targetZ, speed, dt) {
   const px = entity.group.position.x, pz = entity.group.position.z;
-  const dx = targetX - px, dz = targetZ - pz;
-  const dist = Math.hypot(dx, dz); if (dist < 0.3) return false;
+  const dx = targetX - px, dz = targetZ - pz; const dist = Math.hypot(dx, dz);
+  if (dist < 0.3) return false;
   const step = Math.min(speed * dt, dist); const angle0 = Math.atan2(dz, dx);
   const angles = [0, 0.4, -0.4, 0.9, -0.9, 1.4, -1.4, 2.0, -2.0, 2.6, -2.6, Math.PI];
   for (const off of angles) {
-    const a = angle0 + off;
-    const nx = clamp(px + Math.cos(a) * step, -24, 24);
-    const nz = clamp(pz + Math.sin(a) * step, -24, 24);
+    const a = angle0 + off; const nx = clamp(px + Math.cos(a) * step, -24, 24); const nz = clamp(pz + Math.sin(a) * step, -24, 24);
     if (!isBlocked(nx, nz)) { entity.group.position.x = nx; entity.group.position.z = nz; return true; }
   }
   return false;
@@ -372,93 +343,64 @@ function buildHumanoid(color) {
   const teamColor = new THREE.Color(color);
   const hitParts = [];
 
-  // Fallback if the model hasn't loaded yet or failed
   if (!modelLoaded || !modelBase) {
-    const fallback = new THREE.Mesh(
-      new THREE.BoxGeometry(0.5, 1.8, 0.5), 
-      new THREE.MeshStandardMaterial({ color, emissive: color, emissiveIntensity: 0.5 })
-    );
-    fallback.position.y = 0.9;
-    fallback.userData.isHead = true;
-    g.add(fallback);
-    return { group: g, hitParts: [fallback] };
+    const fallback = new THREE.Mesh(new THREE.BoxGeometry(0.5, 1.8, 0.5), new THREE.MeshStandardMaterial({ color, emissive: color, emissiveIntensity: 0.5 }));
+    fallback.position.y = 0.9; fallback.userData.isHead = true;
+    g.add(fallback); return { group: g, hitParts: [fallback] };
   }
 
-  // 1. CLONE THE MODEL
   const model = SkeletonUtils.clone(modelBase);
 
-  // 🔧 ADJUST THESE VALUES IF THE MODEL IS TOO BIG/SMALL OR FACING WRONG
-  model.scale.set(1.5, 1.5, 1.5); 
-  model.rotation.y = Math.PI;     
-  model.position.y = 0;           
-  // ------------------------------------------------------------
+  // 🪄 MAGIC AUTO-SCALER & CENTER
+  const box = new THREE.Box3().setFromObject(model);
+  const size = box.getSize(new THREE.Vector3());
+  const center = box.getCenter(new THREE.Vector3());
+  
+  const targetHeight = 1.8;
+  const scaleFactor = targetHeight / size.y;
+  model.scale.setScalar(scaleFactor);
 
-  // 2. PAINT THE MODEL (Matte Black Hoodie + Team Glow)
+  model.position.y = -(box.min.y * scaleFactor);
+  model.position.x = -(center.x * scaleFactor);
+  model.position.z = -(center.z * scaleFactor);
+  
+  // Face forward (Change to 0 or Math.PI/2 if backward)
+  model.rotation.y = Math.PI; 
+
   const darkHoodieMat = new THREE.MeshStandardMaterial({
-    color: 0x0a0a0c,      
-    roughness: 0.85,
-    metalness: 0.1,
-    emissive: teamColor,  
-    emissiveIntensity: 0.2
+    color: 0x0a0a0c, roughness: 0.85, metalness: 0.1,
+    emissive: teamColor, emissiveIntensity: 0.2
   });
 
   model.traverse((child) => {
-    if (child.isMesh) {
+    if (child.isMesh || child.isSkinnedMesh) {
       child.material = darkHoodieMat;
     }
   });
 
   g.add(model);
 
-  // 3. CREATE INVISIBLE HITBOXES
+  // INVISIBLE HITBOXES
   const hitboxMat = new THREE.MeshBasicMaterial({ visible: false });
   
-  // Head Hitbox
   const headBox = new THREE.Mesh(new THREE.BoxGeometry(0.4, 0.4, 0.4), hitboxMat);
-  headBox.position.set(0, 1.7, 0); 
-  headBox.userData.isHead = true;
-  g.add(headBox);
-  hitParts.push(headBox);
+  headBox.position.set(0, 1.6, 0); headBox.userData.isHead = true;
+  g.add(headBox); hitParts.push(headBox);
 
-  // Torso Hitbox
-  const bodyBox = new THREE.Mesh(new THREE.BoxGeometry(0.7, 1.0, 0.5), hitboxMat);
-  bodyBox.position.set(0, 1.0, 0);
-  g.add(bodyBox);
-  hitParts.push(bodyBox);
+  const bodyBox = new THREE.Mesh(new THREE.BoxGeometry(0.6, 0.9, 0.4), hitboxMat);
+  bodyBox.position.set(0, 0.9, 0); g.add(bodyBox); hitParts.push(bodyBox);
 
-  // Legs Hitbox
-  const legsBox = new THREE.Mesh(new THREE.BoxGeometry(0.6, 0.8, 0.5), hitboxMat);
-  legsBox.position.set(0, 0.4, 0);
-  g.add(legsBox);
-  hitParts.push(legsBox);
+  const legsBox = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.7, 0.4), hitboxMat);
+  legsBox.position.set(0, 0.35, 0); g.add(legsBox); hitParts.push(legsBox);
 
-  // 4. ATTACH A RIFLE (Since the model doesn't have one built-in)
-  const rifle = new THREE.Group();
-  const weaponMat = new THREE.MeshStandardMaterial({ color: 0x111111, metalness: .8, roughness: .3 });
-  const accentMat = new THREE.MeshStandardMaterial({ color: teamColor, emissive: teamColor, emissiveIntensity: 1.2, roughness: .4 });
-  
-  const rBody = new THREE.Mesh(new THREE.BoxGeometry(.08, .1, .4), weaponMat); rBody.position.set(0, 0, 0); rifle.add(rBody);
-  const rAccent = new THREE.Mesh(new THREE.BoxGeometry(.04, .03, .3), accentMat); rAccent.position.set(0, .06, 0); rifle.add(rAccent);
-  const rBarrel = new THREE.Mesh(new THREE.CylinderGeometry(.02, .02, .3, 8), weaponMat); rBarrel.rotation.x = Math.PI / 2; rBarrel.position.set(0, 0, -.35); rifle.add(rBarrel);
-  
-  rifle.position.set(0.3, 1.2, -0.2); 
-  rifle.rotation.set(0.2, 0, 0);
-  g.add(rifle);
-
-  // 5. GROUND SHADOW
-  const shadow = new THREE.Mesh(
-    new THREE.CircleGeometry(.5, 24),
-    new THREE.MeshBasicMaterial({ color: 0x000000, transparent: true, opacity: .42 })
-  );
-  shadow.rotation.x = -Math.PI / 2;
-  shadow.position.y = .02;
-  shadow.raycast = () => {};
+  // GROUND SHADOW
+  const shadow = new THREE.Mesh(new THREE.CircleGeometry(.5, 24), new THREE.MeshBasicMaterial({ color: 0x000000, transparent: true, opacity: .42 }));
+  shadow.rotation.x = -Math.PI / 2; shadow.position.y = .02; shadow.raycast = () => {};
   g.add(shadow);
 
-  // 6. SYSTEM DATA (Empty animParts since it's a static model)
   g.userData.anim = { walkPhase: 0, aimTimer: 0, hitTimer: 0, deathTimer: 0, spawnTimer: .4, dashTimer: 0, recoil: 0 };
   g.userData.animParts = {}; 
-  g.userData.materials = [darkHoodieMat, weaponMat, accentMat];
+  g.userData.materials = [darkHoodieMat];
   g.scale.set(.01, .01, .01); 
   
   return { group: g, hitParts };
@@ -471,27 +413,26 @@ function updateHumanoidAnim(group, dt, isMoving, isAiming, isDashing = false) {
   if (isDashing) anim.dashTimer = .45;
   else if (anim.dashTimer > 0) anim.dashTimer = Math.max(0, anim.dashTimer - dt);
   
-  if (anim.spawnTimer > 0) { anim.spawnTimer -= dt; const a = 1 - Math.max(0, anim.spawnTimer / .4); group.scale.setScalar(a * 1.5); }
-  else if (group.scale.x !== 1.5) group.scale.setScalar(1.5); // Adjust base scale here if model was scaled up
+  // Spawn animation (scale up to 1.0)
+  if (anim.spawnTimer > 0) { anim.spawnTimer -= dt; const a = 1 - Math.max(0, anim.spawnTimer / .4); group.scale.setScalar(a); }
+  else if (group.scale.x !== 1) group.scale.setScalar(1);
 
   if (anim.deathTimer > 0) {
-    anim.deathTimer -= dt;
-    const t = 1 - Math.max(0, anim.deathTimer / .5);
+    anim.deathTimer -= dt; const t = 1 - Math.max(0, anim.deathTimer / .5);
     group.rotation.z = t * Math.PI / 2;
     group.userData.materials.forEach(m => { m.opacity = 1 - t; m.transparent = true; });
     return;
   }
 
-  // Since it's a static model, we simulate movement with a bob and tilt
+  // Hover / bob animation for static models
   if (isDashing) {
-    group.rotation.x = -0.4; 
-    group.position.y = -0.2;
+    group.rotation.x = -0.4; group.position.y = -0.2;
   } else {
     group.rotation.x *= 0.8;
     if (isMoving) {
       anim.walkPhase += dt * 15;
-      group.position.y = Math.abs(Math.sin(anim.walkPhase)) * 0.15; // Hover bob
-      group.rotation.z = Math.sin(anim.walkPhase) * 0.05; // Slight sway
+      group.position.y = Math.abs(Math.sin(anim.walkPhase)) * 0.15;
+      group.rotation.z = Math.sin(anim.walkPhase) * 0.05;
     } else {
       group.position.y *= 0.8;
       group.rotation.z *= 0.8;
@@ -542,9 +483,7 @@ function makeAnimeFloorTexture() {
   ctx.setLineDash([20, 16]); ctx.beginPath(); ctx.moveTo(512, 0); ctx.lineTo(512, 1024); ctx.stroke(); ctx.setLineDash([]);
   ctx.globalAlpha = .18; ctx.fillStyle = '#45dcff'; ctx.fillRect(480, 0, 64, 1024); ctx.globalAlpha = 1;
   const tex = new THREE.CanvasTexture(c);
-  tex.colorSpace = THREE.SRGBColorSpace;
-  tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
-  return tex;
+  tex.colorSpace = THREE.SRGBColorSpace; tex.wrapS = tex.wrapT = THREE.RepeatWrapping; return tex;
 }
 function makeFlagTexture(color, label) {
   const c = document.createElement('canvas'); c.width = 512; c.height = 320;
@@ -554,53 +493,33 @@ function makeFlagTexture(color, label) {
   grad.addColorStop(0, '#11152e'); grad.addColorStop(.52, hex); grad.addColorStop(1, '#17112d');
   ctx.fillStyle = grad; ctx.fillRect(0, 0, 512, 320);
   ctx.globalAlpha = .28; ctx.fillStyle = '#fff';
-  for (let i = -300; i < 700; i += 90) {
-    ctx.beginPath(); ctx.moveTo(i, 0); ctx.lineTo(i + 42, 0); ctx.lineTo(i - 150, 320); ctx.lineTo(i - 192, 320); ctx.fill();
-  }
+  for (let i = -300; i < 700; i += 90) { ctx.beginPath(); ctx.moveTo(i, 0); ctx.lineTo(i + 42, 0); ctx.lineTo(i - 150, 320); ctx.lineTo(i - 192, 320); ctx.fill(); }
   ctx.globalAlpha = 1; ctx.strokeStyle = '#fff'; ctx.lineWidth = 8; ctx.strokeRect(14, 14, 484, 292);
-  ctx.save(); ctx.translate(256, 126);
-  ctx.shadowColor = hex; ctx.shadowBlur = 26; ctx.fillStyle = '#fff'; ctx.beginPath();
-  for (let i = 0; i < 10; i++) {
-    const a = -Math.PI / 2 + i * Math.PI / 5, r = i % 2 ? 34 : 74;
-    const x = Math.cos(a) * r, y = Math.sin(a) * r;
-    i ? ctx.lineTo(x, y) : ctx.moveTo(x, y);
-  }
+  ctx.save(); ctx.translate(256, 126); ctx.shadowColor = hex; ctx.shadowBlur = 26; ctx.fillStyle = '#fff'; ctx.beginPath();
+  for (let i = 0; i < 10; i++) { const a = -Math.PI / 2 + i * Math.PI / 5, r = i % 2 ? 34 : 74; const x = Math.cos(a) * r, y = Math.sin(a) * r; i ? ctx.lineTo(x, y) : ctx.moveTo(x, y); }
   ctx.closePath(); ctx.fill(); ctx.restore();
-  ctx.fillStyle = '#fff'; ctx.font = '900 42px Arial';
-  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-  ctx.shadowColor = '#000'; ctx.shadowBlur = 8;
-  ctx.fillText(label, 256, 250);
-  const tex = new THREE.CanvasTexture(c); tex.colorSpace = THREE.SRGBColorSpace;
-  return tex;
+  ctx.fillStyle = '#fff'; ctx.font = '900 42px Arial'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.shadowColor = '#000'; ctx.shadowBlur = 8; ctx.fillText(label, 256, 250);
+  const tex = new THREE.CanvasTexture(c); tex.colorSpace = THREE.SRGBColorSpace; return tex;
 }
 function makeCitySkyTexture() {
-  const c = document.createElement('canvas');
-  c.width = 2048; c.height = 1024;
+  const c = document.createElement('canvas'); c.width = 2048; c.height = 1024;
   const ctx = c.getContext('2d');
   const grad = ctx.createLinearGradient(0, 0, 0, 1024);
   grad.addColorStop(0, '#02040a'); grad.addColorStop(0.4, '#050a18'); grad.addColorStop(0.7, '#080d1e'); grad.addColorStop(1, '#0a0f22');
   ctx.fillStyle = grad; ctx.fillRect(0, 0, 2048, 1024);
-  for (let i = 0; i < 240; i++) {
-    ctx.fillStyle = `rgba(255,255,255,${Math.random() * 0.55 + 0.15})`;
-    ctx.beginPath(); ctx.arc(Math.random() * 2048, Math.random() * 560, Math.random() * 1.1 + 0.25, 0, Math.PI * 2); ctx.fill();
-  }
+  for (let i = 0; i < 240; i++) { ctx.fillStyle = `rgba(255,255,255,${Math.random() * 0.55 + 0.15})`; ctx.beginPath(); ctx.arc(Math.random() * 2048, Math.random() * 560, Math.random() * 1.1 + 0.25, 0, Math.PI * 2); ctx.fill(); }
   const horizon = 620; let x = 0;
   while (x < 2048) {
     const w = Math.random() * 34 + 12, h = Math.random() * 170 + 55;
     ctx.fillStyle = '#040710'; ctx.fillRect(x, horizon - h, w, h);
-    for (let wy = horizon - h + 8; wy < horizon - 8; wy += 11) {
-      for (let wx = x + 3; wx < x + w - 3; wx += 6) {
-        if (Math.random() < 0.22) {
-          ctx.fillStyle = Math.random() < 0.55 ? `rgba(84,239,255,${Math.random() * 0.5 + 0.15})` : `rgba(255,76,115,${Math.random() * 0.4 + 0.12})`;
-          ctx.fillRect(wx, wy, 2, 3);
-        }
-      }
+    for (let wy = horizon - h + 8; wy < horizon - 8; wy += 11) for (let wx = x + 3; wx < x + w - 3; wx += 6) {
+      if (Math.random() < 0.22) { ctx.fillStyle = Math.random() < 0.55 ? `rgba(84,239,255,${Math.random() * 0.5 + 0.15})` : `rgba(255,76,115,${Math.random() * 0.4 + 0.12})`; ctx.fillRect(wx, wy, 2, 3); }
     }
     if (Math.random() < 0.3) {
       const ah = Math.random() * 36 + 12;
       ctx.fillStyle = '#060912'; ctx.fillRect(x + w / 2 - 1, horizon - h - ah, 2, ah);
-      ctx.fillStyle = Math.random() < 0.5 ? '#54efff' : '#ff4c73';
-      ctx.beginPath(); ctx.arc(x + w / 2, horizon - h - ah, 2, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = Math.random() < 0.5 ? '#54efff' : '#ff4c73'; ctx.beginPath(); ctx.arc(x + w / 2, horizon - h - ah, 2, 0, Math.PI * 2); ctx.fill();
     }
     x += w + Math.random() * 4;
   }
@@ -608,21 +527,15 @@ function makeCitySkyTexture() {
   while (x < 2048) {
     const w = Math.random() * 55 + 25, h = Math.random() * 110 + 70;
     ctx.fillStyle = '#02050c'; ctx.fillRect(x, 1024 - h - 36, w, h + 36);
-    for (let wy = 1024 - h - 36 + 16; wy < 1024 - 36; wy += 16) {
-      for (let wx = x + 4; wx < x + w - 4; wx += 10) {
-        if (Math.random() < 0.11) {
-          ctx.fillStyle = `rgba(84,239,255,${Math.random() * 0.55 + 0.25})`;
-          ctx.fillRect(wx, wy, 3, 4);
-        }
-      }
+    for (let wy = 1024 - h - 36 + 16; wy < 1024 - 36; wy += 16) for (let wx = x + 4; wx < x + w - 4; wx += 10) {
+      if (Math.random() < 0.11) { ctx.fillStyle = `rgba(84,239,255,${Math.random() * 0.55 + 0.25})`; ctx.fillRect(wx, wy, 3, 4); }
     }
     x += w + Math.random() * 6;
   }
   const glow = ctx.createLinearGradient(0, 0, 2048, 0);
   glow.addColorStop(0.0, 'rgba(84,239,255,0.32)'); glow.addColorStop(0.5, 'rgba(140,90,255,0.18)'); glow.addColorStop(1.0, 'rgba(255,76,115,0.32)');
   ctx.fillStyle = glow; ctx.fillRect(0, 600, 2048, 110);
-  const tex = new THREE.CanvasTexture(c); tex.colorSpace = THREE.SRGBColorSpace; tex.wrapS = THREE.RepeatWrapping; tex.wrapT = THREE.ClampToEdgeWrapping;
-  return tex;
+  const tex = new THREE.CanvasTexture(c); tex.colorSpace = THREE.SRGBColorSpace; tex.wrapS = THREE.RepeatWrapping; tex.wrapT = THREE.ClampToEdgeWrapping; return tex;
 }
 function makeHoloPanelTexture(teamName, teamColor) {
   const c = document.createElement('canvas'); c.width = 512; c.height = 320;
@@ -630,17 +543,13 @@ function makeHoloPanelTexture(teamName, teamColor) {
   ctx.fillStyle = 'rgba(4,10,20,0.55)'; ctx.fillRect(0, 0, 512, 320);
   ctx.strokeStyle = hex; ctx.lineWidth = 5; ctx.strokeRect(10, 10, 492, 300);
   ctx.fillStyle = hex;
-  for (const [cx, cy] of [[10, 10], [502, 10], [10, 310], [502, 310]]) {
-    const sx = cx === 10 ? 1 : -1, sy = cy === 10 ? 1 : -1;
-    ctx.fillRect(cx, cy + (sy > 0 ? 0 : -22), 4, 22); ctx.fillRect(cx + (sx > 0 ? 0 : -22), cy, 22, 4);
-  }
+  for (const [cx, cy] of [[10, 10], [502, 10], [10, 310], [502, 310]]) { const sx = cx === 10 ? 1 : -1, sy = cy === 10 ? 1 : -1; ctx.fillRect(cx, cy + (sy > 0 ? 0 : -22), 4, 22); ctx.fillRect(cx + (sx > 0 ? 0 : -22), cy, 22, 4); }
   ctx.font = '900 60px Arial'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
   ctx.shadowColor = hex; ctx.shadowBlur = 24; ctx.fillText(teamName, 256, 128);
   ctx.shadowBlur = 10; ctx.fillStyle = '#e8f4ff'; ctx.font = '700 22px Arial'; ctx.fillText('TACTICAL NODE', 256, 188);
   ctx.fillStyle = hex; ctx.beginPath(); ctx.arc(196, 240, 6, 0, Math.PI * 2); ctx.fill();
   ctx.font = '700 18px Arial'; ctx.fillText('LINK ACTIVE', 262, 240);
-  const tex = new THREE.CanvasTexture(c); tex.colorSpace = THREE.SRGBColorSpace;
-  return tex;
+  const tex = new THREE.CanvasTexture(c); tex.colorSpace = THREE.SRGBColorSpace; return tex;
 }
 function makeSoftGlowTexture(color) {
   const c = document.createElement('canvas'); c.width = c.height = 256;
@@ -648,8 +557,7 @@ function makeSoftGlowTexture(color) {
   const g = ctx.createRadialGradient(128, 128, 0, 128, 128, 128);
   g.addColorStop(0.0, hex + 'aa'); g.addColorStop(0.45, hex + '33'); g.addColorStop(1.0, hex + '00');
   ctx.fillStyle = g; ctx.fillRect(0, 0, 256, 256);
-  const tex = new THREE.CanvasTexture(c); tex.colorSpace = THREE.SRGBColorSpace;
-  return tex;
+  const tex = new THREE.CanvasTexture(c); tex.colorSpace = THREE.SRGBColorSpace; return tex;
 }
 
 function buildFlag(color) {
@@ -668,40 +576,63 @@ function buildFlag(color) {
 function updateFlagWave(flagMesh, t) {
   if (!flagMesh?.userData?.cloth) return;
   const cloth = flagMesh.userData.cloth; const pos = cloth.geometry.attributes.position; const base = flagMesh.userData.clothBase;
-  for (let i = 0; i < pos.count; i++) {
-    const x = base[i * 3], y = base[i * 3 + 1];
-    pos.setZ(i, Math.sin(t * 4 + x * 8) * 0.06 * (x + 0.4));
-    pos.setY(i, y + Math.sin(t * 3 + x * 6) * 0.02 * x);
-  }
+  for (let i = 0; i < pos.count; i++) { const x = base[i * 3], y = base[i * 3 + 1]; pos.setZ(i, Math.sin(t * 4 + x * 8) * 0.06 * (x + 0.4)); pos.setY(i, y + Math.sin(t * 3 + x * 6) * 0.02 * x); }
   pos.needsUpdate = true;
 }
 
 function buildGun() {
   const g = new THREE.Group();
-  const matDark = new THREE.MeshStandardMaterial({ color: 0x1a1a24, roughness: .8, metalness: .2 });
-  const matAccent = new THREE.MeshStandardMaterial({ color: 0x44d7ff, emissive: 0x44d7ff, emissiveIntensity: .5 });
-  const rightArm = new THREE.Mesh(new THREE.BoxGeometry(.1, .25, .4), new THREE.MeshStandardMaterial({ color: 0x168bd3, roughness: .9 })); rightArm.position.set(0.05, -0.15, 0.15); rightArm.rotation.x = 0.4; g.add(rightArm);
-  const rightHand = new THREE.Mesh(new THREE.BoxGeometry(.1, .1, .1), new THREE.MeshStandardMaterial({ color: 0xd9a07c, roughness: .9 })); rightHand.position.set(0.05, -0.08, -0.02); g.add(rightHand);
-  const leftArm = new THREE.Mesh(new THREE.BoxGeometry(.1, .25, .4), new THREE.MeshStandardMaterial({ color: 0x168bd3, roughness: .9 })); leftArm.position.set(-0.15, -0.15, -0.25); leftArm.rotation.x = 0.6; leftArm.rotation.y = -0.2; g.add(leftArm);
-  const leftHand = new THREE.Mesh(new THREE.BoxGeometry(.1, .1, .1), new THREE.MeshStandardMaterial({ color: 0xd9a07c, roughness: .9 })); leftHand.position.set(-0.1, -0.08, -0.4); g.add(leftHand);
-  g.add(new THREE.Mesh(new THREE.BoxGeometry(.12, .14, .45), matDark)).position.set(0, 0.02, -0.15);
-  g.add(new THREE.Mesh(new THREE.BoxGeometry(.08, .04, .3), matDark)).position.set(0, 0.1, -0.15);
-  const barrel = new THREE.Mesh(new THREE.CylinderGeometry(.025, .025, .35, 8), matDark); barrel.rotation.x = Math.PI / 2; barrel.position.set(0, 0.02, -0.5); g.add(barrel);
-  const mag = new THREE.Mesh(new THREE.BoxGeometry(.08, .18, .1), matDark); mag.position.set(0, -0.1, -0.05); mag.rotation.x = 0.2; g.add(mag);
-  const magAccent = new THREE.Mesh(new THREE.BoxGeometry(.09, .04, .11), matAccent); magAccent.position.set(0, -0.1, -0.05); magAccent.rotation.x = 0.2; g.add(magAccent);
+  
+  // Cyberpunk Materials
+  const matDark = new THREE.MeshStandardMaterial({ color: 0x0a0a0c, roughness: 0.7, metalness: 0.4 });
+  const matGunmetal = new THREE.MeshStandardMaterial({ color: 0x1a1a24, roughness: 0.3, metalness: 0.8 });
+  const matAccent = new THREE.MeshStandardMaterial({ color: 0x44d7ff, emissive: 0x44d7ff, emissiveIntensity: 1.5 });
 
-  muzzleFlash = new THREE.Mesh(new THREE.ConeGeometry(.1, .2, 8), new THREE.MeshBasicMaterial({ color: 0xffdd44, transparent: true, opacity: 0, depthWrite: false }));
-  muzzleFlash.rotation.x = -Math.PI / 2; muzzleFlash.position.set(0, 0.02, -0.68); g.add(muzzleFlash);
-  g.position.set(.22, -.2, -.45); g.rotation.y = -0.05; g.rotation.z = -0.02;
+  // Right Arm (Holding Grip)
+  const rightArm = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.06, 0.35, 8), matDark);
+  rightArm.position.set(0.15, -0.2, 0.15); rightArm.rotation.set(0.6, 0, -0.2); g.add(rightArm);
+  
+  const rightGlove = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.12, 0.1), matDark);
+  rightGlove.position.set(0.1, -0.15, -0.1); g.add(rightGlove);
+
+  // Left Arm (Supporting Barrel)
+  const leftArm = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.06, 0.4, 8), matDark);
+  leftArm.position.set(-0.15, -0.25, -0.2); leftArm.rotation.set(0.8, 0.2, 0.1); g.add(leftArm);
+
+  const leftGlove = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.1, 0.08), matDark);
+  leftGlove.position.set(-0.05, -0.15, -0.35); g.add(leftGlove);
+
+  // The Tactical Rifle
+  const rifleBody = new THREE.Mesh(new THREE.BoxGeometry(.1, .12, .5), matGunmetal); 
+  rifleBody.position.set(0, 0, -0.2); g.add(rifleBody);
+
+  const rifleAccent = new THREE.Mesh(new THREE.BoxGeometry(.04, .04, .4), matAccent); 
+  rifleAccent.position.set(0, .07, -0.2); g.add(rifleAccent);
+
+  const barrel = new THREE.Mesh(new THREE.CylinderGeometry(.025, .02, .4, 8), matGunmetal); 
+  barrel.rotation.x = Math.PI / 2; barrel.position.set(0, 0, -.6); g.add(barrel);
+
+  const muzzleGlow = new THREE.Mesh(new THREE.CylinderGeometry(.035, .035, .05, 8), matAccent); 
+  muzzleGlow.rotation.x = Math.PI / 2; muzzleGlow.position.set(0, 0, -.8); g.add(muzzleGlow);
+
+  const magazine = new THREE.Mesh(new THREE.BoxGeometry(.06, .2, .1), matDark); 
+  magazine.position.set(0, -.15, -0.1); magazine.rotation.x = 0.3; g.add(magazine);
+
+  // Muzzle Flash Effect
+  muzzleFlash = new THREE.Mesh(new THREE.ConeGeometry(.08, .2, 8), new THREE.MeshBasicMaterial({ color: 0xffdd44, transparent: true, opacity: 0, depthWrite: false }));
+  muzzleFlash.rotation.x = -Math.PI / 2; muzzleFlash.position.set(0, 0, -0.85); g.add(muzzleFlash);
+
+  // Position the whole rig
+  g.position.set(.22, -.2, -.45); 
+  g.rotation.y = -0.05; 
+  g.rotation.z = -0.02;
+  
   return g;
 }
 
 function createAmbientParticles() {
   const count = 40; const geo = new THREE.BufferGeometry(); const positions = new Float32Array(count * 3); const velocities = [];
-  for (let i = 0; i < count; i++) {
-    positions[i * 3] = rand(-24, 24); positions[i * 3 + 1] = rand(1, 8); positions[i * 3 + 2] = rand(-24, 24);
-    velocities.push({ x: rand(-0.3, 0.3), y: rand(-0.1, 0.15), z: rand(-0.3, 0.3) });
-  }
+  for (let i = 0; i < count; i++) { positions[i * 3] = rand(-24, 24); positions[i * 3 + 1] = rand(1, 8); positions[i * 3 + 2] = rand(-24, 24); velocities.push({ x: rand(-0.3, 0.3), y: rand(-0.1, 0.15), z: rand(-0.3, 0.3) }); }
   geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
   const mat = new THREE.PointsMaterial({ color: 0xffffff, size: 0.1, transparent: true, opacity: 0.4, depthWrite: false });
   const points = new THREE.Points(geo, mat); points.userData = { velocities, count }; scene.add(points); return points;
@@ -719,15 +650,8 @@ function updateAmbientParticles(particles, dt) {
 }
 
 function spawnMuzzleFlash() { if (muzzleFlash) muzzleFlash.material.opacity = 1; }
-function spawnBotFlash(x, z, color) {
-  const flash = new THREE.Mesh(new THREE.SphereGeometry(0.2, 8, 8), new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 1 })); flash.position.set(x, 1.2, z);
-  scene.add(flash); effects.push({ mesh: flash, life: 0.08, maxLife: 0.08, isImpact: true });
-}
-function spawnImpact(x, y, z, color = 0xffffff) {
-  const ring = new THREE.Mesh(new THREE.RingGeometry(.05, .15, 12), new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0.8, side: THREE.DoubleSide }));
-  ring.position.set(x, y, z); ring.lookAt(camera.position);
-  scene.add(ring); effects.push({ mesh: ring, life: 0.3, maxLife: 0.3, isImpact: true });
-}
+function spawnBotFlash(x, z, color) { const flash = new THREE.Mesh(new THREE.SphereGeometry(0.2, 8, 8), new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 1 })); flash.position.set(x, 1.2, z); scene.add(flash); effects.push({ mesh: flash, life: 0.08, maxLife: 0.08, isImpact: true }); }
+function spawnImpact(x, y, z, color = 0xffffff) { const ring = new THREE.Mesh(new THREE.RingGeometry(.05, .15, 12), new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0.8, side: THREE.DoubleSide })); ring.position.set(x, y, z); ring.lookAt(camera.position); scene.add(ring); effects.push({ mesh: ring, life: 0.3, maxLife: 0.3, isImpact: true }); }
 function spawnDamageNumber(x, y, z, text, isHeadshot) {
   const canvas = document.createElement('canvas'); canvas.width = 128; canvas.height = 64; const ctx = canvas.getContext('2d');
   ctx.font = 'bold 48px Orbitron, Arial'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
@@ -751,7 +675,7 @@ class LobbyPreview {
   }
   setColor(hex) {
     if (this.model) { this.scene.remove(this.model); disposeGroup(this.model); }
-    const { group } = buildHumanoid(hex); group.scale.set(1.5, 1.5, 1.5);
+    const { group } = buildHumanoid(hex); group.scale.set(1, 1, 1);
     if (group.userData.anim) group.userData.anim.spawnTimer = 0;
     this.model = group; this.scene.add(group);
   }
@@ -780,12 +704,8 @@ function buildBattlefield3000() {
     ring.rotation.y = Math.PI / 2; ring.position.y = 2.6; arch.add(ring);
     const field = new THREE.Mesh(new THREE.CircleGeometry(2.1, 24), new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0.15, side: THREE.DoubleSide, depthWrite: false, fog: false }));
     field.rotation.y = Math.PI / 2; field.position.y = 2.6; arch.add(field); arch.userData.field = field;
-    for (const zSign of [-1, 1]) {
-      const pylon = new THREE.Mesh(new THREE.BoxGeometry(0.15, 5.2, 0.15), new THREE.MeshStandardMaterial({ color: 0x111a2e, metalness: 0.8, roughness: 0.3, emissive: color, emissiveIntensity: 0.3 }));
-      pylon.position.set(0, 2.6, zSign * 2.2); arch.add(pylon);
-    }
-    const crystal = new THREE.Mesh(new THREE.OctahedronGeometry(0.28, 0), new THREE.MeshBasicMaterial({ color, fog: false }));
-    crystal.position.y = 5.4; arch.add(crystal);
+    for (const zSign of [-1, 1]) { const pylon = new THREE.Mesh(new THREE.BoxGeometry(0.15, 5.2, 0.15), new THREE.MeshStandardMaterial({ color: 0x111a2e, metalness: 0.8, roughness: 0.3, emissive: color, emissiveIntensity: 0.3 })); pylon.position.set(0, 2.6, zSign * 2.2); arch.add(pylon); }
+    const crystal = new THREE.Mesh(new THREE.OctahedronGeometry(0.28, 0), new THREE.MeshBasicMaterial({ color, fog: false })); crystal.position.y = 5.4; arch.add(crystal);
     scene.add(arch); portalArches.push({ group: arch, phase: Math.random() * Math.PI * 2 });
   }
 
@@ -967,10 +887,7 @@ function addPlayer(id, name, irId, team) {
   $('name-tags').appendChild(label);
   players.set(id, { id, name, irId, team, group, hitParts, label, targetPos: new THREE.Vector3(team === 'blue' ? -20 : 20, 0, 0), yaw: 0, hp: 100, alive: true, prevPos: new THREE.Vector3() });
 }
-function removePlayer(id) {
-  const p = players.get(id); if (!p) return;
-  disposeGroup(p.group); scene.remove(p.group); p.label.remove(); players.delete(id);
-}
+function removePlayer(id) { const p = players.get(id); if (!p) return; disposeGroup(p.group); scene.remove(p.group); p.label.remove(); players.delete(id); }
 function addBot(name, team) {
   const { group, hitParts } = buildHumanoid(team === 'blue' ? 0x44d7ff : 0xff4c73);
   const baseX = team === 'blue' ? -20 : 20; const baseZ = rand(-4, 4);
@@ -1299,7 +1216,7 @@ function updateAimLock(dt) {
   const forward = new THREE.Vector3(0, 0, -1).applyEuler(new THREE.Euler(pitch, yaw, 0, 'YXZ'));
   let bestAngle = LOCK_CONE, bestRef = null;
   const checkTarget = (refId, x, z) => {
-    const y = aim.lockPoint === 'head' ? 1.76 : 1.2;
+    const y = aim.lockPoint === 'head' ? 1.6 : 1.2; // Adjusted for 1.8m model height
     const dx = x - camera.position.x, dz = z - camera.position.z, dy = y - camera.position.y;
     const dist = Math.hypot(dx, dy, dz);
     if (dist > LOCK_RANGE || dist < 0.5) return;
@@ -1319,7 +1236,8 @@ function updateAimLock(dt) {
     if (aim.locked.startsWith?.('t:')) { const i = +aim.locked.split(':')[1]; const t = targets[i]; if (!t || !t.alive) { aim.locked = null; return; } tx = t.group.position.x; tz = t.group.position.z; }
     else if (practiceMode && practiceVariant === 'botmatch') { const b = bots.find(b => b.id === aim.locked); if (!b || !b.alive) { aim.locked = null; return; } tx = b.group.position.x; tz = b.group.position.z; }
     else { const p = players.get(aim.locked); if (!p || !p.alive) { aim.locked = null; return; } tx = p.group.position.x; tz = p.group.position.z; }
-    const y = aim.lockPoint === 'head' ? 1.76 : 1.2; const dx = tx - camera.position.x, dz = tz - camera.position.z, dy = y - camera.position.y;
+    const y = aim.lockPoint === 'head' ? 1.6 : 1.2; // Adjusted for 1.8m model
+    const dx = tx - camera.position.x, dz = tz - camera.position.z, dy = y - camera.position.y;
     const dist = Math.hypot(dx, dy, dz); const wantYaw = Math.atan2(-dx, -dz); const wantPitch = Math.asin(clamp(dy / dist, -1, 1));
     const ddy = wrapAngle(wantYaw - yaw), ddp = wantPitch - pitch; const drift = Math.hypot(ddy, ddp); const flickingUp = aim.upAccum > 30;
     losRay.set(camera.position, new THREE.Vector3(dx / dist, dy / dist, dz / dist)); losRay.far = dist;
