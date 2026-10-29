@@ -308,7 +308,7 @@ function saveCustomLayout() {
 }
 
 function box(w, h, d, mat, x, y, z) { const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mat); m.position.set(x, y, z); scene.add(m); return m; }
-function disposeGroup(g) { g.traverse(o => { if (o.geometry) o.geometry.dispose(); if (o.material) Array.isArray(o.material) ? o.material.forEach(m => m.dispose()) : o.material.dispose(); }); }
+function disposeGroup(g) { g.traverse(o => { if (o.geometry && !o.userData.isSharedGeometry) o.geometry.dispose(); if (o.material) Array.isArray(o.material) ? o.material.forEach(m => m.dispose()) : o.material.dispose(); }); }
 function isBlocked(x, z, margin = 0.5) { return covers.some(c => Math.abs(x - c.x) < c.w / 2 + margin && Math.abs(z - c.z) < c.d / 2 + margin); }
 function steerMove(entity, targetX, targetZ, speed, dt) {
   const px = entity.group.position.x, pz = entity.group.position.z;
@@ -351,7 +351,6 @@ function buildHumanoid(color) {
 
   const model = SkeletonUtils.clone(modelBase);
 
-  // 🪄 MAGIC AUTO-SCALER & CENTER
   const box = new THREE.Box3().setFromObject(model);
   const size = box.getSize(new THREE.Vector3());
   const center = box.getCenter(new THREE.Vector3());
@@ -363,26 +362,27 @@ function buildHumanoid(color) {
   model.position.y = -(box.min.y * scaleFactor);
   model.position.x = -(center.x * scaleFactor);
   model.position.z = -(center.z * scaleFactor);
-  
-  // Face forward (Change to 0 or Math.PI/2 if backward)
   model.rotation.y = Math.PI; 
 
+  // BRIGHTER MATERIAL: Mixes the dark hoodie with the team color so it's not pure black
   const darkHoodieMat = new THREE.MeshStandardMaterial({
-    color: 0x0a0a0c, roughness: 0.85, metalness: 0.1,
-    emissive: teamColor, emissiveIntensity: 0.2
+    color: new THREE.Color(0x4a4a55).lerp(teamColor, 0.6),
+    roughness: 0.5,
+    metalness: 0.3,
+    emissive: teamColor,
+    emissiveIntensity: 0.6
   });
 
   model.traverse((child) => {
     if (child.isMesh || child.isSkinnedMesh) {
+      child.userData.isSharedGeometry = true; // PROTECTS THE GPU MEMORY
       child.material = darkHoodieMat;
     }
   });
 
   g.add(model);
 
-  // INVISIBLE HITBOXES
   const hitboxMat = new THREE.MeshBasicMaterial({ visible: false });
-  
   const headBox = new THREE.Mesh(new THREE.BoxGeometry(0.4, 0.4, 0.4), hitboxMat);
   headBox.position.set(0, 1.6, 0); headBox.userData.isHead = true;
   g.add(headBox); hitParts.push(headBox);
@@ -393,7 +393,6 @@ function buildHumanoid(color) {
   const legsBox = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.7, 0.4), hitboxMat);
   legsBox.position.set(0, 0.35, 0); g.add(legsBox); hitParts.push(legsBox);
 
-  // GROUND SHADOW
   const shadow = new THREE.Mesh(new THREE.CircleGeometry(.5, 24), new THREE.MeshBasicMaterial({ color: 0x000000, transparent: true, opacity: .42 }));
   shadow.rotation.x = -Math.PI / 2; shadow.position.y = .02; shadow.raycast = () => {};
   g.add(shadow);
@@ -413,7 +412,6 @@ function updateHumanoidAnim(group, dt, isMoving, isAiming, isDashing = false) {
   if (isDashing) anim.dashTimer = .45;
   else if (anim.dashTimer > 0) anim.dashTimer = Math.max(0, anim.dashTimer - dt);
   
-  // Spawn animation (scale up to 1.0)
   if (anim.spawnTimer > 0) { anim.spawnTimer -= dt; const a = 1 - Math.max(0, anim.spawnTimer / .4); group.scale.setScalar(a); }
   else if (group.scale.x !== 1) group.scale.setScalar(1);
 
@@ -424,7 +422,6 @@ function updateHumanoidAnim(group, dt, isMoving, isAiming, isDashing = false) {
     return;
   }
 
-  // Hover / bob animation for static models
   if (isDashing) {
     group.rotation.x = -0.4; group.position.y = -0.2;
   } else {
@@ -583,26 +580,22 @@ function updateFlagWave(flagMesh, t) {
 function buildGun() {
   const g = new THREE.Group();
   
-  // Cyberpunk Materials
   const matDark = new THREE.MeshStandardMaterial({ color: 0x0a0a0c, roughness: 0.7, metalness: 0.4 });
   const matGunmetal = new THREE.MeshStandardMaterial({ color: 0x1a1a24, roughness: 0.3, metalness: 0.8 });
   const matAccent = new THREE.MeshStandardMaterial({ color: 0x44d7ff, emissive: 0x44d7ff, emissiveIntensity: 1.5 });
 
-  // Right Arm (Holding Grip)
   const rightArm = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.06, 0.35, 8), matDark);
   rightArm.position.set(0.15, -0.2, 0.15); rightArm.rotation.set(0.6, 0, -0.2); g.add(rightArm);
   
   const rightGlove = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.12, 0.1), matDark);
   rightGlove.position.set(0.1, -0.15, -0.1); g.add(rightGlove);
 
-  // Left Arm (Supporting Barrel)
   const leftArm = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.06, 0.4, 8), matDark);
   leftArm.position.set(-0.15, -0.25, -0.2); leftArm.rotation.set(0.8, 0.2, 0.1); g.add(leftArm);
 
   const leftGlove = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.1, 0.08), matDark);
   leftGlove.position.set(-0.05, -0.15, -0.35); g.add(leftGlove);
 
-  // The Tactical Rifle
   const rifleBody = new THREE.Mesh(new THREE.BoxGeometry(.1, .12, .5), matGunmetal); 
   rifleBody.position.set(0, 0, -0.2); g.add(rifleBody);
 
@@ -618,11 +611,9 @@ function buildGun() {
   const magazine = new THREE.Mesh(new THREE.BoxGeometry(.06, .2, .1), matDark); 
   magazine.position.set(0, -.15, -0.1); magazine.rotation.x = 0.3; g.add(magazine);
 
-  // Muzzle Flash Effect
   muzzleFlash = new THREE.Mesh(new THREE.ConeGeometry(.08, .2, 8), new THREE.MeshBasicMaterial({ color: 0xffdd44, transparent: true, opacity: 0, depthWrite: false }));
   muzzleFlash.rotation.x = -Math.PI / 2; muzzleFlash.position.set(0, 0, -0.85); g.add(muzzleFlash);
 
-  // Position the whole rig
   g.position.set(.22, -.2, -.45); 
   g.rotation.y = -0.05; 
   g.rotation.z = -0.02;
@@ -668,20 +659,24 @@ class LobbyPreview {
     this.renderer.setPixelRatio(Math.min(devicePixelRatio, 2)); this.renderer.outputColorSpace = THREE.SRGBColorSpace;
     this.scene = new THREE.Scene(); this.camera = new THREE.PerspectiveCamera(32, 1, .1, 50);
     this.camera.position.set(0, 1.15, 3.4); this.camera.lookAt(0, 1.05, 0);
+    
+    // BRIGHTER LIGHTS so the character isn't a silhouette
+    this.scene.add(new THREE.AmbientLight(0xffffff, 1.5));
     this.scene.add(new THREE.HemisphereLight(0xffffff, 0x445577, 2.4));
-    const key = new THREE.DirectionalLight(0xffffff, 2.8); key.position.set(2, 4, 3); this.scene.add(key);
+    const key = new THREE.DirectionalLight(0xffffff, 3.5); key.position.set(2, 4, 3); this.scene.add(key);
     const rim = new THREE.DirectionalLight(0x44d7ff, 2); rim.position.set(-3, 2, -3); this.scene.add(rim);
     this.model = null; this.running = true; this._loop = this._loop.bind(this); this._loop();
   }
   setColor(hex) {
-    if (this.model) { this.scene.remove(this.model); disposeGroup(this.model); }
+    // SAFE REMOVAL: We don't call disposeGroup here because it would delete the shared geometry
+    if (this.model) { this.scene.remove(this.model); }
     const { group } = buildHumanoid(hex); group.scale.set(1, 1, 1);
     if (group.userData.anim) group.userData.anim.spawnTimer = 0;
     this.model = group; this.scene.add(group);
   }
   _loop() { if (!this.running) return; requestAnimationFrame(this._loop); const t = performance.now() / 1000; if (this.model) this.model.rotation.y = t * .7; this.renderer.render(this.scene, this.camera); }
   resize() { const r = this.canvas.getBoundingClientRect(); if (!r.width || !r.height) return; this.renderer.setSize(r.width, r.height, false); this.camera.aspect = r.width / r.height; this.camera.updateProjectionMatrix(); }
-  dispose() { this.running = false; if (this.model) disposeGroup(this.model); this.renderer.dispose(); }
+  dispose() { this.running = false; if (this.model) this.scene.remove(this.model); this.renderer.dispose(); }
 }
 
 function buildBattlefield3000() {
@@ -1216,7 +1211,7 @@ function updateAimLock(dt) {
   const forward = new THREE.Vector3(0, 0, -1).applyEuler(new THREE.Euler(pitch, yaw, 0, 'YXZ'));
   let bestAngle = LOCK_CONE, bestRef = null;
   const checkTarget = (refId, x, z) => {
-    const y = aim.lockPoint === 'head' ? 1.6 : 1.2; // Adjusted for 1.8m model height
+    const y = aim.lockPoint === 'head' ? 1.6 : 1.2;
     const dx = x - camera.position.x, dz = z - camera.position.z, dy = y - camera.position.y;
     const dist = Math.hypot(dx, dy, dz);
     if (dist > LOCK_RANGE || dist < 0.5) return;
@@ -1236,7 +1231,7 @@ function updateAimLock(dt) {
     if (aim.locked.startsWith?.('t:')) { const i = +aim.locked.split(':')[1]; const t = targets[i]; if (!t || !t.alive) { aim.locked = null; return; } tx = t.group.position.x; tz = t.group.position.z; }
     else if (practiceMode && practiceVariant === 'botmatch') { const b = bots.find(b => b.id === aim.locked); if (!b || !b.alive) { aim.locked = null; return; } tx = b.group.position.x; tz = b.group.position.z; }
     else { const p = players.get(aim.locked); if (!p || !p.alive) { aim.locked = null; return; } tx = p.group.position.x; tz = p.group.position.z; }
-    const y = aim.lockPoint === 'head' ? 1.6 : 1.2; // Adjusted for 1.8m model
+    const y = aim.lockPoint === 'head' ? 1.6 : 1.2;
     const dx = tx - camera.position.x, dz = tz - camera.position.z, dy = y - camera.position.y;
     const dist = Math.hypot(dx, dy, dz); const wantYaw = Math.atan2(-dx, -dz); const wantPitch = Math.asin(clamp(dy / dist, -1, 1));
     const ddy = wrapAngle(wantYaw - yaw), ddp = wantPitch - pitch; const drift = Math.hypot(ddy, ddp); const flickingUp = aim.upAccum > 30;
@@ -1546,6 +1541,9 @@ function loop() {
 }
 
 function enterMatch(match, allPlayers) {
+  // Dispose lobby preview to free WebGL memory!
+  if (lobbyPreview) { lobbyPreview.dispose(); lobbyPreview = null; }
+
   lockLandscape(); matchId = match.id; matchMode = match.mode || 'standard'; roundTime = MODES[matchMode].matchTime; scoreBlue = match.blue_score || 0; scoreRed = match.red_score || 0;
   gameOver = false; practiceMode = false; kills = deaths = captures = headshots = 0; matchElapsed = 0;
   $('lobby').classList.add('hidden'); $('room').classList.add('hidden'); $('hud').classList.remove('hidden'); if (touch) $('mobile').classList.remove('hidden');
@@ -1561,6 +1559,9 @@ function enterMatch(match, allPlayers) {
 }
 
 function enterPractice(variant) {
+  // Dispose lobby preview to free WebGL memory!
+  if (lobbyPreview) { lobbyPreview.dispose(); lobbyPreview = null; }
+
   lockLandscape(); practiceMode = true; practiceVariant = variant; gameOver = false; running = true; paused = false; matchId = null;
   localTeam = 'blue'; scoreBlue = scoreRed = 0; lastScoreBlue = 0; lastScoreRed = 0; kills = deaths = captures = headshots = 0; matchElapsed = 0;
   $('lobby').classList.add('hidden'); $('room').classList.add('hidden'); $('hud').classList.remove('hidden'); if (touch) $('mobile').classList.remove('hidden');
