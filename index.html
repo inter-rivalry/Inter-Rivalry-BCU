@@ -893,6 +893,23 @@ tbody tr{transition:background .15s ease}tbody tr:hover{background:#1c1c1c!impor
 @media(prefers-reduced-motion:reduce){#loadingScreen.ir3000-boot *,#loadingScreen.ir3000-boot:before{animation:none!important}}
 </style>
 
+
+<style id="ir-3d-avatar-styles">
+.ir-avatar-stage{position:relative;width:min(100%,390px);height:370px;margin:0 auto 16px;border:1px solid rgba(0,170,255,.34);border-radius:22px;overflow:hidden;background:radial-gradient(ellipse at 50% 38%,rgba(0,170,255,.18),transparent 58%),linear-gradient(155deg,#101b2b,#070b12 72%);box-shadow:0 14px 38px rgba(0,0,0,.35),inset 0 0 28px rgba(0,170,255,.06);touch-action:pan-y}
+.ir-avatar-stage canvas{display:block;width:100%;height:100%;outline:none;touch-action:pan-y}
+.ir-avatar-stage:after{content:'DRAG TO ROTATE 360°';position:absolute;bottom:12px;left:0;right:0;text-align:center;color:#82cfff;font-size:9px;font-weight:900;letter-spacing:2px;pointer-events:none;text-shadow:0 1px 5px #000}
+.ir-avatar-stage.ir-gold-frame-equipped{border:3px solid #ffd46a;box-shadow:0 0 0 3px #8b5d15,0 0 28px rgba(255,190,55,.3),inset 0 0 0 1px #fff0b2}
+.ir-avatar-editor{margin-top:18px;padding:20px;border:1px solid rgba(0,170,255,.25);border-radius:18px;background:linear-gradient(145deg,rgba(12,24,39,.98),rgba(7,10,17,.98))}
+.ir-avatar-editor h2{font-size:19px;letter-spacing:.6px;color:#eaf7ff}.ir-avatar-editor p{font-size:12px;line-height:1.6;color:#9eafc4;margin:7px 0 16px}
+.ir-avatar-controls{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.ir-avatar-control label{display:block;margin:0 0 7px;color:#a9bfd3;font-size:11px;font-weight:900;letter-spacing:.7px}
+.ir-avatar-control select{width:100%;min-height:43px;padding:9px 10px;border:1px solid #29445d;border-radius:10px;background:#0a1420;color:#f4f7ff}
+.ir-avatar-control input[type=color]{width:100%;height:43px;padding:4px;border:1px solid #29445d;border-radius:10px;background:#0a1420}
+.ir-avatar-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}.ir-avatar-actions button{flex:1;min-width:130px}
+.ir-avatar-status{min-height:18px;margin-top:10px;color:#91cfff;font-size:12px}
+@media(max-width:480px){.ir-avatar-stage{height:340px}.ir-avatar-editor{padding:15px}.ir-avatar-controls{gap:9px}.ir-avatar-control select{font-size:12px}}
+</style>
+
 </head>
 <body>
 
@@ -958,6 +975,7 @@ tbody tr{transition:background .15s ease}tbody tr:hover{background:#1c1c1c!impor
 <div class="nav-right">
     <div style="display:flex;align-items:center;gap:8px;">
         <button id="pushNotificationBtn" class="btn-3d-sm-white-glow" style="width:auto;padding:7px 12px;font-size:11px;" onclick="enablePushNotifications()">🔔 ENABLE PUSH</button>
+        <button id="notificationSettingsBtn" class="btn-3d-sm-white-glow" style="width:auto;padding:7px 12px;font-size:11px;" onclick="openNotificationSettings()">⚙️ SETTINGS</button>
         <div style="position:relative;cursor:pointer;" onclick="toggleNotifications()">
         🔔
         <span id="notificationBadge" style="position:absolute;top:-8px;right:-8px;background:#ff6b6b;color:white;border-radius:50%;padding:2px 6px;font-size:10px;display:none;min-width:18px;text-align:center;">0</span>
@@ -968,6 +986,31 @@ tbody tr{transition:background .15s ease}tbody tr:hover{background:#1c1c1c!impor
 </div>
 <div id="notificationDropdown" style="display:none;position:absolute;top:70px;right:20px;background:#1a1a1a;border:1px solid #333;border-radius:12px;padding:15px;min-width:300px;max-width:400px;max-height:400px;overflow-y:auto;z-index:1000;box-shadow:0 10px 40px rgba(0,0,0,0.5);">
     <div style="color:#888;text-align:center;">Loading...</div>
+</div>
+<div id="irNotificationSettingsModal" class="ir-notify-overlay" style="display:none;">
+  <div class="ir-notify-panel">
+    <div class="ir-notify-head"><div><span>INTER RIVALRY / CONTROL CENTRE</span><h2>🔔 NOTIFICATION SETTINGS</h2></div><button type="button" onclick="closeNotificationSettings()" aria-label="Close">✕</button></div>
+    <p class="ir-notify-note">Choose which activity can alert you. These preferences are saved to your account.</p>
+    <label class="ir-notify-row"><span><b>🌍 GLOBAL CHAT</b><small>Choose how often worldwide chat alerts arrive.</small></span><select id="irPrefGlobalChat"><option value="every_message">Every message</option><option value="every_minute">At most once per minute</option><option value="mentions_only">Mentions only</option><option value="off">Off</option></select></label>
+    <div class="ir-notify-grid">
+      <label class="ir-notify-toggle"><span>💬 Direct messages</span><input id="irPrefDirectMessages" type="checkbox" checked></label>
+      <label class="ir-notify-toggle"><span>⚔️ Challenges</span><input id="irPrefChallenges" type="checkbox" checked></label>
+      <label class="ir-notify-toggle"><span>🏆 Results & winners</span><input id="irPrefResults" type="checkbox" checked></label>
+      <label class="ir-notify-toggle"><span>🏟️ Tournaments</span><input id="irPrefTournaments" type="checkbox" checked></label>
+      <label class="ir-notify-toggle"><span>📊 Ranking changes</span><input id="irPrefRankings" type="checkbox" checked></label>
+      <label class="ir-notify-toggle"><span>👤 Profile & account</span><input id="irPrefAccount" type="checkbox" checked></label>
+    </div>
+    <div class="ir-notify-subhead">ALERT BEHAVIOUR</div>
+    <div class="ir-notify-grid">
+      <label class="ir-notify-toggle"><span>🔊 Notification sound</span><input id="irPrefSound" type="checkbox" checked></label>
+      <label class="ir-notify-toggle"><span>📳 Vibration (supported devices)</span><input id="irPrefVibration" type="checkbox" checked></label>
+    </div>
+    <label class="ir-notify-toggle ir-notify-quiet"><span><b>🌙 Quiet hours</b><small>Silence push alerts during your chosen hours.</small></span><input id="irPrefQuiet" type="checkbox"></label>
+    <div class="ir-notify-time"><label>From <input id="irPrefQuietStart" type="time" value="22:00"></label><label>Until <input id="irPrefQuietEnd" type="time" value="07:00"></label></div>
+    <div class="ir-notify-actions"><button type="button" class="btn-3d-sm-white-glow" onclick="saveNotificationSettings()">SAVE SETTINGS</button><button type="button" class="btn-3d-sm-white-glow-danger" onclick="closeNotificationSettings()">CLOSE</button></div>
+    <div id="irNotifySettingsStatus" class="ir-notify-status" aria-live="polite"></div>
+    <p class="ir-notify-foot">Push alerts also require browser permission and the server-side push service to be configured. Global Chat notifications never block your ability to read or send messages.</p>
+  </div>
 </div>
 </nav>
 <main class="container">
@@ -1227,10 +1270,25 @@ No skill ranks yet.<br>Participate in a skill to begin your ranking journey.
 <button id="myProfileCollegeAdminBtn" class="btn-3d-white-glow-gold" style="display:none;width:auto;padding:10px 24px;font-size:14px;" onclick="openCollegeAdminFromProfile()">👑 COLLEGE ADMIN PANEL</button>
 </div>
 <div class="profile-card profile-big">
-<div class="profile-avatar">👤</div>
+<div id="irMyAvatarStage" class="ir-avatar-stage" aria-label="Your 3D avatar"></div>
 <h1 id="myProfileName">Student</h1>
 <p id="myProfileRivalry">IR-XXXX-XXXX</p>
 <div id="myProfileCollege" style="margin-top:10px;color:#777">College</div>
+</div>
+
+<div class="ir-avatar-editor" id="irAvatarEditor">
+  <h2>🧍 AVATAR CUSTOMIZATION</h2>
+  <p>Build your INTER RIVALRY character. Drag the 3D preview to rotate it. Your outfit and appearance are saved to your account.</p>
+  <div class="ir-avatar-controls">
+    <div class="ir-avatar-control"><label for="irAvatarBuild">CHARACTER BUILD</label><select id="irAvatarBuild"><option value="classic">Masculine</option><option value="feminine">Feminine</option><option value="neutral">Neutral</option></select></div>
+    <div class="ir-avatar-control"><label for="irAvatarHair">HAIRSTYLE</label><select id="irAvatarHair"><option value="short">Short</option><option value="long">Long</option><option value="curly">Curly</option></select></div>
+    <div class="ir-avatar-control"><label for="irAvatarTop">SHIRT COLOUR</label><input id="irAvatarTop" type="color" value="#168eea"></div>
+    <div class="ir-avatar-control"><label for="irAvatarPants">PANTS COLOUR</label><input id="irAvatarPants" type="color" value="#202a3a"></div>
+    <div class="ir-avatar-control"><label for="irAvatarSkin">SKIN TONE</label><select id="irAvatarSkin"><option value="#d69b72">Warm tan</option><option value="#f0c7a2">Light</option><option value="#a96f4d">Deep tan</option><option value="#70452f">Deep</option><option value="#e4ad8c">Medium</option></select></div>
+    <div class="ir-avatar-control"><label for="irAvatarHairColor">HAIR COLOUR</label><input id="irAvatarHairColor" type="color" value="#24202a"></div>
+  </div>
+  <div class="ir-avatar-actions"><button class="btn-3d-white-glow-gold" type="button" onclick="irSaveAvatar()">💾 SAVE AVATAR</button><button class="btn-3d-white-glow" type="button" onclick="irResetAvatar()">↺ RESET DEFAULT</button></div>
+  <div id="irAvatarStatus" class="ir-avatar-status" role="status"></div>
 </div>
 
 <div class="profile-card">
@@ -1300,7 +1358,7 @@ No skill ranks yet.<br>Participate in a skill to begin your ranking journey.
 <main class="container">
 <button class="btn-3d-white-glow" style="width:auto;padding:10px 24px;font-size:14px;margin-bottom:20px;" onclick="backToStudentDashboard()">⬅️ BACK</button>
 <div class="profile-card profile-big">
-<div class="profile-avatar">👤</div>
+<div id="irViewAvatarStage" class="ir-avatar-stage" aria-label="3D player avatar"></div>
 <h1 id="viewProfileName">User</h1>
 <p id="viewProfileRivalry">IR-XXXX-XXXX</p>
 <div id="viewProfileCollege" style="margin-top:10px;color:#777">College</div>
@@ -2371,6 +2429,11 @@ input::placeholder,textarea::placeholder { color:#686868 !important; opacity:1 !
 .ir-chat-page{padding-bottom:50px}.ir-chat-heading{display:flex;align-items:center;justify-content:space-between;gap:15px;margin:8px 0 22px}.ir-chat-kicker{font-size:10px;letter-spacing:2px;color:#19a9ff;font-weight:900}.ir-chat-heading h1{margin:5px 0;font-size:clamp(25px,5vw,38px);letter-spacing:1.5px}.ir-chat-heading p{margin:0;color:#9eafc3;font-size:13px}.ir-chat-layout{display:grid;grid-template-columns:minmax(220px,.75fr) minmax(0,1.6fr);gap:14px;min-height:520px}.ir-chat-inbox,.ir-chat-window{min-width:0;border:1px solid #26364b;border-radius:15px;background:linear-gradient(145deg,#101a29,#080b11);overflow:hidden}.ir-chat-inbox{padding:15px}.ir-chat-inbox h2{font-size:13px;letter-spacing:1.5px;color:#9ec9e8;margin:0 0 13px}.ir-chat-contact{width:100%;display:block;text-align:left;padding:12px;margin:0 0 8px;border:1px solid #28394c;border-radius:10px;background:#0b111b;color:#f4f7ff;cursor:pointer}.ir-chat-contact.active{border-color:#19a9ff;background:#102238}.ir-chat-contact strong{display:block;font-size:13px}.ir-chat-contact small{display:block;color:#91a3b8;font-size:11px;margin-top:5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.ir-chat-window{display:flex;flex-direction:column;min-height:520px}.ir-chat-window-header{padding:15px 17px;border-bottom:1px solid #26364b;display:flex;flex-direction:column;gap:5px}.ir-chat-window-header strong{font-size:15px;color:#f4f7ff}.ir-chat-window-header span{font-size:11px;color:#8ea4bd}.ir-chat-messages{flex:1;min-height:300px;max-height:520px;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:10px}.ir-chat-empty{margin:auto;color:#8492a5;text-align:center;font-size:13px;line-height:1.6}.ir-chat-bubble{max-width:min(82%,520px);padding:10px 12px;border:1px solid #2a3d54;border-radius:12px;background:#101b2a;color:#f4f7ff;overflow-wrap:anywhere;white-space:pre-wrap;align-self:flex-start}.ir-chat-bubble.mine{align-self:flex-end;border-color:#12699a;background:#0d2a40}.ir-chat-bubble time{display:block;margin-top:6px;color:#8ea4bd;font-size:9px;text-align:right}.ir-chat-composer{display:flex;align-items:flex-end;gap:9px;padding:12px;border-top:1px solid #26364b}.ir-chat-composer textarea{flex:1;min-width:0;resize:vertical;max-height:120px;background:#080d16;color:#f4f7ff;border:1px solid #30445b;border-radius:9px;padding:11px;font:inherit}.ir-chat-composer button{width:auto;min-width:95px;padding:12px}.ir-chat-footnote{padding:0 13px 12px;color:#75869c;font-size:10px}.ir-chat-status-error{color:#ff8585!important}.ir-chat-status-ok{color:#83e6b1!important}
 @media(max-width:720px){.ir-chat-layout{grid-template-columns:1fr}.ir-chat-inbox{max-height:240px;overflow:auto}.ir-chat-window{min-height:440px}.ir-chat-messages{max-height:390px}.ir-chat-heading{align-items:flex-start;flex-direction:column}.ir-chat-heading>button{width:100%!important}}
 
+
+/* INTER RIVALRY notification control centre */
+.ir-notify-overlay{position:fixed;inset:0;z-index:12000;background:rgba(0,0,0,.82);backdrop-filter:blur(9px);display:flex;align-items:center;justify-content:center;padding:16px;overflow:auto}
+.ir-notify-panel{width:min(650px,100%);max-height:92vh;overflow:auto;background:linear-gradient(145deg,#0b1422,#05080e);border:1px solid #17466a;box-shadow:0 20px 70px #000;border-radius:16px;padding:20px;color:#f4f7ff}
+.ir-notify-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;border-bottom:1px solid #20344a;padding-bottom:14px}.ir-notify-head span,.ir-notify-subhead{font-size:10px;letter-spacing:2px;color:#19a9ff}.ir-notify-head h2{font:700 19px Orbitron,Rajdhani,sans-serif;margin:7px 0 0}.ir-notify-head>button{background:#101b2a;color:#fff;border:1px solid #34506b;border-radius:8px;padding:8px 12px}.ir-notify-note,.ir-notify-foot{color:#9aabc0;font-size:12px;line-height:1.55}.ir-notify-row,.ir-notify-toggle{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:13px 12px;margin:9px 0;background:#0c1725;border:1px solid #20344a;border-radius:10px}.ir-notify-row b,.ir-notify-toggle b{display:block;font-size:12px;letter-spacing:.5px}.ir-notify-row small,.ir-notify-toggle small{display:block;color:#8da0b8;font-size:10px;margin-top:4px}.ir-notify-row select,.ir-notify-time input{background:#08111d;color:#f4f7ff;border:1px solid #31506b;border-radius:7px;padding:9px;max-width:190px}.ir-notify-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px}.ir-notify-toggle{margin:0;min-width:0;font-size:12px}.ir-notify-toggle input{width:18px;height:18px;accent-color:#19a9ff;flex-shrink:0}.ir-notify-subhead{margin:18px 0 9px}.ir-notify-quiet{margin-top:12px}.ir-notify-time{display:flex;gap:12px;flex-wrap:wrap;padding:10px 12px;color:#a9b5ca;font-size:12px}.ir-notify-time label{display:flex;align-items:center;gap:8px}.ir-notify-actions{display:flex;gap:9px;flex-wrap:wrap;margin-top:14px}.ir-notify-actions button{width:auto;padding:11px 17px}.ir-notify-status{font-size:12px;color:#83e6b1;margin-top:10px;min-height:16px}.ir-notify-foot{font-size:10px;margin-bottom:0}@media(max-width:520px){.ir-notify-grid{grid-template-columns:1fr}.ir-notify-row{align-items:flex-start;flex-direction:column}.ir-notify-row select{max-width:none;width:100%}.ir-notify-panel{padding:15px}}
 </style>
 <script>
 /* INTER RIVALRY application logic — inline build */
@@ -2534,6 +2597,46 @@ async function restorePushNotificationState() {
     } catch (e) {
         console.warn('Could not restore push state:', e);
     }
+}
+
+
+// ==================== NOTIFICATION PREFERENCES ====================
+const IR_NOTIFICATION_DEFAULTS = {
+  global_chat_mode:'every_message', direct_messages:true, challenges:true,
+  results:true, tournaments:true, rankings:true, account_updates:true,
+  sound_enabled:true, vibration_enabled:true, quiet_hours_enabled:false,
+  quiet_start:'22:00', quiet_end:'07:00'
+};
+async function openNotificationSettings(){
+  const modal=document.getElementById('irNotificationSettingsModal');
+  if(!modal) return;
+  modal.style.display='flex';
+  await loadNotificationSettings();
+}
+function closeNotificationSettings(){
+  const modal=document.getElementById('irNotificationSettingsModal');
+  if(modal) modal.style.display='none';
+}
+async function loadNotificationSettings(){
+  const status=document.getElementById('irNotifySettingsStatus');
+  const {data:{user}}=await client.auth.getUser();
+  if(!user){if(status)status.textContent='Please sign in to manage notification settings.';return;}
+  const {data,error}=await client.from('notification_preferences').select('*').eq('user_id',user.id).maybeSingle();
+  if(error){if(status)status.textContent='Run the notification SQL setup first: '+error.message;return;}
+  const v={...IR_NOTIFICATION_DEFAULTS,...(data||{})};
+  const set=(id,value)=>{const el=document.getElementById(id);if(el)el.type==='checkbox'?el.checked=!!value:el.value=value??'';};
+  set('irPrefGlobalChat',v.global_chat_mode);set('irPrefDirectMessages',v.direct_messages);set('irPrefChallenges',v.challenges);set('irPrefResults',v.results);set('irPrefTournaments',v.tournaments);set('irPrefRankings',v.rankings);set('irPrefAccount',v.account_updates);set('irPrefSound',v.sound_enabled);set('irPrefVibration',v.vibration_enabled);set('irPrefQuiet',v.quiet_hours_enabled);set('irPrefQuietStart',v.quiet_start);set('irPrefQuietEnd',v.quiet_end);
+  if(status)status.textContent=data?'Your saved settings are loaded.':'Default settings are ready. Save to keep them on your account.';
+}
+async function saveNotificationSettings(){
+  const status=document.getElementById('irNotifySettingsStatus');
+  const {data:{user}}=await client.auth.getUser();
+  if(!user){if(status)status.textContent='Please sign in first.';return;}
+  const val=id=>document.getElementById(id);
+  const payload={user_id:user.id,global_chat_mode:val('irPrefGlobalChat').value,direct_messages:val('irPrefDirectMessages').checked,challenges:val('irPrefChallenges').checked,results:val('irPrefResults').checked,tournaments:val('irPrefTournaments').checked,rankings:val('irPrefRankings').checked,account_updates:val('irPrefAccount').checked,sound_enabled:val('irPrefSound').checked,vibration_enabled:val('irPrefVibration').checked,quiet_hours_enabled:val('irPrefQuiet').checked,quiet_start:val('irPrefQuietStart').value||'22:00',quiet_end:val('irPrefQuietEnd').value||'07:00',timezone_name:Intl.DateTimeFormat().resolvedOptions().timeZone||'Asia/Kolkata',updated_at:new Date().toISOString()};
+  const {error}=await client.from('notification_preferences').upsert(payload,{onConflict:'user_id'});
+  if(error){if(status)status.textContent='Could not save: '+error.message;return;}
+  if(status)status.textContent='✅ Notification preferences saved to your account.';
 }
 
 
@@ -3799,6 +3902,7 @@ async function viewProfile(userId){
     if(privacyNote) privacyNote.textContent=profile.profile_visibility==='private'?'🔒 Private profile — new messages are disabled.':(currentUserProfile?.profile_visibility==='private'?'🔒 Set your own profile to Public to send messages.':'');
     document.getElementById('viewProfileName').textContent = profile.full_name || 'User';
     document.getElementById('viewProfileRivalry').textContent = profile.inter_rivalry_id || '-';
+    await irLoadAvatar(userId,'irViewAvatarStage',false);
     let membership = null;
     if(battlefield === 'college'){
         const { data } = await client.from('college_memberships').select('course,year_of_study,specialization,colleges(college_name)').eq('user_id',userId).eq('is_active',true).maybeSingle();
@@ -7638,14 +7742,14 @@ async function loadMyProfilePage(){
     // Purchased cosmetics are read from the authenticated user's own inventory.
     const {data:profileItems,error:profileItemsError}=await client.from('ir_coin_inventory').select('item_code').eq('user_id',user.id);
     const hasGoldFrame=!profileItemsError && (profileItems||[]).some(x=>x.item_code==='profile_frame_gold');
-    const ownAvatar=document.querySelector('#myProfilePage .profile-big .profile-avatar');
+    const ownAvatar=document.getElementById('irMyAvatarStage');
     if(ownAvatar){
       ownAvatar.classList.toggle('ir-gold-frame-equipped',hasGoldFrame);
-      ownAvatar.innerHTML=hasGoldFrame ? '<span style="font-size:30px;position:relative;z-index:1;filter:drop-shadow(0 2px 5px #000)">👤</span>' : '👤';
       let label=document.getElementById('irEquippedFrameLabel');
       if(hasGoldFrame){ if(!label){label=document.createElement('div');label.id='irEquippedFrameLabel';label.className='ir-equipped-label';ownAvatar.parentElement.insertBefore(label,ownAvatar.nextSibling);} label.textContent='✦ GOLDEN PROFILE FRAME EQUIPPED'; }
       else if(label) label.remove();
     }
+    await irLoadAvatar(user.id,'irMyAvatarStage',true);
     document.getElementById("myProfileName").textContent = profile.full_name || "Student";
     document.getElementById("myProfileRivalry").textContent = profile.inter_rivalry_id || "IR-XXXX-XXXX";
     document.getElementById("myProfileId").textContent = profile.inter_rivalry_id || "Not assigned";
@@ -10803,6 +10907,97 @@ async function loadIRPublicChallenges(){
     host.innerHTML='<div class="ir-public-empty">Public Challenges database is not set up yet, or access is blocked. Once the matching SQL setup is installed, this arena will load here.<br><br><small>'+irPublicSafe(error.message||'Unknown database error')+'</small></div>';
   }
 }
+
+
+
+// ==================== INTER RIVALRY 3D AVATAR SYSTEM ====================
+(function(){
+  const DEFAULT={build:'classic',hair:'short',top:'#168eea',pants:'#202a3a',skin:'#d69b72',hairColor:'#24202a'};
+  let threePromise=null, avatarRenderer=null, avatarScene=null, avatarCamera=null, avatarRoot=null, avatarConfig={...DEFAULT}, avatarControlsBound=false;
+  const clampColor=v=>/^#[0-9a-fA-F]{6}$/.test(String(v||''))?v:DEFAULT.top;
+  function status(message){const el=document.getElementById('irAvatarStatus');if(el)el.textContent=message||'';}
+  function loadThree(){
+    if(window.THREE)return Promise.resolve(window.THREE);
+    if(threePromise)return threePromise;
+    threePromise=new Promise((resolve,reject)=>{const sc=document.createElement('script');sc.src='https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js';sc.onload=()=>window.THREE?resolve(window.THREE):reject(new Error('3D engine unavailable'));sc.onerror=()=>reject(new Error('Could not load 3D engine. Check your connection.'));document.head.appendChild(sc);});
+    return threePromise;
+  }
+  function material(T,color,rough=.78){return new T.MeshStandardMaterial({color,roughness:rough,metalness:.03});}
+  function mesh(T,g,m,x,y,z,group,sx=1,sy=1,sz=1){const o=new T.Mesh(g,m);o.position.set(x,y,z);o.scale.set(sx,sy,sz);o.castShadow=true;o.receiveShadow=true;group.add(o);return o;}
+  function capsulePart(T,group,mat,a,b,r1,r2){const A=new T.Vector3(...a),B=new T.Vector3(...b),d=new T.Vector3().subVectors(B,A);const o=new T.Mesh(new T.CylinderGeometry(r2,r1,d.length(),12),mat);o.position.copy(A).add(B).multiplyScalar(.5);o.quaternion.setFromUnitVectors(new T.Vector3(0,1,0),d.normalize());o.castShadow=true;group.add(o);return o;}
+  function buildCharacter(T,cfg){
+    const g=new T.Group();
+    const skin=material(T,cfg.skin),shirt=material(T,cfg.top),pants=material(T,cfg.pants),hair=material(T,cfg.hairColor),shoe=material(T,'#111722'),detail=material(T,'#d8e7f3',.45);
+    const fem=cfg.build==='feminine', torsoW=fem?.39:.43, hipW=fem?.37:.42;
+    // Legs and footwear
+    capsulePart(T,g,pants,[-hipW*.48,.94,0],[-hipW*.48,.22,0],.105,.085);
+    capsulePart(T,g,pants,[hipW*.48,.94,0],[hipW*.48,.22,0],.105,.085);
+    mesh(T,new T.BoxGeometry(.25,.13,.39),shoe,-hipW*.48,.105,.065,g);
+    mesh(T,new T.BoxGeometry(.25,.13,.39),shoe,hipW*.48,.105,.065,g);
+    // Torso, neck and head
+    mesh(T,new T.CapsuleGeometry(torsoW*.78,.56,4,10),shirt,0,1.38,0,g,1,.9,.64);
+    mesh(T,new T.CylinderGeometry(.075,.085,.13,12),skin,0,1.77,0,g);
+    mesh(T,new T.SphereGeometry(.235,24,18),skin,0,2.03,0,g,1,.98,.9);
+    // Face details: eyes, brows, nose and mouth are subtle and stylized
+    const eye=material(T,'#18202a'),white=material(T,'#f5f3ed'),mouth=material(T,'#754b43');
+    [-.082,.082].forEach(x=>{mesh(T,new T.SphereGeometry(.025,10,8),white,x,2.06,.202,g,1,1,.45);mesh(T,new T.SphereGeometry(.012,8,6),eye,x,2.06,.222,g);});
+    mesh(T,new T.BoxGeometry(.065,.012,.018),mouth,0,1.955,.207,g);
+    // Hair cap and optional side/back lengths
+    mesh(T,new T.SphereGeometry(.245,20,14,0,Math.PI*2,0,Math.PI*.58),hair,0,2.105,-.015,g,1,1,.95);
+    if(cfg.hair==='long'){
+      mesh(T,new T.SphereGeometry(.19,16,12),hair,-.19,1.91,-.015,g,.55,1.5,.62);
+      mesh(T,new T.SphereGeometry(.19,16,12),hair,.19,1.91,-.015,g,.55,1.5,.62);
+    }else if(cfg.hair==='curly'){
+      for(let i=0;i<7;i++){const a=i/7*Math.PI*2;mesh(T,new T.SphereGeometry(.09,10,8),hair,Math.cos(a)*.19,2.19+Math.sin(a)*.045,Math.sin(a)*.12,g);}
+    }else{
+      mesh(T,new T.SphereGeometry(.17,14,10),hair,0,2.15,.12,g,1,.35,.55);
+    }
+    // Arms and hands
+    const shoulder=fem?.245:.275;
+    capsulePart(T,g,shirt,[-shoulder,1.62,0],[-shoulder-.07,1.15,.01],.095,.075);
+    capsulePart(T,g,shirt,[shoulder,1.62,0],[shoulder+.07,1.15,.01],.095,.075);
+    capsulePart(T,g,skin,[-shoulder-.07,1.15,.01],[-shoulder-.07,1.03,.025],.055,.05);
+    capsulePart(T,g,skin,[shoulder+.07,1.15,.01],[shoulder+.07,1.03,.025],.055,.05);
+    // Shirt seam and belt detail
+    mesh(T,new T.BoxGeometry(torsoW*1.25,.035,.012),detail,0,1.12,.145,g);
+    mesh(T,new T.BoxGeometry(.16,.055,.025),shoe,0,.99,.15,g);
+    // Slightly more tailored silhouette for feminine build, still fully clothed
+    if(fem){mesh(T,new T.SphereGeometry(.22,14,10),shirt,0,1.25,.005,g,1.45,.68,.68);}
+    g.position.y=-.02;
+    return g;
+  }
+  async function renderAvatar(mountId,cfg){
+    const host=document.getElementById(mountId);if(!host)return;
+    if(host.__irAvatarCleanup)host.__irAvatarCleanup();
+    const T=await loadThree();
+    const scene=new T.Scene();scene.background=new T.Color('#080e18');scene.fog=new T.Fog('#080e18',5,11);
+    const camera=new T.PerspectiveCamera(34,1,.1,100);camera.position.set(0,1.55,5.8);camera.lookAt(0,1.15,0);
+    const renderer=new T.WebGLRenderer({antialias:true,alpha:false,powerPreference:'low-power'});renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,1.5));renderer.outputColorSpace=T.SRGBColorSpace;renderer.shadowMap.enabled=true;renderer.shadowMap.type=T.PCFSoftShadowMap;host.appendChild(renderer.domElement);
+    scene.add(new T.HemisphereLight('#c9e7ff','#18202a',2.1));const key=new T.DirectionalLight('#ffffff',2.4);key.position.set(3,5,4);key.castShadow=true;scene.add(key);const rim=new T.PointLight('#008cff',1.6,7);rim.position.set(-2,2,1);scene.add(rim);
+    const floor=new T.Mesh(new T.CircleGeometry(1.15,48),new T.MeshBasicMaterial({color:'#102338',transparent:true,opacity:.65}));floor.rotation.x=-Math.PI/2;floor.position.y=.015;scene.add(floor);
+    const ring=new T.Mesh(new T.TorusGeometry(.88,.012,8,64),new T.MeshBasicMaterial({color:'#168eea',transparent:true,opacity:.75}));ring.rotation.x=Math.PI/2;ring.position.y=.025;scene.add(ring);
+    const root=buildCharacter(T,cfg);scene.add(root);
+    const resize=()=>{const w=Math.max(1,host.clientWidth),h=Math.max(1,host.clientHeight);renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix();};resize();
+    let dragging=false,lastX=0,rotating=false;
+    const down=e=>{dragging=true;lastX=e.clientX;try{renderer.domElement.setPointerCapture(e.pointerId);}catch{}};const move=e=>{if(!dragging)return;root.rotation.y+=(e.clientX-lastX)*.012;lastX=e.clientX;};const up=()=>{dragging=false;};
+    renderer.domElement.addEventListener('pointerdown',down);window.addEventListener('pointermove',move);window.addEventListener('pointerup',up);
+    const observer=window.ResizeObserver?new ResizeObserver(resize):null;if(observer)observer.observe(host);
+    let frameId=0;const render=()=>{frameId=requestAnimationFrame(render);if(!dragging)root.rotation.y+=.0035;renderer.render(scene,camera);};render();
+    host.__irAvatarCleanup=()=>{cancelAnimationFrame(frameId);window.removeEventListener('pointermove',move);window.removeEventListener('pointerup',up);if(observer)observer.disconnect();renderer.dispose();renderer.domElement.remove();host.__irAvatarCleanup=null;};
+    if(mountId==='irMyAvatarStage'){avatarRenderer=renderer;avatarScene=scene;avatarCamera=camera;avatarRoot=root;}
+  }
+  function readControls(){return {build:document.getElementById('irAvatarBuild')?.value||DEFAULT.build,hair:document.getElementById('irAvatarHair')?.value||DEFAULT.hair,top:clampColor(document.getElementById('irAvatarTop')?.value||DEFAULT.top),pants:clampColor(document.getElementById('irAvatarPants')?.value||DEFAULT.pants),skin:document.getElementById('irAvatarSkin')?.value||DEFAULT.skin,hairColor:clampColor(document.getElementById('irAvatarHairColor')?.value||DEFAULT.hairColor)};}
+  function fillControls(c){const map={irAvatarBuild:'build',irAvatarHair:'hair',irAvatarTop:'top',irAvatarPants:'pants',irAvatarSkin:'skin',irAvatarHairColor:'hairColor'};Object.entries(map).forEach(([id,k])=>{const el=document.getElementById(id);if(el)el.value=c[k]||DEFAULT[k];});}
+  function bindControls(){if(avatarControlsBound)return;avatarControlsBound=true;['irAvatarBuild','irAvatarHair','irAvatarTop','irAvatarPants','irAvatarSkin','irAvatarHairColor'].forEach(id=>document.getElementById(id)?.addEventListener('input',async()=>{avatarConfig=readControls();try{await renderAvatar('irMyAvatarStage',avatarConfig);status('Preview updated. Save to keep your changes.');}catch(e){status(e.message);}}));}
+  window.irLoadAvatar=async function(userId,mountId,editable){
+    let cfg={...DEFAULT};
+    try{const {data,error}=await client.from('ir_user_avatars').select('avatar_config').eq('user_id',userId).maybeSingle();if(!error&&data?.avatar_config)cfg={...DEFAULT,...data.avatar_config};else if(error)console.warn('Avatar table not ready; using default/local copy:',error.message);}catch(e){console.warn(e);}
+    if(editable){try{const local=JSON.parse(localStorage.getItem('ir-avatar-'+userId)||'null');if(local)cfg={...cfg,...local};}catch{}avatarConfig={...cfg};fillControls(avatarConfig);bindControls();}
+    try{await renderAvatar(mountId,cfg);}catch(e){const host=document.getElementById(mountId);if(host)host.innerHTML='<div style="padding:35px 20px;text-align:center;color:#9fcfff">3D preview could not start.<br><small>'+String(e.message||e).replace(/[<>]/g,'')+'</small></div>';if(editable)status('3D preview unavailable. Please check your connection and WebGL support.');}
+  };
+  window.irSaveAvatar=async function(){const {data:{user}}=await client.auth.getUser();if(!user){status('Please sign in first.');return;}avatarConfig=readControls();localStorage.setItem('ir-avatar-'+user.id,JSON.stringify(avatarConfig));status('Saving avatar...');const {error}=await client.from('ir_user_avatars').upsert({user_id:user.id,avatar_config:avatarConfig,updated_at:new Date().toISOString()},{onConflict:'user_id'});if(error){status('Saved on this device. Run ir-avatar-setup.sql in Supabase SQL Editor to sync across devices.');console.warn('Avatar save:',error.message);return;}status('✓ Avatar saved to your INTER RIVALRY account.');};
+  window.irResetAvatar=async function(){avatarConfig={...DEFAULT};fillControls(avatarConfig);try{await renderAvatar('irMyAvatarStage',avatarConfig);status('Default outfit restored. Save to apply it to your account.');}catch(e){status(e.message);}};
+})();
 
 </script>
 </body>
