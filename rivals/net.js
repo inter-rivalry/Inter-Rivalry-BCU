@@ -11,15 +11,6 @@ import {
    Uses the existing INTER RIVALRY Supabase
 ========================================= */
 
-// Prevent mobile browsers from leaving the startup auth check pending forever.
-function withTimeout(promise, ms, label) {
-  let timer;
-  const timeout = new Promise((_, reject) => {
-    timer = setTimeout(() => reject(new Error(label)), ms);
-  });
-  return Promise.race([promise, timeout]).finally(() => clearTimeout(timer));
-}
-
 export class Net {
   constructor() {
     this.client = createClient(
@@ -98,54 +89,46 @@ export class Net {
 
   async init() {
     try {
-      // Check the saved INTER RIVALRY session first. Keep this shorter than
-      // the game boot timeout so the UI can display a useful error.
-      const authResult = await withTimeout(
-        this.client.auth.getSession(),
-        5000,
-        'Login check timed out. Check your internet connection and reload the game.'
-      );
+      const {
+        data: { session },
+        error
+      } = await this.client.auth.getSession();
 
-      const session = authResult?.data?.session;
-      const authError = authResult?.error;
-
-      if (authError) {
+      if (error) {
         return {
           ok: false,
-          reason: this.errorMessage(authError, 'Could not check your login.')
+          reason: 'auth_error',
+          message: this.errorMessage(
+            error,
+            'Could not check your login.'
+          )
         };
       }
 
       if (!session?.user) {
         return {
           ok: false,
-          reason: 'No saved INTER RIVALRY session was found. Sign in to INTER RIVALRY, then reopen RIVALS.'
+          reason: 'not_logged_in',
+          message: 'Please sign in on INTER RIVALRY first.'
         };
       }
 
       this.user = session.user;
 
-      // The profile is supplementary. A slow profile query must not block
-      // a valid saved login from entering the game.
-      let profile = null;
-      try {
-        const profileResult = await withTimeout(
-          this.client
-            .from('profiles')
-            .select('inter_rivalry_id, full_name')
-            .eq('id', this.user.id)
-            .maybeSingle(),
-          1500,
-          'Profile lookup timed out'
-        );
+      const {
+        data: profile,
+        error: profileError
+      } = await this.client
+        .from('profiles')
+        .select('inter_rivalry_id, full_name')
+        .eq('id', this.user.id)
+        .maybeSingle();
 
-        if (profileResult.error) {
-          console.warn('[RIVALS] Could not load profile:', profileResult.error.message);
-        } else {
-          profile = profileResult.data;
-        }
-      } catch (profileError) {
-        console.warn('[RIVALS] Profile lookup skipped:', profileError.message);
+      if (profileError) {
+        console.warn(
+          '[RIVALS] Could not load profile:',
+          profileError.message
+        );
       }
 
       this.displayName =
@@ -155,7 +138,8 @@ export class Net {
         this.user.email?.split('@')[0] ||
         `Player-${this.user.id.slice(0, 4)}`;
 
-      this.irId = profile?.inter_rivalry_id || 'IR-???';
+      this.irId =
+        profile?.inter_rivalry_id || 'IR-???';
 
       return {
         ok: true,
@@ -163,10 +147,12 @@ export class Net {
         name: this.displayName,
         irId: this.irId
       };
+
     } catch (error) {
       return {
         ok: false,
-        reason: this.errorMessage(
+        reason: 'connection_error',
+        message: this.errorMessage(
           error,
           'Could not connect to INTER RIVALRY.'
         )
@@ -551,22 +537,66 @@ export class Net {
 
   async findMatch(teamSize, mode) {
     const authError = this.requireUser();
+
     if (authError) return authError;
-    const size = Number(teamSize);
-    if (![3, 5].includes(size) || !['standard', 'hardcore'].includes(mode))
-      return { ok: false, reason: 'invalid_match_config' };
+
     try {
-      const { data, error } = await this.client.rpc('rivals_find_match', {
-        p_team_size: size, p_mode: mode
-      });
-      if (error) return { ok: false, reason: this.errorMessage(error, 'Could not enter matchmaking.'), needs_sql: true };
-      const room = Array.isArray(data) ? data[0] : data;
-      if (!room?.id) return { ok: false, reason: 'matchmaking_no_room' };
-      this.room = room;
-      this.isHost = room.host_id === this.user.id;
-      return { ok: true, room };
+      const {
+        data: rooms,
+        error
+      } = await this.client
+        .from('rooms')
+        .select('*')
+        .eq('team_size', Number(teamSize))
+        .eq('mode', mode)
+        .eq('status', 'waiting')
+        .order('created_at', { ascending: true })
+        .limit(20);
+
+      if (error) {
+        return {
+          ok: false,
+          reason: this.errorMessage(
+            error,
+            'Could not search for matches.'
+          )
+        };
+      }
+
+      for (const room of rooms || []) {
+        // Don't join your own room through matchmaking.
+        if (room.host_id === this.user.id) {
+          continue;
+        }
+
+        const result = await this.joinRoom(room.code);
+
+        if (result.ok) {
+          return result;
+        }
+
+        // Skip rooms that became full or closed.
+        if (
+          result.reason !== 'full' &&
+          result.reason !== 'not_found'
+        ) {
+          console.warn(
+            '[RIVALS] Could not join candidate room:',
+            result.reason
+          );
+        }
+      }
+
+      return await this.createRoom(teamSize, mode);
+
     } catch (error) {
-      return { ok: false, reason: this.errorMessage(error, 'Matchmaking failed.'), needs_sql: true };
+      return {
+        ok: false,
+        reason: this.errorMessage(
+          error,
+          'Matchmaking failed.'
+        )
+      };
     }
   }
 
@@ -844,14 +874,16 @@ const redPlayers = currentPlayers.filter(
 );
 
 if (
-  currentPlayers.length !== capacity * 2 ||
-  bluePlayers.length !== capacity ||
-  redPlayers.length !== capacity
+  currentPlayers.length < 2 ||
+  bluePlayers.length === 0 ||
+  redPlayers.length === 0 ||
+  bluePlayers.length > capacity ||
+  redPlayers.length > capacity
 ) {
   return {
     ok: false,
     reason: 'players_missing',
-    message: `The lobby needs exactly ${capacity} players on each team.`
+    message: 'Both teams need at least one player, within team capacity.'
   };
 }
 
